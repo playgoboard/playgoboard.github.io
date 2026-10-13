@@ -68,8 +68,9 @@
       Object.assign(this, snap, { board: snap.board.slice(), captures: { ...snap.captures } });
     }
 
-    // Returns { ok: true } or { ok: false, reason: "occupied" | "suicide" | "ko" | "not-playing" }.
-    play(x, y) {
+    // Works out a move without making it.
+    // Returns { ok: true, next, captured } or { ok: false, reason: "occupied" | "suicide" | "ko" | "not-playing" }.
+    checkMove(x, y) {
       if (this.phase !== "play") return { ok: false, reason: "not-playing" };
       const i = this.index(x, y);
       if (this.board[i] !== EMPTY) return { ok: false, reason: "occupied" };
@@ -94,14 +95,21 @@
       const before = this.history[this.history.length - 1];
       if (before && before.board.join("") === next.join("")) return { ok: false, reason: "ko" };
 
+      return { ok: true, next, captured };
+    }
+
+    play(x, y) {
+      const check = this.checkMove(x, y);
+      if (!check.ok) return check;
+      const me = this.turn;
       this.history.push(this.snapshot());
-      this.board = next;
-      this.captures[me] += captured;
-      this.lastMove = i;
+      this.board = check.next;
+      this.captures[me] += check.captured;
+      this.lastMove = this.index(x, y);
       this.passesInRow = 0;
       this.moveNumber++;
-      this.turn = them;
-      return { ok: true, captured };
+      this.turn = otherColor(me);
+      return { ok: true, captured: check.captured };
     }
 
     pass() {

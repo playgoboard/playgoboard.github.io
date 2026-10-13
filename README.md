@@ -5,7 +5,7 @@ A website for playing the board game Go, in the style of chess.com.
 ## What it does right now
 - Play Go on a 9×9, 13×13 or 19×19 board, two players taking turns on the same computer.
 - Captures, the ko rule and the "no suicide" rule are all checked for you.
-- Pass, Undo and Resign buttons.
+- Hint, Pass (skip your turn), Undo and Resign buttons. Hint shows a good move in green.
 - When both players pass, click the dead groups and the site counts the score
   (area scoring, with 7.5 komi for White).
 - Play against the computer: 5 bot levels (Pebble, Sprout, Fox, Tiger, Dragon).

@@ -38,3 +38,6 @@
 - Board sizes 9/13/19, captures, ko, suicide check, pass, undo, resign, dead-stone marking and score count.
 - Bots: 5 levels (Pebble, Sprout, Fox, Tiger, Dragon), color choice Black/White/Random, human sits at the
   bottom, undo takes back two moves. Bot passes when you pass and it's ahead on the count (or clearly lost).
+- Hint button: asks the Level 5 bot (HINT_LEVEL in game-page.js), draws a green circle; the hint is tied to the
+  exact position (positionKey) and vanishes or cancels when anything changes. GoGame.checkMove tests a move without playing it.
+- Site name is "GoBoard" for now (placeholder; the user may rename it).

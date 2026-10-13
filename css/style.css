@@ -128,6 +128,7 @@ nav { display: flex; gap: 18px; }
 .btn:disabled { opacity: 0.4; cursor: default; }
 .btn-primary { background: var(--accent); box-shadow: 0 4px 0 var(--accent-dark); width: 100%; }
 .btn-danger { background: var(--danger); }
+.btn-hint { background: #2f6e8a; }
 .button-row { display: flex; gap: 8px; }
 .button-row[hidden] { display: none; }
 

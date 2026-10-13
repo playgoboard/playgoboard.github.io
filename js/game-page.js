@@ -20,6 +20,7 @@
   const undoButton = $("btn-undo");
   const passButton = $("btn-pass");
   const resignButton = $("btn-resign");
+  const hintButton = $("btn-hint");
 
   // Choices in the "New game" box (only used when a game starts).
   const setup = { mode: "friend", size: 19, botLevel: 1, color: "black" };
@@ -31,6 +32,15 @@
   let botLevel = 1;
   let botThinking = false;
   let botToken = 0; // bumped to cancel a bot that is still thinking
+
+  // Hints come from the strongest bot and are only valid for the position they were asked in.
+  const HINT_LEVEL = 5;
+  let hint = null;        // { x, y } or { pass: true }
+  let hintThinking = false;
+  let hintKey = "";
+  let hintToken = 0;
+  let gameNumber = 0;
+  const positionKey = () => `${gameNumber}|${game.board.join("")}|${game.turn}|${game.phase}`;
 
   const botName = () => `${BOT_LEVELS[botLevel - 1].name} (Level ${botLevel})`;
   const playerName = (color) => (!vsBot ? COLOR_NAME[color] : color === humanColor ? "You" : botName());
@@ -91,6 +101,10 @@
       parts.push(`<circle cx="${lx + 1}" cy="${ly + 1}" r="0.22" fill="none" stroke="${ring}" stroke-width="0.06"/>`);
     }
 
+    if (hint && !hint.pass) {
+      parts.push(`<circle cx="${hint.x + 1}" cy="${hint.y + 1}" r="0.42" fill="rgba(129,182,76,0.45)" stroke="#5d8a32" stroke-width="0.07"/>`);
+    }
+
     // Invisible click targets, one per point, with a see-through "ghost" stone on hover.
     const ghostsOn = game.phase === "play" && !isBotTurn();
     for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
@@ -125,10 +139,12 @@
     $("scoring-buttons").hidden = game.phase !== "scoring";
     undoButton.disabled = botThinking || !game.canUndo();
     passButton.disabled = resignButton.disabled = game.phase !== "play" || isBotTurn();
+    hintButton.disabled = game.phase !== "play" || isBotTurn() || hintThinking;
 
-    statusEl.classList.toggle("thinking", botThinking);
+    statusEl.classList.toggle("thinking", botThinking || hintThinking);
     if (game.phase === "play") {
       statusEl.textContent = botThinking ? `${BOT_LEVELS[botLevel - 1].name} is thinking`
+        : hintThinking ? "Looking for a good move"
         : vsBot ? "Your move" : `${COLOR_NAME[game.turn]} to play`;
     } else if (game.phase === "scoring") {
       const s = game.score();
@@ -144,7 +160,16 @@
     }
   }
 
+  function dropStaleHint() {
+    if ((hint || hintThinking) && hintKey !== positionKey()) {
+      hint = null;
+      hintThinking = false;
+      hintToken++;
+    }
+  }
+
   function refresh() {
+    dropStaleHint();
     drawBoard();
     updatePanel();
     startBotIfItsTurn();
@@ -180,6 +205,7 @@
   function startNewGame() {
     cancelBot();
     game = new GoGame(setup.size);
+    gameNumber++;
     vsBot = setup.mode === "bot";
     botLevel = setup.botLevel;
     humanColor = setup.color === "white" ? WHITE
@@ -252,6 +278,27 @@
   });
 
   $("btn-new").addEventListener("click", startNewGame);
+
+  hintButton.addEventListener("click", () => {
+    if (hintThinking || game.phase !== "play" || isBotTurn()) return;
+    hint = null;
+    hintThinking = true;
+    hintKey = positionKey();
+    const token = ++hintToken;
+    const stillWanted = () => token === hintToken;
+    updatePanel();
+
+    chooseBotMove(game, HINT_LEVEL, () => !stillWanted()).then((choice) => {
+      if (!stillWanted()) return;
+      hintThinking = false;
+      const move = choice.pass ? null : choice.moves.find(({ x, y }) => game.checkMove(x, y).ok);
+      hint = move || { pass: true };
+      messageEl.textContent = move
+        ? "Hint: try the green spot."
+        : "Hint: nothing useful left to play. Passing is a good idea.";
+      refresh();
+    });
+  });
 
   passButton.addEventListener("click", () => {
     const who = playerName(game.turn);
