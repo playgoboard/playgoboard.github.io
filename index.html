@@ -12,7 +12,7 @@
     <nav id="nav">
       <button class="nav-item active" data-mode="friend">Play a friend</button>
       <button class="nav-item" data-mode="bot">Bots</button>
-      <span class="nav-item soon" title="Coming later">Online</span>
+      <button class="nav-item" data-mode="online">Online</button>
     </nav>
   </header>
 
@@ -36,12 +36,15 @@
         <h2>New game</h2>
         <p class="label">Opponent</p>
         <div class="choice-row" id="mode-picker">
-          <button data-mode="friend" class="selected">Friend (this computer)</button>
+          <button data-mode="friend" class="selected">Same computer</button>
           <button data-mode="bot">Computer</button>
+          <button data-mode="online">Online friend</button>
         </div>
         <div id="bot-options" hidden>
           <p class="label">Bot level</p>
           <div class="bot-list" id="bot-list"></div>
+        </div>
+        <div id="color-options" hidden>
           <p class="label">Your color</p>
           <div class="choice-row" id="color-picker">
             <button data-color="black" class="selected">Black</button>
@@ -56,6 +59,24 @@
           <button data-size="19" class="selected">19×19</button>
         </div>
         <button id="btn-new" class="btn btn-primary">Start new game</button>
+
+        <div id="online-options" hidden>
+          <button id="btn-create" class="btn btn-primary">Create online game</button>
+          <p class="label spaced">Or join a friend's game</p>
+          <div class="join-row">
+            <input id="join-code" type="text" maxlength="6" placeholder="Enter code" autocomplete="off" spellcheck="false">
+            <button id="btn-join" class="btn">Join</button>
+          </div>
+        </div>
+
+        <div id="invite-box" class="invite-box" hidden>
+          <p>Send this code to your friend:</p>
+          <div id="invite-code" class="invite-code"></div>
+          <button id="btn-copy-link" class="btn">Copy invite link</button>
+          <p class="thinking">Waiting for your friend to join</p>
+          <button id="btn-cancel-invite" class="btn">Cancel</button>
+        </div>
+        <p id="online-status" class="message online-status"></p>
       </div>
 
       <div class="panel-block">
@@ -84,8 +105,11 @@
     </aside>
   </main>
 
+  <!-- PeerJS connects two browsers for online games (free public service). -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script src="js/go-rules.js"></script>
   <script src="js/go-bot.js"></script>
   <script src="js/game-page.js"></script>
+  <script src="js/online-lobby.js"></script>
 </body>
 </html>

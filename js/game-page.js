@@ -1,7 +1,8 @@
 // Draws the board and wires up the buttons. All rule decisions live in go-rules.js,
-// and the computer's moves come from go-bot.js.
+// the computer's moves come from go-bot.js, and online-lobby.js connects online games
+// through the small window.GoPage interface at the bottom.
 (function () {
-  const { GoGame, EMPTY, BLACK, WHITE } = window.Go;
+  const { GoGame, EMPTY, BLACK, WHITE, otherColor } = window.Go;
   const { BOT_LEVELS, chooseBotMove } = window.GoBot;
 
   const COLOR_NAME = { [BLACK]: "Black", [WHITE]: "White" };
@@ -27,24 +28,32 @@
 
   // The game being played right now.
   let game = new GoGame(setup.size);
-  let vsBot = false;
-  let humanColor = BLACK;
+  let gameNumber = 0;
+  let opponent = "friend"; // "friend" (same computer), "bot" or "online"
+  let humanColor = BLACK;  // your color against a bot or an online friend
   let botLevel = 1;
   let botThinking = false;
-  let botToken = 0; // bumped to cancel a bot that is still thinking
+  let botToken = 0;        // bumped to cancel a bot that is still thinking
+  let link = null;         // the online connection, if any
+  let linkOpen = false;
 
   // Hints come from the strongest bot and are only valid for the position they were asked in.
   const HINT_LEVEL = 5;
-  let hint = null;        // { x, y } or { pass: true }
+  let hint = null;         // { x, y } or { pass: true }
   let hintThinking = false;
   let hintKey = "";
   let hintToken = 0;
-  let gameNumber = 0;
   const positionKey = () => `${gameNumber}|${game.board.join("")}|${game.turn}|${game.phase}`;
 
   const botName = () => `${BOT_LEVELS[botLevel - 1].name} (Level ${botLevel})`;
-  const playerName = (color) => (!vsBot ? COLOR_NAME[color] : color === humanColor ? "You" : botName());
-  const isBotTurn = () => vsBot && game.phase === "play" && game.turn !== humanColor;
+  const isOpponentTurn = () => opponent !== "friend" && game.phase === "play" && game.turn !== humanColor;
+  const isBotTurn = () => opponent === "bot" && isOpponentTurn();
+
+  function playerName(color) {
+    if (opponent === "friend") return COLOR_NAME[color];
+    if (color === humanColor) return "You";
+    return opponent === "bot" ? botName() : "Friend";
+  }
 
   // ---- Board drawing ----
 
@@ -106,7 +115,7 @@
     }
 
     // Invisible click targets, one per point, with a see-through "ghost" stone on hover.
-    const ghostsOn = game.phase === "play" && !isBotTurn();
+    const ghostsOn = game.phase === "play" && !isOpponentTurn();
     for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
       const showGhost = ghostsOn && game.board[game.index(x, y)] === EMPTY;
       parts.push(`<g class="spot" data-x="${x}" data-y="${y}">
@@ -121,13 +130,32 @@
 
   // ---- Side panel ----
 
+  function statusText() {
+    if (game.phase === "scoring") {
+      const s = game.score();
+      return `Scoring — Black ${s.black}, White ${s.white}`;
+    }
+    if (game.phase === "over") {
+      const r = game.result, winner = playerName(r.winner);
+      const verb = winner === "You" ? "win" : "wins";
+      return r.byResignation ? `${winner} ${verb} by resignation` : `${winner} ${verb} by ${r.margin} points`;
+    }
+    if (botThinking) return `${BOT_LEVELS[botLevel - 1].name} is thinking`;
+    if (hintThinking) return "Looking for a good move";
+    if (opponent === "online" && !linkOpen) return "Disconnected";
+    if (opponent === "online") return isOpponentTurn() ? "Friend's move" : "Your move";
+    if (opponent === "bot") return "Your move";
+    return `${COLOR_NAME[game.turn]} to play`;
+  }
+
   function updatePanel() {
+    const online = opponent === "online";
     $("name-black").textContent = playerName(BLACK);
     $("name-white").textContent = playerName(WHITE);
     $("info-black").textContent = `Captured: ${game.captures[BLACK]}`;
     $("info-white").textContent = `Captured: ${game.captures[WHITE]} · Komi 7.5`;
 
-    const bottomColor = vsBot ? humanColor : BLACK;
+    const bottomColor = opponent === "friend" ? BLACK : humanColor;
     for (const color of [BLACK, WHITE]) {
       const card = $(color === BLACK ? "card-black" : "card-white");
       card.classList.toggle("to-move", game.phase === "play" && game.turn === color);
@@ -137,26 +165,21 @@
 
     $("play-buttons").hidden = game.phase === "scoring";
     $("scoring-buttons").hidden = game.phase !== "scoring";
-    undoButton.disabled = botThinking || !game.canUndo();
-    passButton.disabled = resignButton.disabled = game.phase !== "play" || isBotTurn();
-    hintButton.disabled = game.phase !== "play" || isBotTurn() || hintThinking;
+    // No takebacks or hints against an online friend: that would be cheating.
+    undoButton.disabled = online || botThinking || !game.canUndo();
+    hintButton.disabled = online || game.phase !== "play" || isOpponentTurn() || hintThinking;
+    passButton.disabled = game.phase !== "play" || isOpponentTurn() || (online && !linkOpen);
+    resignButton.disabled = game.phase !== "play" || isBotTurn();
+    undoButton.title = online ? "Undo is off in online games" : "";
 
     statusEl.classList.toggle("thinking", botThinking || hintThinking);
-    if (game.phase === "play") {
-      statusEl.textContent = botThinking ? `${BOT_LEVELS[botLevel - 1].name} is thinking`
-        : hintThinking ? "Looking for a good move"
-        : vsBot ? "Your move" : `${COLOR_NAME[game.turn]} to play`;
-    } else if (game.phase === "scoring") {
-      const s = game.score();
-      statusEl.textContent = `Scoring — Black ${s.black}, White ${s.white}`;
-      messageEl.textContent = "Both passed. Click any dead groups to remove them, then press Count score.";
-    } else {
-      const r = game.result, winner = playerName(r.winner);
-      const verb = winner === "You" ? "win" : "wins";
-      statusEl.textContent = r.byResignation
-        ? `${winner} ${verb} by resignation`
-        : `${winner} ${verb} by ${r.margin} points`;
-      messageEl.textContent = r.byResignation ? "" : `Final score: Black ${r.black}, White ${r.white}.`;
+    statusEl.textContent = statusText();
+    if (game.phase === "scoring") {
+      messageEl.textContent = online
+        ? "Both passed. Either of you can click dead groups (you both see it), then press Count score."
+        : "Both passed. Click any dead groups to remove them, then press Count score.";
+    } else if (game.phase === "over" && !game.result.byResignation) {
+      messageEl.textContent = `Final score: Black ${game.result.black}, White ${game.result.white}.`;
     }
   }
 
@@ -200,18 +223,74 @@
     botThinking = false;
   }
 
-  // ---- Buttons and clicks ----
+  // ---- Online games ----
 
-  function startNewGame() {
+  function sendToFriend(message) {
+    if (opponent === "online" && link) link.send(message);
+  }
+
+  function leaveOnlineGame() {
+    if (link) link.close();
+    link = null;
+    linkOpen = false;
+  }
+
+  // Your friend's actions arrive here. Both browsers run the same rules on the
+  // same moves, so the two boards stay identical.
+  function receiveFromFriend(message) {
+    const friendColor = otherColor(humanColor);
+    switch (message.type) {
+      case "move":
+        if (isOpponentTurn() && !game.play(message.x, message.y).ok) {
+          messageEl.textContent = "Your friend's move didn't match your board. Try starting a new game.";
+        } else {
+          messageEl.textContent = "";
+        }
+        break;
+      case "pass":
+        if (isOpponentTurn()) {
+          game.pass();
+          messageEl.textContent = game.phase === "play" ? "Your friend passed." : "";
+        }
+        break;
+      case "resign":
+        game.resign(friendColor);
+        break;
+      case "toggle-dead":
+        game.toggleDead(message.x, message.y);
+        break;
+      case "finish":
+        game.finishScoring();
+        break;
+      case "resume":
+        game.resumePlay();
+        messageEl.textContent = "Your friend wants to keep playing.";
+        break;
+    }
+    refresh();
+  }
+
+  // ---- Starting games ----
+
+  function beginGame(size, newOpponent, myColor) {
     cancelBot();
-    game = new GoGame(setup.size);
+    leaveOnlineGame();
+    game = new GoGame(size);
     gameNumber++;
-    vsBot = setup.mode === "bot";
+    opponent = newOpponent;
+    humanColor = myColor;
     botLevel = setup.botLevel;
-    humanColor = setup.color === "white" ? WHITE
-      : setup.color === "random" ? (Math.random() < 0.5 ? BLACK : WHITE)
-      : BLACK;
-    messageEl.textContent = vsBot ? `You are ${COLOR_NAME[humanColor]}. Black moves first.` : "";
+  }
+
+  function pickedColor() {
+    if (setup.color === "white") return WHITE;
+    if (setup.color === "random") return Math.random() < 0.5 ? BLACK : WHITE;
+    return BLACK;
+  }
+
+  function startLocalGame() {
+    beginGame(setup.size, setup.mode === "bot" ? "bot" : "friend", pickedColor());
+    messageEl.textContent = opponent === "bot" ? `You are ${COLOR_NAME[humanColor]}. Black moves first.` : "";
     refresh();
   }
 
@@ -222,9 +301,14 @@
   function setMode(mode) {
     setup.mode = mode;
     $("bot-options").hidden = mode !== "bot";
+    $("color-options").hidden = mode === "friend";
+    $("online-options").hidden = mode !== "online";
+    $("btn-new").hidden = mode === "online";
     pickOne($("mode-picker"), $("mode-picker").querySelector(`[data-mode="${mode}"]`));
     for (const item of $("nav").querySelectorAll("button")) item.classList.toggle("active", item.dataset.mode === mode);
   }
+
+  // ---- Buttons and clicks ----
 
   $("bot-list").innerHTML = BOT_LEVELS.map((b) => `
     <button data-level="${b.level}" class="${b.level === setup.botLevel ? "selected" : ""}">
@@ -239,9 +323,12 @@
 
     if (game.phase === "scoring") {
       game.toggleDead(x, y);
-    } else if (game.phase === "play" && !isBotTurn()) {
+      sendToFriend({ type: "toggle-dead", x, y });
+    } else if (game.phase === "play" && !isOpponentTurn()) {
+      if (opponent === "online" && !linkOpen) return;
       const result = game.play(x, y);
       messageEl.textContent = result.ok ? "" : ILLEGAL_MOVE_TEXT[result.reason] || "";
+      if (result.ok) sendToFriend({ type: "move", x, y });
     }
     refresh();
   });
@@ -277,10 +364,10 @@
     pickOne(event.currentTarget, button);
   });
 
-  $("btn-new").addEventListener("click", startNewGame);
+  $("btn-new").addEventListener("click", startLocalGame);
 
   hintButton.addEventListener("click", () => {
-    if (hintThinking || game.phase !== "play" || isBotTurn()) return;
+    if (hintThinking || game.phase !== "play" || isOpponentTurn() || opponent === "online") return;
     hint = null;
     hintThinking = true;
     hintKey = positionKey();
@@ -303,6 +390,7 @@
   passButton.addEventListener("click", () => {
     const who = playerName(game.turn);
     game.pass();
+    sendToFriend({ type: "pass" });
     messageEl.textContent = game.phase === "play" ? `${who} passed.` : "";
     refresh();
   });
@@ -310,29 +398,59 @@
   // Against the bot, undo takes back the bot's reply too, so it's your move again.
   undoButton.addEventListener("click", () => {
     game.undo();
-    while (vsBot && game.turn !== humanColor && game.canUndo()) game.undo();
+    while (opponent === "bot" && game.turn !== humanColor && game.canUndo()) game.undo();
     messageEl.textContent = "";
     refresh();
   });
 
   resignButton.addEventListener("click", () => {
-    const question = vsBot ? "Are you sure you want to resign?" : `${COLOR_NAME[game.turn]}: are you sure you want to resign?`;
-    if (confirm(question)) {
+    const question = opponent === "friend"
+      ? `${COLOR_NAME[game.turn]}: are you sure you want to resign?`
+      : "Are you sure you want to resign?";
+    if (!confirm(question)) return;
+    if (opponent === "friend") {
       game.resign();
-      refresh();
+    } else {
+      game.resign(humanColor);
+      sendToFriend({ type: "resign" });
     }
+    refresh();
   });
 
   $("btn-finish").addEventListener("click", () => {
     game.finishScoring();
+    sendToFriend({ type: "finish" });
     refresh();
   });
 
   $("btn-resume").addEventListener("click", () => {
     game.resumePlay();
+    sendToFriend({ type: "resume" });
     messageEl.textContent = "Back to playing.";
     refresh();
   });
+
+  // What online-lobby.js needs from this page.
+  window.GoPage = {
+    getSetup: () => ({ size: setup.size, color: pickedColor() }),
+    setMode,
+    startOnlineGame(size, myColor, newLink) {
+      beginGame(size, "online", myColor);
+      link = newLink;
+      linkOpen = true;
+      messageEl.textContent = `Connected! You are ${COLOR_NAME[myColor]}. Black moves first.`;
+      refresh();
+    },
+    receiveFromFriend,
+    friendDisconnected() {
+      linkOpen = false;
+      if (opponent === "online" && game.phase !== "over") {
+        messageEl.textContent = "Your friend left or lost their connection. Start a new game to play again.";
+      }
+      refresh();
+    },
+    leaveOnlineGame,
+  };
 
   refresh();
 })();

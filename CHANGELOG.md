@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.4.0
+- Online play with a friend: create a game to get a 6-letter code and invite link, or join with a code. Uses the free PeerJS service to connect the two browsers. Undo and Hint are off in online games; passing, resigning, dead stones and scoring stay in sync.
+
 ## 0.3.0
 - Hint button: Dragon (Level 5) thinks for a few seconds and marks a good move in green. Works against friends and bots.
 - Pass button now says "Skip your turn" on hover, and How to play explains when to pass.

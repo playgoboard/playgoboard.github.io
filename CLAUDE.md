@@ -15,7 +15,12 @@
 - `js/go-bot.js`: the computer player. Levels 1-3 = rules-of-thumb scoring plus random noise;
   levels 4-5 = Monte Carlo tree search (1.2 s / 4 s per move) run in small time slices so the page stays responsive.
   Has its own fast board copy (FastBoard) for speed. Bot names and descriptions are in BOT_LEVELS.
-- `js/game-page.js`: draws the board (SVG) and handles the buttons and the bot's turn.
+- `js/game-page.js`: draws the board (SVG), handles the buttons, the bot's turn and online moves.
+  Exposes `window.GoPage` for the lobby.
+- `js/online-lobby.js`: online play via PeerJS (loaded from unpkg, peerjs@1.5.4, the user approved it).
+  Room code = 6 chars, peer id `goboard-v1-<code>`. Creator picks size/colors and sends {type:"start"}.
+  Messages: move, pass, resign, toggle-dead, finish, resume, busy. Invite link = `?join=CODE`.
+  No reconnect after a drop (start a new game). Undo/Hint disabled online.
 - Testing: Node and Python aren't installed. Use Java's `jwebserver.exe` (JDK 21 bin) on 127.0.0.1
   and the browser pane, but always ask me yes/no before starting it.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).
@@ -31,7 +36,7 @@
 ## Roadmap
 1. Local 2-player board — done
 2. Play vs computer — done (5 levels; weak on 19×19)
-3. Online play with friends (needs a server)
+3. Online play with friends — done (PeerJS room codes); putting the site online is next
 4. Accounts, ratings, game history, puzzles
 
 ## Features so far

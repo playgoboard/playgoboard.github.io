@@ -122,10 +122,11 @@
       if (this.passesInRow >= 2) this.phase = "scoring";
     }
 
-    resign() {
+    // Online, the other player can resign even when it's not their turn.
+    resign(loser = this.turn) {
       if (this.phase === "over") return;
       this.phase = "over";
-      this.result = { winner: otherColor(this.turn), byResignation: true };
+      this.result = { winner: otherColor(loser), byResignation: true };
     }
 
     canUndo() {

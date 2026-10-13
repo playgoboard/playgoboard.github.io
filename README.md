@@ -12,8 +12,11 @@ A website for playing the board game Go, in the style of chess.com.
   Pick Black, White or Random. Undo takes back your move and the bot's reply.
   The bots are best on 9×9; on 19×19 even Dragon is still a beginner.
 
-## How to play it
-Double-click `index.html`. It opens in your web browser. You don't need to install anything or be online.
+- Play online with a friend: click **Online**, then **Create online game**, and send your friend the
+  code or the invite link. They type the code under "Join" (or just click the link).
+  Online play needs internet and uses the free PeerJS service to connect you. It may not work on
+  some school or work networks. Undo and Hint are turned off in online games.
 
-## Coming later
-Play online with friends.
+## How to play it
+Double-click `index.html`. It opens in your web browser. Local games and bots work without
+internet; online games need it.
