@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GoBoard — Play Go</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top-bar">
+    <div class="logo"><span class="logo-stone"></span>GoBoard</div>
+    <nav>
+      <span class="nav-item active">Play</span>
+      <span class="nav-item soon" title="Coming later">Bots</span>
+      <span class="nav-item soon" title="Coming later">Online</span>
+    </nav>
+  </header>
+
+  <main class="game-layout">
+    <section class="board-column">
+      <div class="player-card" id="card-white">
+        <span class="stone-icon white"></span>
+        <span class="player-name">White</span>
+        <span class="player-info" id="info-white"></span>
+      </div>
+      <div id="board" class="board"></div>
+      <div class="player-card" id="card-black">
+        <span class="stone-icon black"></span>
+        <span class="player-name">Black</span>
+        <span class="player-info" id="info-black"></span>
+      </div>
+    </section>
+
+    <aside class="side-panel">
+      <div class="panel-block">
+        <h2>New game</h2>
+        <div class="size-picker" id="size-picker">
+          <button data-size="9">9×9</button>
+          <button data-size="13">13×13</button>
+          <button data-size="19" class="selected">19×19</button>
+        </div>
+        <button id="btn-new" class="btn btn-primary">Start new game</button>
+      </div>
+
+      <div class="panel-block">
+        <p id="status" class="status"></p>
+        <p id="message" class="message"></p>
+        <div id="play-buttons" class="button-row">
+          <button id="btn-pass" class="btn">Pass</button>
+          <button id="btn-undo" class="btn">Undo</button>
+          <button id="btn-resign" class="btn btn-danger">Resign</button>
+        </div>
+        <div id="scoring-buttons" class="button-row" hidden>
+          <button id="btn-finish" class="btn btn-primary">Count score</button>
+          <button id="btn-resume" class="btn">Keep playing</button>
+        </div>
+      </div>
+
+      <div class="panel-block small">
+        <h2>How to play</h2>
+        <p>Click a point to place a stone. Surround stones to capture them.
+          When both players pass, click any dead groups to remove them, then press
+          <b>Count score</b>. White gets 7.5 bonus points (komi) for moving second.</p>
+      </div>
+    </aside>
+  </main>
+
+  <script src="js/go-rules.js"></script>
+  <script src="js/game-page.js"></script>
+</body>
+</html>

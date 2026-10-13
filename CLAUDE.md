@@ -1,0 +1,33 @@
+# CLAUDE.md — Go Website (GoBoard)
+
+## About me
+- I'm a gamer, not a software engineer. This is my first website.
+- Talk to me in plain language. Short explanations. No jargon unless I ask.
+  If you must use a technical word, explain it in one simple sentence.
+- Be honest. If something is hard, risky, or won't work well, say so.
+- Don't push extra features I didn't ask for. One suggestion at the end of a task, once.
+
+## Project facts
+- Goal: a chess.com-style site for Go. Built in small steps.
+- Plain HTML/CSS/JavaScript, no build tools and no libraries. Open `index.html` to play.
+- Scripts are plain `<script>` files (not modules) so the page works when opened straight from disk.
+- `js/go-rules.js`: the game rules only (no drawing). Reuse it for bots and online play.
+- `js/game-page.js`: draws the board (SVG) and handles the buttons.
+- `css/style.css`: the look (dark chess.com-like theme, colors at the top).
+- Rules: area scoring, komi 7.5, simple ko, suicide not allowed.
+
+## How we work
+1. One feature at a time. Before bigger changes, explain the plan in 2–4 sentences and wait for OK.
+2. After each step, check it works, tell me what changed and how to test it.
+3. Never say something is done without checking it.
+4. Use git. Commit after each working step with a plain-English message.
+5. Don't add outside libraries or paid services without asking me first.
+
+## Roadmap
+1. Local 2-player board — done
+2. Play vs computer
+3. Online play with friends (needs a server)
+4. Accounts, ratings, game history, puzzles
+
+## Features so far
+- Board sizes 9/13/19, captures, ko, suicide check, pass, undo, resign, dead-stone marking and score count.
