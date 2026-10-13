@@ -18,5 +18,5 @@ A website for playing the board game Go, in the style of chess.com.
   some school or work networks. Undo and Hint are turned off in online games.
 
 ## How to play it
-Double-click `index.html`. It opens in your web browser. Local games and bots work without
+Play online at **https://reinj-bot.github.io/goboard/**, or double-click `index.html`. It opens in your web browser. Local games and bots work without
 internet; online games need it.

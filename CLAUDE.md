@@ -36,7 +36,9 @@
 ## Roadmap
 1. Local 2-player board — done
 2. Play vs computer — done (5 levels; weak on 19×19)
-3. Online play with friends — done (PeerJS room codes); putting the site online is next
+3. Online play with friends — done (PeerJS room codes). Live at https://reinj-bot.github.io/goboard/
+   (GitHub Pages from `main`). Commits use the GitHub private email. Never push the local
+   `backup-before-email-change` branch. Ask me yes/no before every push.
 4. Accounts, ratings, game history, puzzles
 
 ## Features so far
