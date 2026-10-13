@@ -9,9 +9,9 @@
 <body>
   <header class="top-bar">
     <div class="logo"><span class="logo-stone"></span>GoBoard</div>
-    <nav>
-      <span class="nav-item active">Play</span>
-      <span class="nav-item soon" title="Coming later">Bots</span>
+    <nav id="nav">
+      <button class="nav-item active" data-mode="friend">Play a friend</button>
+      <button class="nav-item" data-mode="bot">Bots</button>
       <span class="nav-item soon" title="Coming later">Online</span>
     </nav>
   </header>
@@ -20,13 +20,13 @@
     <section class="board-column">
       <div class="player-card" id="card-white">
         <span class="stone-icon white"></span>
-        <span class="player-name">White</span>
+        <span class="player-name" id="name-white">White</span>
         <span class="player-info" id="info-white"></span>
       </div>
       <div id="board" class="board"></div>
       <div class="player-card" id="card-black">
         <span class="stone-icon black"></span>
-        <span class="player-name">Black</span>
+        <span class="player-name" id="name-black">Black</span>
         <span class="player-info" id="info-black"></span>
       </div>
     </section>
@@ -34,7 +34,23 @@
     <aside class="side-panel">
       <div class="panel-block">
         <h2>New game</h2>
-        <div class="size-picker" id="size-picker">
+        <p class="label">Opponent</p>
+        <div class="choice-row" id="mode-picker">
+          <button data-mode="friend" class="selected">Friend (this computer)</button>
+          <button data-mode="bot">Computer</button>
+        </div>
+        <div id="bot-options" hidden>
+          <p class="label">Bot level</p>
+          <div class="bot-list" id="bot-list"></div>
+          <p class="label">Your color</p>
+          <div class="choice-row" id="color-picker">
+            <button data-color="black" class="selected">Black</button>
+            <button data-color="random">Random</button>
+            <button data-color="white">White</button>
+          </div>
+        </div>
+        <p class="label">Board size</p>
+        <div class="choice-row" id="size-picker">
           <button data-size="9">9×9</button>
           <button data-size="13">13×13</button>
           <button data-size="19" class="selected">19×19</button>
@@ -66,6 +82,7 @@
   </main>
 
   <script src="js/go-rules.js"></script>
+  <script src="js/go-bot.js"></script>
   <script src="js/game-page.js"></script>
 </body>
 </html>

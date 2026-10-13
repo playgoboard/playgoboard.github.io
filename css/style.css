@@ -35,7 +35,10 @@ body {
   margin-right: 10px;
 }
 nav { display: flex; gap: 18px; }
-.nav-item { color: var(--text-dim); font-weight: 600; }
+.nav-item {
+  color: var(--text-dim); font-weight: 600; font-size: 16px;
+  background: none; border: none; padding: 0; font-family: inherit; cursor: pointer;
+}
 .nav-item.active { color: var(--text); }
 .nav-item.soon { opacity: 0.5; cursor: default; }
 
@@ -51,7 +54,13 @@ nav { display: flex; gap: 18px; }
 .board-column {
   width: min(720px, 100%, calc(100vh - 170px));
   min-width: 280px;
+  display: flex;
+  flex-direction: column;
 }
+/* You sit at the bottom of the board, like on chess.com. */
+.board-column .top-seat { order: 0; }
+.board-column .board { order: 1; }
+.board-column .bottom-seat { order: 2; }
 
 .player-card {
   display: flex;
@@ -86,12 +95,29 @@ nav { display: flex; gap: 18px; }
 .panel-block h2 { margin: 0 0 10px; font-size: 16px; }
 .panel-block.small p { margin: 0; font-size: 14px; color: var(--text-dim); line-height: 1.45; }
 
-.size-picker { display: flex; gap: 6px; margin-bottom: 10px; }
-.size-picker button {
-  flex: 1; padding: 8px 0; border: none; border-radius: 6px;
+.label { margin: 10px 0 6px; font-size: 13px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; }
+.label:first-of-type { margin-top: 0; }
+#bot-options[hidden] { display: none; }
+
+.choice-row { display: flex; gap: 6px; margin-bottom: 10px; }
+.choice-row button, .bot-list button {
+  flex: 1; padding: 8px 4px; border: none; border-radius: 6px;
   background: var(--panel-light); color: var(--text); font-weight: 600; cursor: pointer;
+  font-family: inherit;
 }
-.size-picker button.selected { outline: 2px solid var(--accent); }
+.choice-row button.selected, .bot-list button.selected { outline: 2px solid var(--accent); }
+
+.bot-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.bot-list button { display: flex; align-items: center; gap: 10px; text-align: left; padding: 8px 10px; }
+.bot-level {
+  width: 26px; height: 26px; border-radius: 50%; flex: none;
+  display: grid; place-items: center; background: var(--bg); font-size: 13px;
+}
+.bot-name { display: block; }
+.bot-blurb { display: block; font-weight: 400; font-size: 12px; color: var(--text-dim); }
+
+.thinking::after { content: ""; animation: dots 1.2s steps(4) infinite; }
+@keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
 
 .btn {
   flex: 1; padding: 10px; border: none; border-radius: 6px;

@@ -12,7 +12,12 @@
 - Plain HTML/CSS/JavaScript, no build tools and no libraries. Open `index.html` to play.
 - Scripts are plain `<script>` files (not modules) so the page works when opened straight from disk.
 - `js/go-rules.js`: the game rules only (no drawing). Reuse it for bots and online play.
-- `js/game-page.js`: draws the board (SVG) and handles the buttons.
+- `js/go-bot.js`: the computer player. Levels 1-3 = rules-of-thumb scoring plus random noise;
+  levels 4-5 = Monte Carlo tree search (1.2 s / 4 s per move) run in small time slices so the page stays responsive.
+  Has its own fast board copy (FastBoard) for speed. Bot names and descriptions are in BOT_LEVELS.
+- `js/game-page.js`: draws the board (SVG) and handles the buttons and the bot's turn.
+- Testing: Node and Python aren't installed. Use Java's `jwebserver.exe` (JDK 21 bin) on 127.0.0.1
+  and the browser pane, but always ask me yes/no before starting it.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).
 - Rules: area scoring, komi 7.5, simple ko, suicide not allowed.
 
@@ -25,9 +30,11 @@
 
 ## Roadmap
 1. Local 2-player board — done
-2. Play vs computer
+2. Play vs computer — done (5 levels; weak on 19×19)
 3. Online play with friends (needs a server)
 4. Accounts, ratings, game history, puzzles
 
 ## Features so far
 - Board sizes 9/13/19, captures, ko, suicide check, pass, undo, resign, dead-stone marking and score count.
+- Bots: 5 levels (Pebble, Sprout, Fox, Tiger, Dragon), color choice Black/White/Random, human sits at the
+  bottom, undo takes back two moves. Bot passes when you pass and it's ahead on the count (or clearly lost).
