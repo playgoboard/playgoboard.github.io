@@ -39,6 +39,8 @@
 3. Online play with friends — done (PeerJS room codes). Live at https://reinj-bot.github.io/goboard/
    (GitHub Pages from `main`). Commits use the GitHub private email. Never push the local
    `backup-before-email-change` branch. Ask me yes/no before every push.
+   Also on Netlify, which deploys from a copy repo `reinj-bot/goboard-8506c` (made by Netlify's
+   deploy link). `git push` goes to BOTH repos (two push URLs on origin), so both sites update.
 4. Accounts, ratings, game history, puzzles
 
 ## Features so far
