@@ -32,8 +32,10 @@
   never mix old and new files.
 - `js/chat-filter.js` (word lists + cleanMessage) and `js/online-chat.js` (chat box UI): chat only in
   online games, message {type:"chat", text}, filtered on send AND receive, shown via textContent only.
-- Planned next (user picked, in this order): rematch button
-  (random colors, not swapped), link preview, game clock (with an Off option), move list + replay,
+- Rematch: both send {type:"rematch-offer"}; when the host has both, HostSession.startRematch picks
+  RANDOM colors (the user asked: not just swapped) and sends {type:"rematch", size, yourColor}.
+  GoPage.startOnlineGame(size, color, actions, session, kind) with kind "new" | "reconnect" | "rematch".
+- Planned next (user picked, in this order): link preview, game clock (with an Off option), move list + replay,
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).
 - Rules: area scoring, komi 7.5, simple ko, suicide not allowed.

@@ -7,7 +7,7 @@
   <meta name="description" content="Play the board game Go for free in your browser: against a friend, against 5 levels of bots, or online with a room code. 9×9, 13×13 and 19×19 boards.">
   <!-- The same site is also on GitHub Pages; this tells Google which address is the main one. -->
   <link rel="canonical" href="https://playgoboard.netlify.app/">
-  <link rel="stylesheet" href="css/style.css?v=8">
+  <link rel="stylesheet" href="css/style.css?v=9">
 </head>
 <body>
   <header class="top-bar">
@@ -92,6 +92,9 @@
           <button id="btn-undo" class="btn">Undo</button>
           <button id="btn-resign" class="btn btn-danger">Resign</button>
         </div>
+        <div id="rematch-row" class="button-row rematch-row" hidden>
+          <button id="btn-rematch" class="btn btn-primary">Rematch</button>
+        </div>
         <div id="scoring-buttons" class="button-row" hidden>
           <button id="btn-finish" class="btn btn-primary">Count score</button>
           <button id="btn-resume" class="btn">Keep playing</button>
@@ -120,12 +123,12 @@
 
   <!-- PeerJS connects two browsers for online games (free public service). -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="js/go-rules.js?v=8"></script>
-  <script src="js/go-bot.js?v=8"></script>
-  <script src="js/sounds.js?v=8"></script>
-  <script src="js/chat-filter.js?v=8"></script>
-  <script src="js/online-chat.js?v=8"></script>
-  <script src="js/game-page.js?v=8"></script>
-  <script src="js/online-lobby.js?v=8"></script>
+  <script src="js/go-rules.js?v=9"></script>
+  <script src="js/go-bot.js?v=9"></script>
+  <script src="js/sounds.js?v=9"></script>
+  <script src="js/chat-filter.js?v=9"></script>
+  <script src="js/online-chat.js?v=9"></script>
+  <script src="js/game-page.js?v=9"></script>
+  <script src="js/online-lobby.js?v=9"></script>
 </body>
 </html>

@@ -37,6 +37,8 @@
   let link = null;         // the online connection, if any
   let linkOpen = false;
   let onlineActions = [];  // everything that happened in this online game, in order (replayed after a reconnect)
+  let rematchMine = false;   // you asked for a rematch
+  let rematchFriend = false; // your friend asked for one
 
   // Hints come from the strongest bot and are only valid for the position they were asked in.
   const HINT_LEVEL = 5;
@@ -165,6 +167,10 @@
     }
 
     window.GoChat.show(online);
+    const rematchButton = $("btn-rematch");
+    $("rematch-row").hidden = !(online && game.phase === "over");
+    rematchButton.disabled = !linkOpen || rematchMine;
+    rematchButton.textContent = rematchMine ? "Waiting for your friend…" : rematchFriend ? "Accept rematch" : "Rematch";
     $("play-buttons").hidden = game.phase === "scoring";
     $("scoring-buttons").hidden = game.phase !== "scoring";
     // No takebacks or hints against an online friend: that would be cheating.
@@ -297,8 +303,21 @@
   }
 
   // Your friend's actions arrive here.
+  // A rematch starts once both players asked. The creator's browser picks random
+  // colors and tells the joiner (see HostSession.startRematch in online-lobby.js).
+  function maybeStartRematch() {
+    if (rematchMine && rematchFriend && link && link.isHost) link.startRematch();
+  }
+
   function receiveFromFriend(message) {
     if (message.type === "chat") return window.GoChat.receive(message.text);
+    if (message.type === "rematch-offer") {
+      if (game.phase !== "over") return;
+      rematchFriend = true;
+      if (!rematchMine) messageEl.textContent = "Your friend wants a rematch!";
+      maybeStartRematch();
+      return refresh();
+    }
     const yourTurnOnly = message.type === "move" || message.type === "pass";
     if (yourTurnOnly && !isOpponentTurn()) return;
     if (message.type === "resign" && message.loser !== otherColor(humanColor)) return;
@@ -456,6 +475,15 @@
     refresh();
   });
 
+  $("btn-rematch").addEventListener("click", () => {
+    if (opponent !== "online" || game.phase !== "over" || !linkOpen || rematchMine) return;
+    rematchMine = true;
+    sendToFriend({ type: "rematch-offer" });
+    messageEl.textContent = rematchFriend ? "" : "Rematch offered. Waiting for your friend to accept.";
+    maybeStartRematch();
+    refresh();
+  });
+
   $("btn-finish").addEventListener("click", () => {
     if (opponent === "online") doOnline({ type: "finish" });
     else game.finishScoring();
@@ -473,18 +501,25 @@
   window.GoPage = {
     getSetup: () => ({ size: setup.size, color: pickedColor() }),
     setMode,
-    // Starts an online game, or rebuilds it from the creator's list after a reconnect.
-    startOnlineGame(size, myColor, actions, session) {
-      const reconnect = link === session;
-      if (!reconnect) {
+    // kind: "new" (first connection), "reconnect" (rebuild from the creator's list) or "rematch".
+    startOnlineGame(size, myColor, actions, session, kind) {
+      if (kind === "new") {
         beginGame(size, "online", myColor);
         window.GoChat.clear();
+      } else {
+        cancelBot();
+        onlineActions = [];
+        game = new GoGame(size);
+        gameNumber++;
+        humanColor = myColor;
       }
-      else { cancelBot(); onlineActions = []; game = new GoGame(size); gameNumber++; }
       link = session;
       linkOpen = true;
+      rematchMine = rematchFriend = false;
       for (const action of actions) applyOnlineAction(action);
-      messageEl.textContent = reconnect ? "Reconnected!" : `Connected! You are ${COLOR_NAME[myColor]}. Black moves first.`;
+      const colorNote = `You are ${COLOR_NAME[myColor]}. Black moves first.`;
+      messageEl.textContent = kind === "reconnect" ? "Reconnected!"
+        : kind === "rematch" ? `Rematch! ${colorNote}` : `Connected! ${colorNote}`;
       refresh();
     },
     onlineActions: () => onlineActions.slice(),

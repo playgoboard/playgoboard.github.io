@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.0
+- Rematch button after an online game: once both players click it, a new game starts on the same board with randomly picked colors. Chat carries over.
+
 ## 0.7.0
 - Chat in online games, with a bad-word filter on both sides (catches tricks like sh1t, fuuuck and f u c k). Messages are plain text only.
 

@@ -176,6 +176,7 @@ nav { display: flex; gap: 18px; }
 .btn-hint { background: #2f6e8a; }
 .button-row { display: flex; gap: 8px; }
 .button-row[hidden] { display: none; }
+.rematch-row { margin-top: 10px; }
 
 .status { margin: 0 0 6px; font-size: 18px; font-weight: 700; }
 .message { margin: 0 0 12px; min-height: 1.3em; color: var(--text-dim); font-size: 14px; }

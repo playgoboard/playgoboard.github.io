@@ -137,8 +137,18 @@
       this.guestToken = null;
       this.started = false;
       this.code = null;
+      this.isHost = true;
       this.ui = ui;
       this.register(0);
+    }
+
+    // Both players asked for a rematch: same board size, colors picked at random.
+    startRematch() {
+      const { BLACK, WHITE } = window.Go;
+      this.hostColor = Math.random() < 0.5 ? BLACK : WHITE;
+      this.guestColor = this.hostColor === BLACK ? WHITE : BLACK;
+      window.GoPage.startOnlineGame(this.size, this.hostColor, [], this, "rematch");
+      this.send({ type: "rematch", size: this.size, yourColor: this.guestColor });
     }
 
     register(attempt) {
@@ -208,6 +218,7 @@
       super();
       this.code = code;
       this.token = randomCode() + randomCode();
+      this.isHost = false;
       this.ui = ui;
       this.startedAt = Date.now();
       this.makePeer();
@@ -255,8 +266,11 @@
     onMessage(msg) {
       if (msg.type === "sync") {
         if (this.connected) return; // an extra answer to a repeated hello
+        const kind = this.everConnected ? "reconnect" : "new";
         this.connected = this.everConnected = true;
-        this.ui.onSync(msg, this);
+        this.ui.onSync(msg, kind);
+      } else if (msg.type === "rematch") {
+        window.GoPage.startOnlineGame(msg.size, msg.yourColor, [], this, "rematch");
       } else if (msg.type === "busy") {
         this.ui.onFail("busy");
       } else {
@@ -321,7 +335,7 @@
         if (session !== current) return;
         hideInvite();
         showStatus("");
-        window.GoPage.startOnlineGame(gameSize, myColor, [], session);
+        window.GoPage.startOnlineGame(gameSize, myColor, [], session, "new");
       },
       onFail: (type) => failed(session, type),
     });
@@ -339,10 +353,10 @@
     stopCurrent();
     showStatus("Connecting to your friend…");
     const session = new GuestSession(code, {
-      onSync: (msg) => {
+      onSync: (msg, kind) => {
         if (session !== current) return;
         showStatus("");
-        window.GoPage.startOnlineGame(msg.size, msg.yourColor, msg.actions, session);
+        window.GoPage.startOnlineGame(msg.size, msg.yourColor, msg.actions, session, kind);
       },
       onFail: (type) => failed(session, type),
     });
