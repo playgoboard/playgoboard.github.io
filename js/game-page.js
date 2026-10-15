@@ -193,7 +193,39 @@
     }
   }
 
+  // Plays a sound when a new stone appears (any player), but not for undo or a new game.
+  let heard = { gameNumber: -1, moveNumber: 0, captures: 0 };
+  function playMoveSounds() {
+    const captures = game.captures[BLACK] + game.captures[WHITE];
+    const newStone = heard.gameNumber === gameNumber && game.moveNumber === heard.moveNumber + 1
+      && typeof game.lastMove === "number";
+    if (newStone) {
+      window.GoSounds.stone();
+      if (captures > heard.captures) window.GoSounds.capture(captures - heard.captures);
+    }
+    heard = { gameNumber, moveNumber: game.moveNumber, captures };
+  }
+
+  // The button may be missing if a browser briefly mixes an old cached page with this script.
+  const soundButton = $("btn-sound");
+  function updateSoundButton() {
+    const muted = window.GoSounds.isMuted();
+    const button = soundButton;
+    if (!button) return;
+    button.textContent = muted ? "🔇" : "🔊";
+    button.title = muted ? "Sound is off. Click to turn it on." : "Sound is on. Click to turn it off.";
+    button.classList.toggle("off", muted);
+  }
+
+  if (soundButton) soundButton.addEventListener("click", () => {
+    window.GoSounds.setMuted(!window.GoSounds.isMuted());
+    updateSoundButton();
+    if (!window.GoSounds.isMuted()) window.GoSounds.stone(); // a sample so you hear it's on
+  });
+  updateSoundButton();
+
   function refresh() {
+    playMoveSounds();
     dropStaleHint();
     drawBoard();
     updatePanel();

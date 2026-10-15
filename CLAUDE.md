@@ -26,6 +26,13 @@
   finish, resume, all applied through applyOnlineAction. Undo/Hint disabled online.
 - Testing: Node and Python aren't installed. Use Java's `jwebserver.exe` (JDK 21 bin) on 127.0.0.1
   and the browser pane, but always ask me yes/no before starting it.
+- `js/sounds.js`: stone/capture sounds made with Web Audio (no files); mute saved in localStorage.
+  game-page.js plays them when a new stone appears (not on undo/new game).
+- index.html loads css/js with `?v=N`. Bump N in every upload that changes css/js, so browsers
+  never mix old and new files.
+- Planned next (user picked, in this order): online chat with a bad-word filter, rematch button
+  (random colors, not swapped), link preview, game clock (with an Off option), move list + replay,
+  puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).
 - Rules: area scoring, komi 7.5, simple ko, suicide not allowed.
 

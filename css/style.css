@@ -42,6 +42,12 @@ nav { display: flex; gap: 18px; }
 }
 .nav-item.active { color: var(--text); }
 .nav-item.soon { opacity: 0.5; cursor: default; }
+.sound-toggle {
+  margin-left: auto; padding: 6px 12px; border: none; border-radius: 6px;
+  background: var(--panel-light); color: var(--text); font-weight: 600; font-family: inherit; cursor: pointer;
+  white-space: nowrap;
+}
+.sound-toggle.off { color: var(--text-dim); }
 
 .game-layout {
   display: flex;
@@ -139,6 +145,7 @@ nav { display: flex; gap: 18px; }
 /* Phones and small windows: the panel drops under the board, so put the game
    buttons first instead of below the whole "New game" box. */
 @media (max-width: 1000px) {
+  .top-bar { gap: 14px; padding: 10px 12px; }
   .game-layout { gap: 12px; padding-top: 10px; }
   .side-panel { width: min(720px, 100%); }
   .controls-block { order: -1; }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0
+- Stone sounds: a wooden clack when any stone is placed and a pebble rattle for captures. Mute button (🔊/🔇) at the top, remembered between visits.
+- Script and style links carry a version tag so browsers don't mix old and new files after an update.
+
 ## 0.5.1
 - Phones: the game buttons (Hint, Pass, Undo, Resign) now sit right under the board instead of below the New game box.
 
