@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.1
+- Link preview: sharing the site in WhatsApp, Discord etc. shows a picture (preview.png), title and description.
+
 ## 0.8.0
 - Rematch button after an online game: once both players click it, a new game starts on the same board with randomly picked colors. Chat carries over.
 
