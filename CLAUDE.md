@@ -13,6 +13,9 @@
 - Scripts are plain `<script>` files (not modules) so the page works when opened straight from disk.
 - `js/go-rules.js`: the game rules only (no drawing). Reuse it for bots and online play.
 - `js/go-bot.js`: the computer player. Levels 1-3 = rules-of-thumb scoring plus random noise;
+  levels 4-5 + Hint = MCTS with RAVE, playouts with capture/escape-atari/no-self-atari, run in
+  `js/bot-worker.js` workers (one per spare core, max 8; root parallel, stats summed; falls back to
+  time slices on the page). Dragon/Hint think 10 s, Tiger 1.2 s. Old notes:
   levels 4-5 = Monte Carlo tree search (1.2 s / 4 s per move) run in small time slices so the page stays responsive.
   Has its own fast board copy (FastBoard) for speed. Bot names and descriptions are in BOT_LEVELS.
 - `js/game-page.js`: draws the board (SVG), handles the buttons, the bot's turn and online moves.

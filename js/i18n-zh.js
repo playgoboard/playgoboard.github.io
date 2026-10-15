@@ -64,7 +64,7 @@ window.GO_TEXT_ZH = {
   "Grabs stones when it can.": ["能吃子就吃子。", "能吃子就吃子。"],
   "Protects its stones, sets traps.": ["会保护自己的棋子，还会设陷阱。", "會保護自己的棋子，還會設陷阱。"],
   "Reads ahead for about a second.": ["每步往后计算大约一秒钟。", "每步往後計算大約一秒鐘。"],
-  "Thinks hard, a few seconds a move.": ["认真思考，每步几秒钟。", "認真思考，每步幾秒鐘。"],
+  "Thinks hard, about 10 seconds a move.": ["认真思考，每步大约 10 秒。", "認真思考，每步大約 10 秒。"],
   "{name} (Level {level})": ["{name}（{level} 级）", "{name}（{level} 級）"],
   "{name} is thinking": ["{name} 正在思考", "{name} 正在思考"],
 

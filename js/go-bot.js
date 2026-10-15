@@ -1,8 +1,8 @@
 // Computer opponents. Levels 1-3 score every move with Go rules of thumb (with
-// random mistakes mixed in). Levels 4-5 also play thousands of quick random games
+// random mistakes mixed in). Levels 4-5 also play thousands of quick practice games
 // from the current position and pick the move that wins most often
-// ("Monte Carlo tree search"). The thinking is done in small time slices so the
-// page never freezes.
+// ("Monte Carlo tree search", with RAVE). The thinking runs in background workers,
+// one per spare processor core (js/bot-worker.js), so the page never freezes.
 (function () {
   const { EMPTY, BLACK, WHITE, KOMI, otherColor } = window.Go;
 
@@ -11,14 +11,17 @@
     { level: 2, name: "Sprout", blurb: "Grabs stones when it can.", noise: 7 },
     { level: 3, name: "Fox", blurb: "Protects its stones, sets traps.", noise: 1.5 },
     { level: 4, name: "Tiger", blurb: "Reads ahead for about a second.", thinkMs: 1200 },
-    { level: 5, name: "Dragon", blurb: "Thinks hard, a few seconds a move.", thinkMs: 4000 },
+    { level: 5, name: "Dragon", blurb: "Thinks hard, about 10 seconds a move.", thinkMs: 10000 },
   ];
 
   // Search tuning. Prior visits let the rules of thumb steer the search early on.
   const PRIOR_VISITS = 6;
+  const PRIOR_RAVE = 20;
+  const RAVE_EQUIVALENCE = 1000; // after about this many real visits, RAVE stops mattering much
   const EXPAND_AFTER = 2;
-  const EXPLORATION = 0.5;
+  const EXPLORATION = 0.15;      // RAVE already explores, so less blind exploring is needed
   const SLICE_MS = 30;
+  const MAX_WORKERS = 8;
 
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -174,11 +177,48 @@
       return captured;
     }
 
+    // Would a stone at i (legal, empty) end up in atari without capturing anything?
+    // Practice games avoid these moves; real players rarely make them on purpose.
+    isSelfAtari(i, color) {
+      const opp = otherColor(color);
+      for (const nb of this.nbrs[i]) {
+        if (this.cells[nb] === opp && this.scanGroup(nb, 2) === 1) return false; // it captures
+      }
+      const g = this.g, mark = g.mark, stack = g.stack, cells = this.cells;
+      const stamp = ++g.stamp;
+      mark[i] = stamp;
+      let libs = 0, len = 0;
+      for (const nb of this.nbrs[i]) {
+        if (mark[nb] === stamp) continue;
+        if (cells[nb] === EMPTY) {
+          mark[nb] = stamp;
+          if (++libs >= 2) return false;
+        } else if (cells[nb] === color) {
+          mark[nb] = stamp;
+          stack[len++] = nb;
+        }
+      }
+      // Liberties of the friendly groups the stone joins.
+      for (let k = 0; k < len; k++) {
+        for (const nb of this.nbrs[stack[k]]) {
+          if (mark[nb] === stamp) continue;
+          mark[nb] = stamp;
+          if (cells[nb] === EMPTY) {
+            if (++libs >= 2) return false;
+          } else if (cells[nb] === color) {
+            stack[len++] = nb;
+          }
+        }
+      }
+      return true;
+    }
+
+    // A random move that is legal, doesn't fill our own eye and isn't self-atari.
     randomMove(color) {
       const count = this.emptyCount, start = Math.floor(Math.random() * count);
       for (let k = 0; k < count; k++) {
         const i = this.empties[(start + k) % count];
-        if (!this.isEye(i, color) && this.isLegal(i, color)) return i;
+        if (!this.isEye(i, color) && this.isLegal(i, color) && !this.isSelfAtari(i, color)) return i;
       }
       return -1;
     }
@@ -191,15 +231,36 @@
       return this.isLegal(lib, color) ? lib : -1;
     }
 
-    // Plays random moves until both sides run out, then returns black minus white (no komi).
-    playout(color, last) {
+    // If the last move put one of our groups next to it in atari, run away by
+    // extending at its last liberty (when that really gives it more room).
+    escapeAtari(last, color) {
+      if (last < 0) return -1;
+      for (const nb of this.nbrs[last]) {
+        if (this.cells[nb] !== color || this.scanGroup(nb, 2) !== 1) continue;
+        const lib = this.lastLib;
+        if (this.isLegal(lib, color) && !this.isSelfAtari(lib, color)) return lib;
+      }
+      return -1;
+    }
+
+    // Plays sensible random moves until both sides run out, then returns black minus white (no komi).
+    // `record` (optional) collects the moves for RAVE: record.moves / record.colors / record.length.
+    playout(color, last, record) {
       let passes = 0, moves = 0;
       const limit = this.n * 3;
       while (passes < 2 && moves < limit) {
         let move = this.captureNear(last, color);
+        if (move < 0) move = this.escapeAtari(last, color);
         if (move < 0) move = this.randomMove(color);
         if (move < 0) passes++;
-        else { passes = 0; this.play(move, color); }
+        else {
+          passes = 0;
+          this.play(move, color);
+          if (record) {
+            record.moves[record.length] = move;
+            record.colors[record.length++] = color;
+          }
+        }
         last = move;
         color = otherColor(color);
         moves++;
@@ -342,12 +403,20 @@
       .map((c) => c.i);
   }
 
-  // ---- Monte Carlo tree search ----
+  // ---- Monte Carlo tree search with RAVE ----
+  //
+  // RAVE ("all moves as first"): when a practice game is won, every move the winner
+  // played anywhere in it gets a little credit, not only the first one. That makes the
+  // search learn which points matter much faster; real visits take over as they add up.
 
   function expand(node, board, scratch, color, last) {
     node.children = candidateMoves(board, color, true).map((i) => {
       const prior = clamp(0.5 + evaluateMove(board, scratch, i, color, last) / 24, 0.1, 0.9);
-      return { move: i, color, wins: prior * PRIOR_VISITS, visits: PRIOR_VISITS, children: null };
+      return {
+        move: i, color, children: null,
+        wins: prior * PRIOR_VISITS, visits: PRIOR_VISITS,
+        raveWins: prior * PRIOR_RAVE, raveVisits: PRIOR_RAVE,
+      };
     });
   }
 
@@ -355,18 +424,38 @@
     const logN = Math.log(node.visits + 1);
     let best = null, bestValue = -Infinity;
     for (const child of node.children) {
-      const value = child.wins / child.visits + EXPLORATION * Math.sqrt(logN / child.visits);
+      const beta = Math.sqrt(RAVE_EQUIVALENCE / (3 * child.visits + RAVE_EQUIVALENCE));
+      const value = (1 - beta) * (child.wins / child.visits) + beta * (child.raveWins / child.raveVisits)
+        + EXPLORATION * Math.sqrt(logN / child.visits);
       if (value > bestValue) { bestValue = value; best = child; }
     }
     return best;
   }
 
-  function runIteration(root, rootBoard, work, scratch, rootColor, rootLast) {
-    work.copyFrom(rootBoard);
-    let node = root, color = rootColor, last = rootLast;
-    const path = [root];
+  // One search: everything one thread needs, reused for every practice game.
+  function newSearch(rootBoard, rootColor, rootLast) {
+    const size = rootBoard.size, n = rootBoard.n;
+    const search = {
+      rootBoard, rootColor, rootLast,
+      root: { move: -1, color: otherColor(rootColor), wins: 0, visits: 0, children: null },
+      work: new FastBoard(size), scratch: new FastBoard(size),
+      record: { moves: new Int16Array(n * 4), colors: new Int8Array(n * 4), length: 0 },
+      amaf: new Int8Array(n),
+    };
+    expand(search.root, rootBoard, search.scratch, rootColor, rootLast);
+    return search;
+  }
+
+  function runIteration(search) {
+    const { work, record, amaf } = search;
+    work.copyFrom(search.rootBoard);
+    record.length = 0;
+    let node = search.root, color = search.rootColor, last = search.rootLast;
+    const path = [node];
     const step = (child) => {
       work.play(child.move, color);
+      record.moves[record.length] = child.move;
+      record.colors[record.length++] = color;
       last = child.move;
       color = otherColor(color);
       path.push(child);
@@ -375,35 +464,143 @@
 
     while (node.children && node.children.length) node = step(selectChild(node));
     if (node.children === null && node.visits >= PRIOR_VISITS + EXPAND_AFTER) {
-      expand(node, work, scratch, color, last);
+      expand(node, work, search.scratch, color, last);
       if (node.children.length) node = step(selectChild(node));
     }
 
-    const winner = work.playout(color, last) - KOMI > 0 ? BLACK : WHITE;
-    for (const n of path) {
-      n.visits++;
-      if (n.color === winner) n.wins++;
+    const winner = work.playout(color, last, record) - KOMI > 0 ? BLACK : WHITE;
+    for (const p of path) {
+      p.visits++;
+      if (p.color === winner) p.wins++;
+    }
+
+    // RAVE: walk the game backwards so amaf[] holds who played each point first
+    // from move k onwards; the children of path[k] are the choices at move k.
+    amaf.fill(0);
+    for (let k = record.length - 1; k >= 0; k--) {
+      amaf[record.moves[k]] = record.colors[k];
+      if (k >= path.length || !path[k].children) continue;
+      for (const child of path[k].children) {
+        if (amaf[child.move] !== child.color) continue;
+        child.raveVisits++;
+        if (child.color === winner) child.raveWins++;
+      }
     }
   }
 
-  function monteCarlo(rootBoard, rootColor, rootLast, thinkMs, isCancelled) {
-    const root = { move: -1, color: otherColor(rootColor), wins: 0, visits: 0, children: null };
-    const work = new FastBoard(rootBoard.size), scratch = new FastBoard(rootBoard.size);
-    expand(root, rootBoard, scratch, rootColor, rootLast);
-    const deadline = performance.now() + thinkMs;
+  // [move, visits, wins] for every first move, so several searches can be added up.
+  const rootStats = (search) => search.root.children.map((c) => [c.move, c.visits, c.wins]);
 
+  // Runs without breaks: used inside a background worker (js/bot-worker.js).
+  function searchInWorker(cells, size, ko, color, last, thinkMs) {
+    const board = new FastBoard(size, cells);
+    board.ko = ko;
+    const search = newSearch(board, color, last);
+    const deadline = performance.now() + thinkMs;
+    let k = 0;
+    while ((k++ & 15) !== 0 || performance.now() < deadline) runIteration(search);
+    return rootStats(search);
+  }
+
+  // Best first, from summed stats; the win rate is the best move's.
+  function rankStats(statLists) {
+    const totals = new Map();
+    for (const list of statLists) {
+      for (const [move, visits, wins] of list) {
+        const t = totals.get(move) || { move, visits: 0, wins: 0 };
+        t.visits += visits;
+        t.wins += wins;
+        totals.set(move, t);
+      }
+    }
+    const kids = [...totals.values()].sort((a, b) => b.visits - a.visits);
+    return { ranked: kids.map((k) => k.move), winRate: kids.length ? kids[0].wins / kids[0].visits : 0 };
+  }
+
+  // Fallback without workers (e.g. the page opened straight from disk): think on the
+  // page itself in small time slices so it never freezes.
+  function searchOnPage(rootBoard, rootColor, rootLast, thinkMs, isCancelled) {
+    const search = newSearch(rootBoard, rootColor, rootLast);
+    const deadline = performance.now() + thinkMs;
     return new Promise((resolve) => {
       const slice = () => {
         if (isCancelled()) return resolve({ ranked: [], winRate: 0 });
         const end = Math.min(performance.now() + SLICE_MS, deadline);
-        do runIteration(root, rootBoard, work, scratch, rootColor, rootLast);
+        do runIteration(search);
         while (performance.now() < end);
         if (performance.now() < deadline) return setTimeout(slice, 0);
-        const kids = root.children.slice().sort((a, b) => b.visits - a.visits);
-        resolve({ ranked: kids.map((k) => k.move), winRate: kids.length ? kids[0].wins / kids[0].visits : 0 });
+        resolve(rankStats([rootStats(search)]));
       };
       setTimeout(slice, 0);
     });
+  }
+
+  // ---- Background workers: one search per spare processor core ----
+
+  // The worker loads the same versions of the scripts as the page (same ?v=).
+  const SCRIPT_URL = typeof document !== "undefined" && document.currentScript ? document.currentScript.src : "";
+  let pool = null;          // { workers, busy }
+  let workersBroken = false;
+
+  function stopPool() {
+    if (pool) for (const w of pool.workers) w.terminate();
+    pool = null;
+  }
+
+  function getPool() {
+    if (workersBroken || typeof Worker !== "function" || !SCRIPT_URL || location.protocol === "file:") return null;
+    if (pool && pool.busy) stopPool(); // an old search is still running: start fresh
+    if (pool) return pool;
+    try {
+      const url = new URL("bot-worker.js", SCRIPT_URL);
+      url.search = new URL(SCRIPT_URL).search;
+      const count = clamp((navigator.hardwareConcurrency || 2) - 1, 1, MAX_WORKERS);
+      pool = { workers: Array.from({ length: count }, () => new Worker(url)), busy: false };
+    } catch {
+      workersBroken = true;
+      pool = null;
+    }
+    return pool;
+  }
+
+  function searchWithWorkers(current, board, color, last, thinkMs, isCancelled) {
+    current.busy = true;
+    return new Promise((resolve) => {
+      const results = [];
+      let finished = false;
+      const finish = (value) => {
+        if (finished) return;
+        finished = true;
+        clearInterval(watch);
+        current.busy = false;
+        resolve(value);
+      };
+      const watch = setInterval(() => {
+        if (!isCancelled()) return;
+        if (pool === current) stopPool();
+        finish({ ranked: [], winRate: 0 });
+      }, 100);
+      for (const worker of current.workers) {
+        worker.onmessage = (event) => {
+          results.push(event.data);
+          if (results.length === current.workers.length) finish(rankStats(results));
+        };
+        worker.onerror = () => {
+          // Workers can't start here: remember that and think on the page instead.
+          workersBroken = true;
+          if (pool === current) stopPool();
+          finish(null);
+        };
+        worker.postMessage({ cells: board.cells, size: board.size, ko: board.ko, color, last, thinkMs });
+      }
+    });
+  }
+
+  function monteCarlo(board, color, last, thinkMs, isCancelled) {
+    const current = getPool();
+    if (!current) return searchOnPage(board, color, last, thinkMs, isCancelled);
+    return searchWithWorkers(current, board, color, last, thinkMs, isCancelled)
+      .then((result) => result || searchOnPage(board, color, last, thinkMs, isCancelled));
   }
 
   function leadsOnCount(game, color) {
@@ -438,5 +635,5 @@
     });
   }
 
-  window.GoBot = { BOT_LEVELS, chooseBotMove, FastBoard };
+  window.GoBot = { BOT_LEVELS, chooseBotMove, FastBoard, searchInWorker };
 })();

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.21.0
+- Stronger Tiger, Dragon and Hint on every board size: smarter practice games (escape atari, avoid self-atari), RAVE so the search learns faster, and the thinking runs on all spare processor cores in background workers. Dragon (and Hint) now think about 10 seconds per move. In tests on one core each, new Dragon beat old Dragon 17-7 on 9x9, 14-0 on 13x13 and 7-0 on 19x19.
+
 ## 0.20.0
 - Better chances in mainland China: the PeerJS and Supabase libraries are now stored in the site (js/vendor) instead of loading from unpkg and jsDelivr, and online games also use connection servers from Chinese companies (Xiaomi, Tencent) next to Google's.
 
