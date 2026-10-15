@@ -3,6 +3,7 @@
 // The database rules are in supabase/05-game-history.sql.
 (function () {
   const { BLACK, WHITE } = window.Go;
+  const { t } = window.GoI18n;
   const colorName = (color) => (color === BLACK ? "black" : "white");
   const accounts = () => (window.GoAccounts && window.GoAccounts.ready ? window.GoAccounts : null);
 
@@ -16,10 +17,10 @@
 
   function resultWords(code) {
     const [who, how] = code.split("+");
-    const winner = who === "B" ? "Black" : "White";
-    if (how === "R") return `${winner} won by resignation`;
-    if (how === "T") return `${winner} won on time`;
-    return `${winner} won by ${how} points`;
+    const black = who === "B";
+    if (how === "R") return black ? t("Black won by resignation") : t("White won by resignation");
+    if (how === "T") return black ? t("Black won on time") : t("White won on time");
+    return black ? t("Black won by {n} points", { n: how }) : t("White won by {n} points", { n: how });
   }
 
   // game: { gameKey, myColor, opponent, size, moves, result, ratedGameId, quick }

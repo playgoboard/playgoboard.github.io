@@ -5,6 +5,7 @@
   const accounts = window.GoAccounts;
   if (!accounts || !accounts.ready) return;
   const client = accounts.client;
+  const { t } = window.GoI18n;
   const CHECK_EVERY_MS = 60000; // look for new friend requests once a minute
 
   let rows = [];
@@ -46,7 +47,7 @@
   function personRow(player, detail, ...buttons) {
     const row = element("div", "friend-row");
     const who = element("div", "friend-who");
-    who.append(element("b", "", player ? player.username : "Unknown player"), element("span", "friend-detail", detail));
+    who.append(element("b", "", player ? player.username : t("Unknown player")), element("span", "friend-detail", detail));
     const actions = element("div", "friend-actions");
     actions.append(...buttons);
     row.append(who, actions);
@@ -76,24 +77,24 @@
       draw();
       if (okText) setNote(okText);
     } catch (error) {
-      setNote(((error && error.message) || String(error)).replace(/^.*?:\s*/, ""), true);
+      setNote(t(((error && error.message) || String(error)).replace(/^.*?:\s*/, "")), true);
     }
   }
 
   function draw() {
     if (!container) return;
     container.innerHTML = "";
-    container.append(element("h2", "", "Friends"));
+    container.append(element("h2", "", t("Friends")));
 
     const addRow = element("div", "join-row friend-add");
     const input = element("input");
-    input.placeholder = "Friend's username";
+    input.placeholder = t("Friend's username");
     input.maxLength = 16;
     input.autocomplete = "off";
-    const addButton = button("Add friend", "btn-primary", () => {
+    const addButton = button(t("Add friend"), "btn-primary", () => {
       const name = input.value.trim();
-      if (!name) return setNote("Type your friend's username first.", true);
-      act(() => client.rpc("send_friend_request", { friend_name: name }), `Friend request sent to ${name}.`);
+      if (!name) return setNote(t("Type your friend's username first."), true);
+      act(() => client.rpc("send_friend_request", { friend_name: name }), t("Friend request sent to {name}.", { name }));
     });
     addButton.dataset.main = "yes"; // Enter in the box presses this button
     addRow.append(input, addButton);
@@ -106,32 +107,32 @@
       .sort((a, b) => other(b).rating - other(a).rating);
 
     if (incoming.length) {
-      container.append(section("Friend requests for you", incoming.map((r) => {
+      container.append(section(t("Friend requests for you"), incoming.map((r) => {
         const p = other(r);
-        return personRow(p, `Rating ${p.rating}`,
-          button("Accept", "btn-primary", () => act(() => client.rpc("answer_friend_request", { friend: p.id, accept: true }), `You and ${p.username} are now friends!`)),
-          button("Decline", "", () => act(() => client.rpc("answer_friend_request", { friend: p.id, accept: false }), "Request declined.")));
+        return personRow(p, t("Rating {n}", { n: p.rating }),
+          button(t("Accept"), "btn-primary", () => act(() => client.rpc("answer_friend_request", { friend: p.id, accept: true }), t("You and {name} are now friends!", { name: p.username }))),
+          button(t("Decline"), "", () => act(() => client.rpc("answer_friend_request", { friend: p.id, accept: false }), t("Request declined."))));
       })));
     }
 
-    container.append(section("Your friends", friends.map((r) => {
+    container.append(section(t("Your friends"), friends.map((r) => {
       const p = other(r);
-      return personRow(p, `Rating ${p.rating} · ${p.wins} W / ${p.losses} L`,
-        button("Remove", "", () => {
-          if (confirm(`Remove ${p.username} from your friends?`)) act(() => client.rpc("remove_friend", { friend: p.id }), `${p.username} was removed.`);
+      return personRow(p, t("Rating {n} · {w} W / {l} L", { n: p.rating, w: p.wins, l: p.losses }),
+        button(t("Remove"), "", () => {
+          if (confirm(t("Remove {name} from your friends?", { name: p.username }))) act(() => client.rpc("remove_friend", { friend: p.id }), t("{name} was removed.", { name: p.username }));
         }));
-    }), "No friends yet. Add someone by their username above."));
+    }), t("No friends yet. Add someone by their username above.")));
 
     if (outgoing.length) {
-      container.append(section("Requests you sent", outgoing.map((r) => {
+      container.append(section(t("Requests you sent"), outgoing.map((r) => {
         const p = other(r);
-        return personRow(p, "Waiting for an answer",
-          button("Cancel", "", () => act(() => client.rpc("remove_friend", { friend: p.id }), "Request cancelled.")));
+        return personRow(p, t("Waiting for an answer"),
+          button(t("Cancel"), "", () => act(() => client.rpc("remove_friend", { friend: p.id }), t("Request cancelled."))));
       })));
     }
 
     const back = element("p", "account-links");
-    const backButton = element("button", "link-button", "Back to your profile");
+    const backButton = element("button", "link-button", t("Back to your profile"));
     backButton.dataset.go = "profile";
     back.append(backButton);
     container.append(back);
@@ -139,17 +140,22 @@
 
   accounts.onView("friends", async (view) => {
     container = view;
+    const heading = () => {
+      container.textContent = "";
+      container.append(element("h2", "", t("Friends")));
+    };
+    heading();
     if (!me()) {
-      container.innerHTML = "<h2>Friends</h2><p>Log in to see your friends.</p>";
+      container.append(element("p", "", t("Log in to see your friends.")));
       return;
     }
-    container.innerHTML = "<h2>Friends</h2><p>Loading…</p>";
+    container.append(element("p", "", t("Loading…")));
     try {
       await load();
       draw();
     } catch (error) {
-      container.innerHTML = "<h2>Friends</h2>";
-      container.append(element("p", "friend-empty", "Couldn't load your friends. Check your internet connection."));
+      heading();
+      container.append(element("p", "friend-empty", t("Couldn't load your friends. Check your internet connection.")));
     }
   });
 

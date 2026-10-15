@@ -19,6 +19,7 @@
   const POLL_MS = 2500;        // ask the database this often, plus up to 1 s at random
   const ARRIVE_WAIT_MS = 30000; // paired, but the opponent never arrived: search again
 
+  const { t } = window.GoI18n;
   const $ = (id) => document.getElementById(id);
   const accounts = window.GoAccounts;
   const lobby = window.GoLobby;
@@ -42,7 +43,7 @@
     picker.textContent = "";
     for (const { name } of LEVELS) {
       const button = document.createElement("button");
-      button.textContent = name;
+      button.textContent = t(name);
       button.classList.toggle("selected", name === level);
       button.addEventListener("click", () => {
         level = name;
@@ -72,8 +73,9 @@
   }
 
   function settingsText(setup) {
-    const clock = setup.clock.minutes ? `${setup.clock.minutes} min${setup.clock.bonus ? ` +${setup.clock.bonus}s` : ""}` : "No clock";
-    return `${setup.size}×${setup.size} · ${clock} · ${setup.rated ? "Rated" : "Casual"}`;
+    const clock = setup.clock.minutes
+      ? t("{n} min", { n: setup.clock.minutes }) + (setup.clock.bonus ? ` +${setup.clock.bonus}s` : "") : t("No clock");
+    return `${setup.size}×${setup.size} · ${clock} · ${setup.rated ? t("Rated") : t("Casual")}`;
   }
 
   // ---- Searching ----
@@ -82,8 +84,8 @@
     if (lobby.peerJsMissing()) return;
     const profile = accounts.current().profile;
     const setup = window.GoPage.getSetup();
-    if (setup.rated && !profile) return lobby.showStatus("Log in (top right) to play rated games, or pick Casual.");
-    if (!profile && !level) return lobby.showStatus("Pick your level first, so you get a fair opponent.");
+    if (setup.rated && !profile) return lobby.showStatus(t("Log in (top right) to play rated games, or pick Casual."));
+    if (!profile && !level) return lobby.showStatus(t("Pick your level first, so you get a fair opponent."));
     stop();
     lobby.showStatus("");
     search = {
@@ -104,7 +106,7 @@
     s.ticket = crypto.randomUUID();
     s.room = null;
     s.pairedAt = null;
-    setText("Looking for an opponent");
+    setText(t("Looking for an opponent"));
     const { BLACK, WHITE } = window.Go;
     const settings = { ...s.setup, color: Math.random() < 0.5 ? BLACK : WHITE };
     s.session = lobby.startHost(settings, {
@@ -143,13 +145,13 @@
     if (error) {
       stop();
       const text = (error.message || "").replace(/^.*?:\s*/, "");
-      lobby.showStatus(/fetch|network/i.test(text) ? "Can't reach the server. Check your internet connection." : text);
+      lobby.showStatus(/fetch|network/i.test(text) ? t("Can't reach the server. Check your internet connection.") : t(text));
       return;
     }
     if (data.status === "found") return joinRoom(s, data.room);
     if (data.status === "matched") {
       s.pairedAt = Date.now();
-      setText("Opponent found! Connecting");
+      setText(t("Opponent found! Connecting"));
     }
     later(s);
   }
@@ -158,7 +160,7 @@
   function joinRoom(s, room) {
     clearTimeout(s.timer);
     s.room = null;
-    setText("Opponent found! Connecting");
+    setText(t("Opponent found! Connecting"));
     s.session = lobby.startGuest(room, {
       onStart: () => done(s),
       onFail: () => { if (s === search) searchAgain(s); },

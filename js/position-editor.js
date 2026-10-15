@@ -4,6 +4,7 @@
 // starts the game through GoPage.startFromPosition.
 (function () {
   const { EMPTY, BLACK, WHITE, GoGame } = window.Go;
+  const { t } = window.GoI18n;
   const $ = (id) => document.getElementById(id);
   const boardEl = $("board");
   const TOOL_COLOR = { black: BLACK, white: WHITE, erase: EMPTY };
@@ -58,7 +59,7 @@
     const wanted = window.GoPage.getSetup().size;
     if (wanted !== size || !board.length) emptyBoard(wanted);
     show(true);
-    say("Click the board to place stones. Board size, opponent and clock are in the New game box.");
+    say(t("Click the board to place stones. Board size, opponent and clock are in the New game box."));
     draw();
   }
 
@@ -70,13 +71,13 @@
 
   function play() {
     if (window.GoPage.getSetup().mode === "online") {
-      say("Custom positions work with Same computer or Computer. Pick one in the New game box.", true);
+      say(t("Custom positions work with Same computer or Computer. Pick one in the New game box."), true);
       return;
     }
     // Stones without liberties can't exist in a real game.
     const breathless = new GoGame(size).breathlessStones(board);
     if (breathless.length) {
-      say("Some stones have no liberties (no empty point next to their group). Remove or change them first.", true);
+      say(t("Some stones have no liberties (no empty point next to their group). Remove or change them first."), true);
       return;
     }
     show(false);

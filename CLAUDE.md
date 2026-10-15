@@ -79,6 +79,12 @@
 - Position editor: `js/position-editor.js` (GoEditor.isOpen) owns the board while open (capture-phase click
   listener; game-page drawBoard skips). GoGame.setPosition(board, turn) + breathlessStones(). GoPage.startFromPosition.
   Same computer and bots only (the user chose: no online).
+- Languages: `js/i18n.js` (GoI18n.t, sentences, beforeChange) + `js/i18n-zh.js` (GO_TEXT_ZH: "English": [simplified, traditional]).
+  The ENGLISH TEXT IS THE KEY: wrap new player-visible text in t("...") (placeholders {name}) and add a line to
+  i18n-zh.js. Static HTML text nodes, placeholders, titles and aria-labels are translated on DOMContentLoaded;
+  paragraphs with <b> use data-t-html="key". Switching = ?lang=xx reload (stored in localStorage "goboard-language").
+  Database error messages are translated through t() too, so keep their English in the dictionary.
+  Chat only allows English and Chinese (GoChatFilter.isAllowedText) and filters Chinese bad words.
 - Planned next (user picked, in this order):
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).

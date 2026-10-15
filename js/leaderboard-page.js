@@ -5,6 +5,7 @@
 // Usernames come from other players, so they are always shown with textContent.
 (function () {
   const { BLACK, WHITE } = window.Go;
+  const { t } = window.GoI18n;
   const TOP_PLAYERS = 100;
   const HISTORY_GAMES = 50;
 
@@ -17,6 +18,12 @@
   const playerLink = (name) => `leaderboard.html?player=${encodeURIComponent(name)}`;
   const myProfile = () => (accounts && accounts.ready ? accounts.current().profile : null);
   const dateText = (when) => new Date(when).toLocaleDateString();
+  // Saved names of players without an account look like "Guest" or "Guest (Novice)".
+  function shownName(name) {
+    const guest = /^Guest(?: \((\w+)\))?$/.exec(name);
+    if (!guest) return name;
+    return guest[1] ? t("Guest ({level})", { level: t(guest[1]) }) : t("Guest");
+  }
 
   function element(tag, className, text) {
     const el = document.createElement(tag);
@@ -64,11 +71,11 @@
 
   function problem(text) {
     const box = element("div", "panel-block");
-    box.append(element("h1", "", "Leaderboard"), element("p", "message", text));
+    box.append(element("h1", "", t("Leaderboard")), element("p", "message", text));
     showList(box);
   }
 
-  const failText = "Couldn't load this. Check your internet connection and try again.";
+  const failText = t("Couldn't load this. Check your internet connection and try again.");
 
   // ---- Top players ----
 
@@ -79,16 +86,16 @@
     if (error) return problem(failText);
     const me = myProfile();
     const box = element("div", "panel-block");
-    box.append(element("h1", "", "Leaderboard"),
-      element("p", "message", "Players with at least one rated game. Click a name to see their games."));
+    box.append(element("h1", "", t("Leaderboard")),
+      element("p", "message", t("Players with at least one rated game. Click a name to see their games.")));
     if (!data.length) {
-      box.append(element("p", "message", "Nobody has played a rated game yet. Be the first! Play online and pick Rated."));
+      box.append(element("p", "message", t("Nobody has played a rated game yet. Be the first! Play online and pick Rated.")));
     } else {
-      box.append(table(["#", "Player", "Rating", "Games", "Won / Lost"], data.map((p, k) =>
+      box.append(table(["#", t("Player"), t("Rating"), t("Games"), t("Won / Lost")], data.map((p, k) =>
         row([String(k + 1), link(p.username, playerLink(p.username)), String(p.rating), String(p.games), `${p.wins} / ${p.losses}`],
           me && me.username === p.username ? "me" : ""))));
     }
-    if (me) box.append(link("See my games", playerLink(me.username), "link-button spaced-link"));
+    if (me) box.append(link(t("See my games"), playerLink(me.username), "link-button spaced-link"));
     showList(box);
   }
 
@@ -116,7 +123,7 @@
       const other = color === "black" ? g.white_player : g.black_player;
       games.push({
         when: g.finished_at || g.created_at,
-        opponent: other ? other.username : "Deleted player",
+        opponent: other ? other.username : t("Deleted player"),
         opponentIsAccount: Boolean(other),
         color,
         size: g.board_size,
@@ -131,19 +138,19 @@
   }
 
   function resultText(game) {
-    if (game.rated && game.rated.winner === "disputed") return "Disputed";
-    const word = game.won ? "Won" : "Lost";
-    if (game.how === "R") return `${word} (resign)`;
-    if (game.how === "T") return `${word} (time)`;
+    if (game.rated && game.rated.winner === "disputed") return t("Disputed");
+    const won = game.won;
+    if (game.how === "R") return won ? t("Won (resign)") : t("Lost (resign)");
+    if (game.how === "T") return won ? t("Won (time)") : t("Lost (time)");
     if (game.how) return `${word} (${game.how} pts)`;
     return word;
   }
 
   function typeText(game, color) {
-    if (!game.rated) return game.quick ? "Casual · Quick" : "Casual";
+    if (!game.rated) return game.quick ? t("Casual · Quick") : t("Casual");
     const change = game.rated[`${color}_change`];
-    if (typeof change !== "number") return "Rated";
-    return `Rated ${change >= 0 ? "+" : ""}${change}`;
+    if (typeof change !== "number") return t("Rated");
+    return `${t("Rated")} ${change >= 0 ? "+" : ""}${change}`;
   }
 
   async function showPlayer(name) {
@@ -152,7 +159,7 @@
       .eq("username", name).maybeSingle();
     if (found.error) return problem(failText);
     const player = found.data;
-    if (!player) return problem("There's no player with that name. They may have deleted their account.");
+    if (!player) return problem(t("There's no player with that name. They may have deleted their account."));
 
     const [records, rated] = await Promise.all([
       client.from("game_records")
@@ -169,10 +176,10 @@
     const games = mergeGames(player, records.error ? [] : records.data, rated.data);
 
     const profile = element("div", "panel-block");
-    profile.append(link("‹ Leaderboard", "leaderboard.html", "link-button"), element("h1", "", player.username));
+    profile.append(link(t("‹ Leaderboard"), "leaderboard.html", "link-button"), element("h1", "", player.username));
     const stats = element("div", "stat-row");
-    for (const [label, value] of [["Rating", player.rating], ["Rated games", player.games], ["Wins", player.wins],
-      ["Losses", player.losses], ["Member since", dateText(player.created_at)]]) {
+    for (const [label, value] of [[t("Rating"), player.rating], [t("Rated games"), player.games], [t("Wins"), player.wins],
+      [t("Losses"), player.losses], [t("Member since"), dateText(player.created_at)]]) {
       const stat = element("div", "stat");
       stat.append(element("b", "", String(value)), element("span", "", label));
       stats.append(stat);
@@ -180,14 +187,14 @@
     profile.append(stats);
 
     const list = element("div", "panel-block");
-    list.append(element("h2", "", "Games"));
+    list.append(element("h2", "", t("Games")));
     if (!games.length) {
-      list.append(element("p", "message", "No online games yet. Games are saved here when a logged-in player finishes an online game."));
+      list.append(element("p", "message", t("No online games yet. Games are saved here when a logged-in player finishes an online game.")));
     } else {
-      list.append(table(["Date", "Opponent", "Color", "Board", "Result", "Type", ""], games.map((g) => {
-        const opponent = g.opponentIsAccount ? link(g.opponent, playerLink(g.opponent)) : g.opponent;
-        const replay = g.replayId ? link("Replay", `leaderboard.html?game=${g.replayId}`, "btn small-link") : element("span", "message", "No replay");
-        return row([dateText(g.when), opponent, g.color === "black" ? "Black" : "White", `${g.size}×${g.size}`,
+      list.append(table([t("Date"), t("Opponent"), t("Color"), t("Board"), t("Result"), t("Type"), ""], games.map((g) => {
+        const opponent = g.opponentIsAccount ? link(g.opponent, playerLink(g.opponent)) : shownName(g.opponent);
+        const replay = g.replayId ? link(t("Replay"), `leaderboard.html?game=${g.replayId}`, "btn small-link") : element("span", "message", t("No replay"));
+        return row([dateText(g.when), opponent, g.color === "black" ? t("Black") : t("White"), `${g.size}×${g.size}`,
           resultText(g), typeText(g, g.color), replay], g.won ? "won" : "lost");
       })));
     }
@@ -200,7 +207,7 @@
   async function showReplay(id) {
     const { data: record, error } = await accounts.client.from("game_records")
       .select("*, owner:profiles!game_records_player_fkey(username)").eq("id", id).maybeSingle();
-    if (error || !record) return problem(error ? failText : "That game wasn't found.");
+    if (error || !record) return problem(error ? failText : t("That game wasn't found."));
     let rated = null;
     if (record.rated_game_id) {
       const r = await accounts.client.from("rated_games").select("*").eq("id", record.rated_game_id).maybeSingle();
@@ -211,15 +218,15 @@
     const total = game.moves.length;
     let shown = total;
     const ownerColor = record.my_color === "black" ? BLACK : WHITE;
-    const ownerName = record.owner ? record.owner.username : "Deleted player";
+    const ownerName = record.owner ? record.owner.username : t("Deleted player");
     const seats = { bottom: ownerColor, top: ownerColor === BLACK ? WHITE : BLACK };
-    const names = { [ownerColor]: ownerName, [seats.top]: record.opponent_name };
+    const names = { [ownerColor]: ownerName, [seats.top]: shownName(record.opponent_name) };
 
     $("replay-back").href = record.owner ? playerLink(record.owner.username) : "leaderboard.html";
     $("replay-result").textContent = gameHistory.resultWords(record.result);
-    const kind = rated ? `Rated${typeof rated[`${record.my_color}_change`] === "number"
+    const kind = rated ? `${t("Rated")}${typeof rated[`${record.my_color}_change`] === "number"
       ? ` (${ownerName} ${rated[`${record.my_color}_change`] >= 0 ? "+" : ""}${rated[`${record.my_color}_change`]})` : ""}`
-      : record.quick ? "Casual quick match" : "Casual";
+      : record.quick ? t("Casual quick match") : t("Casual");
     $("replay-details").textContent = `${record.board_size}×${record.board_size} · ${kind} · ${dateText(record.created_at)}`;
 
     for (const seat of ["top", "bottom"]) {
@@ -240,7 +247,7 @@
       });
       for (const seat of ["top", "bottom"]) {
         const color = seats[seat];
-        $(`info-${seat}`).textContent = `Captured: ${captures[color]}${color === WHITE ? " · Komi 7.5" : ""}`;
+        $(`info-${seat}`).textContent = t("Captured: {n}", { n: captures[color] }) + (color === WHITE ? ` · ${t("Komi 7.5")}` : "");
         $(`card-${seat}`).classList.toggle("to-move", turnColor === color);
       }
       window.GoMoveList.render($("move-list"), game.moves, game.size, shown);
@@ -274,7 +281,7 @@
   // ---- Start ----
 
   if (!accounts || !accounts.ready || !gameHistory) {
-    problem("The leaderboard couldn't load. Check your internet connection and reload the page.");
+    problem(t("The leaderboard couldn't load. Check your internet connection and reload the page."));
     return;
   }
   const gameId = params.get("game");

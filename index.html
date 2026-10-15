@@ -19,7 +19,7 @@
   <meta property="og:image:alt" content="A Go board with black and white stones next to the GoBoard name">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#302e2b">
-  <link rel="stylesheet" href="css/style.css?v=23">
+  <link rel="stylesheet" href="css/style.css?v=25">
 </head>
 <body>
   <header class="top-bar">
@@ -204,7 +204,7 @@
 
       <div class="panel-block small">
         <h2>How to play</h2>
-        <p>Click a point to place a stone. Surround stones to capture them.
+        <p data-t-html="how-to-play">Click a point to place a stone. Surround stones to capture them.
           Stuck? <b>Hint</b> shows a good move in green. <b>Pass</b> skips your turn, which
           is normal near the end when nothing useful is left. When both players pass in a row,
           click any dead groups to remove them, then press <b>Count score</b>.
@@ -213,25 +213,27 @@
     </aside>
   </main>
 
+  <script src="js/i18n-zh.js?v=25"></script>
+  <script src="js/i18n.js?v=25"></script>
   <!-- PeerJS connects two browsers for online games (free public service). -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="js/go-rules.js?v=23"></script>
-  <script src="js/go-bot.js?v=23"></script>
-  <script src="js/sounds.js?v=23"></script>
+  <script src="js/go-rules.js?v=25"></script>
+  <script src="js/go-bot.js?v=25"></script>
+  <script src="js/sounds.js?v=25"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.js"></script>
-  <script src="js/supabase-config.js?v=23"></script>
-  <script src="js/game-clock.js?v=23"></script>
-  <script src="js/board-view.js?v=23"></script>
-  <script src="js/chat-filter.js?v=23"></script>
-  <script src="js/accounts.js?v=23"></script>
-  <script src="js/friends.js?v=23"></script>
-  <script src="js/rated-games.js?v=23"></script>
-  <script src="js/online-chat.js?v=23"></script>
-  <script src="js/move-list.js?v=23"></script>
-  <script src="js/game-history.js?v=23"></script>
-  <script src="js/game-page.js?v=23"></script>
-  <script src="js/position-editor.js?v=23"></script>
-  <script src="js/online-lobby.js?v=23"></script>
-  <script src="js/quick-match.js?v=23"></script>
+  <script src="js/supabase-config.js?v=25"></script>
+  <script src="js/game-clock.js?v=25"></script>
+  <script src="js/board-view.js?v=25"></script>
+  <script src="js/chat-filter.js?v=25"></script>
+  <script src="js/accounts.js?v=25"></script>
+  <script src="js/friends.js?v=25"></script>
+  <script src="js/rated-games.js?v=25"></script>
+  <script src="js/online-chat.js?v=25"></script>
+  <script src="js/move-list.js?v=25"></script>
+  <script src="js/game-history.js?v=25"></script>
+  <script src="js/game-page.js?v=25"></script>
+  <script src="js/position-editor.js?v=25"></script>
+  <script src="js/online-lobby.js?v=25"></script>
+  <script src="js/quick-match.js?v=25"></script>
 </body>
 </html>

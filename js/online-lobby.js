@@ -17,15 +17,16 @@
   const FIRST_JOIN_LIMIT_MS = 25000; // give up on a first join after this long
   const RECONNECT_LIMIT_MS = 120000; // give up reconnecting after 2 minutes
 
+  const { t } = window.GoI18n;
   const ERROR_TEXT = {
-    "peer-unavailable": "No game found with that code. Check the code and ask your friend if their game is still waiting.",
-    "network": "Can't reach the online service. Check your internet connection.",
-    "server-error": "The online service isn't answering right now. Try again in a minute.",
-    "socket-error": "Can't reach the online service. Check your internet connection.",
-    "browser-incompatible": "This browser can't play online. Try Chrome, Edge or Firefox.",
-    "busy": "That game already has two players.",
-    "no-peerjs": "Online play couldn't load. Check your internet connection and reload the page.",
-    "timeout": "Couldn't connect to your friend. Some school or work Wi-Fi blocks this. Try another network, or try again.",
+    "peer-unavailable": t("No game found with that code. Check the code and ask your friend if their game is still waiting."),
+    "network": t("Can't reach the online service. Check your internet connection."),
+    "server-error": t("The online service isn't answering right now. Try again in a minute."),
+    "socket-error": t("Can't reach the online service. Check your internet connection."),
+    "browser-incompatible": t("This browser can't play online. Try Chrome, Edge or Firefox."),
+    "busy": t("That game already has two players."),
+    "no-peerjs": t("Online play couldn't load. Check your internet connection and reload the page."),
+    "timeout": t("Couldn't connect to your friend. Some school or work Wi-Fi blocks this. Try another network, or try again."),
   };
 
   const $ = (id) => document.getElementById(id);
@@ -43,7 +44,7 @@
   }
 
   const cleanCode = (text) => text.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, CODE_LENGTH);
-  const errorText = (type) => ERROR_TEXT[type] || "Something went wrong with the connection. Try again.";
+  const errorText = (type) => ERROR_TEXT[type] || t("Something went wrong with the connection. Try again.");
 
   // Shared by both sides: owns the current connection, pings, and notices drops.
   class Session {
@@ -257,7 +258,7 @@
       if (!this.connected) {
         const cameBack = this.everConnected;
         this.connected = this.everConnected = true;
-        if (cameBack) window.GoPage.setConnection(true, `Your ${window.GoPage.friendWord()} is back!`);
+        if (cameBack) window.GoPage.setConnection(true, t("{yourFriend} is back!", { yourFriend: window.GoPage.YourFriend() }));
       }
     }
 
@@ -267,7 +268,7 @@
     }
 
     onLost() {
-      window.GoPage.setConnection(false, `Your ${window.GoPage.friendWord()}'s connection dropped. Waiting for them to come back…`);
+      window.GoPage.setConnection(false, t("{yourFriend}'s connection dropped. Waiting for them to come back…", { yourFriend: window.GoPage.YourFriend() }));
     }
   }
 
@@ -316,7 +317,7 @@
         return this.ui.onFail(this.lastError === "peer-unavailable" ? "peer-unavailable" : "timeout");
       }
       if (this.everConnected && now - this.lostAt > RECONNECT_LIMIT_MS) {
-        window.GoPage.setConnection(false, `Couldn't reconnect to your ${window.GoPage.friendWord()}. Start a new game to play again.`);
+        window.GoPage.setConnection(false, t("Couldn't reconnect to {yourFriend}. Start a new game to play again.", { yourFriend: window.GoPage.yourFriend() }));
         return this.close();
       }
       if (this.conn && this.conn.open) return this.onOpen(); // say hello again until the game arrives
@@ -341,7 +342,7 @@
     }
 
     onLost() {
-      window.GoPage.setConnection(false, "Connection lost. Reconnecting…");
+      window.GoPage.setConnection(false, t("Connection lost. Reconnecting…"));
     }
   }
 
@@ -424,7 +425,7 @@
   // The creator picks the board size and colors.
   function createGame() {
     if (peerJsMissing()) return;
-    showStatus("Creating your game…");
+    showStatus(t("Creating your game…"));
     const session = startHost(window.GoPage.getSetup(), {
       onCode: (code) => { showInvite(code); showStatus(""); },
       onFail: (type) => failed(session, type),
@@ -435,10 +436,10 @@
     if (peerJsMissing()) return;
     const code = cleanCode(rawCode);
     if (code.length !== CODE_LENGTH) {
-      showStatus(`Codes are ${CODE_LENGTH} letters and numbers.`);
+      showStatus(t("Codes are {n} letters and numbers.", { n: CODE_LENGTH }));
       return;
     }
-    showStatus("Connecting to your friend…");
+    showStatus(t("Connecting to your friend…"));
     const session = startGuest(code, { onFail: (type) => failed(session, type) });
   }
 
@@ -469,9 +470,9 @@
     const link = inviteLink($("invite-code").textContent);
     try {
       await navigator.clipboard.writeText(link);
-      showStatus("Invite link copied. Paste it to your friend.");
+      showStatus(t("Invite link copied. Paste it to your friend."));
     } catch {
-      showStatus(`Copy this link: ${link}`);
+      showStatus(t("Copy this link: {link}", { link }));
     }
   });
 

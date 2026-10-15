@@ -50,6 +50,12 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
   white-space: nowrap;
 }
 .sound-toggle.off { color: var(--text-dim); }
+.lang-select {
+  padding: 6px 8px; border: none; border-radius: 6px; cursor: pointer;
+  background: var(--panel-light); color: var(--text); font-weight: 600; font-family: inherit; font-size: 14px;
+}
+/* Pages without a sound button (privacy) push the menu to the right. */
+.top-bar nav + .lang-select { margin-left: auto; }
 .account-button {
   margin-left: auto; padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer;
   background: var(--accent); color: #fff; font-weight: 700; font-family: inherit; white-space: nowrap;

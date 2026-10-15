@@ -8,11 +8,12 @@
   const LOW_TIME_MS = 20000;      // the clock turns red below this
   const TIMEOUT_GRACE_MS = 2000;  // online: wait a moment before calling your friend's time, in case their move is on its way
 
-  const COLOR_NAME = { [BLACK]: "Black", [WHITE]: "White" };
+  const { t, sentences } = window.GoI18n;
+  const COLOR_NAME = { [BLACK]: t("Black"), [WHITE]: t("White") };
   const ILLEGAL_MOVE_TEXT = {
-    occupied: "There's already a stone there.",
-    suicide: "You can't play where your stones would have no liberties.",
-    ko: "Ko rule: you can't retake right away. Play somewhere else first.",
+    occupied: t("There's already a stone there."),
+    suicide: t("You can't play where your stones would have no liberties."),
+    ko: t("Ko rule: you can't retake right away. Play somewhere else first."),
   };
 
   const $ = (id) => document.getElementById(id);
@@ -54,7 +55,8 @@
   let hintToken = 0;
   const positionKey = () => `${gameNumber}|${game.board.join("")}|${game.turn}|${game.phase}`;
 
-  const botName = () => `${BOT_LEVELS[botLevel - 1].name} (Level ${botLevel})`;
+  const botShortName = () => t(BOT_LEVELS[botLevel - 1].name);
+  const botName = () => t("{name} (Level {level})", { name: botShortName(), level: botLevel });
   const isOpponentTurn = () => opponent !== "friend" && game.phase === "play" && game.turn !== humanColor;
   const isBotTurn = () => opponent === "bot" && isOpponentTurn();
 
@@ -62,13 +64,21 @@
   const onlinePlayer = (color) => (opponent === "online" && onlineMeta.players ? onlineMeta.players[color] : null);
   // Quick match opponents are strangers, so the texts say "opponent" instead of "friend".
   const friendWord = () => (opponent === "online" && onlineMeta.quick ? "opponent" : "friend");
-  const FriendWord = () => (friendWord() === "friend" ? "Friend" : "Opponent");
+  const FriendWord = () => (friendWord() === "friend" ? t("Friend") : t("Opponent"));
+  const YourFriend = () => (friendWord() === "friend" ? t("Your friend") : t("Your opponent"));
+  const yourFriend = () => (friendWord() === "friend" ? t("your friend") : t("your opponent"));
+  const isYou = (color) => opponent !== "friend" && color === humanColor;
 
   function playerName(color) {
     if (opponent === "friend") return COLOR_NAME[color];
-    if (color === humanColor) return "You";
+    if (color === humanColor) return t("You");
     if (opponent === "bot") return botName();
     return onlinePlayer(color) ? onlinePlayer(color).username : FriendWord();
+  }
+
+  // Quick match guests show the level they picked, e.g. "Guest (Beginner)".
+  function guestName(player) {
+    return player.level ? t("Guest ({level})", { level: t(player.level) }) : t("Guest");
   }
 
   // The name on the player card: online it shows usernames with ratings when known.
@@ -76,17 +86,22 @@
     const player = onlinePlayer(color);
     if (!player) return playerName(color);
     if (player.rating !== undefined) return `${player.username} (${player.rating})`;
-    return player.level ? `${player.username} (${player.level})` : player.username;
+    return player.id ? player.username : guestName(player);
   }
 
   // Resignation and running out of time end the game without counting.
   const endedByScore = () => game.phase === "over" && game.result && game.result.margin !== undefined;
 
   function resultText(r) {
-    const winner = playerName(r.winner), verb = winner === "You" ? "win" : "wins";
-    if (r.byResignation) return `${winner} ${verb} by resignation`;
-    if (r.byTimeout) return `${winner} ${verb} on time`;
-    return `${winner} ${verb} by ${r.margin} points`;
+    const vars = { winner: playerName(r.winner), n: r.margin };
+    if (isYou(r.winner)) {
+      if (r.byResignation) return t("You win by resignation");
+      if (r.byTimeout) return t("You win on time");
+      return t("You win by {n} points", vars);
+    }
+    if (r.byResignation) return t("{winner} wins by resignation", vars);
+    if (r.byTimeout) return t("{winner} wins on time", vars);
+    return t("{winner} wins by {n} points", vars);
   }
 
   // ---- Board drawing ----
@@ -120,23 +135,23 @@
   function statusText() {
     if (game.phase === "scoring") {
       const s = game.score();
-      return `Scoring — Black ${s.black}, White ${s.white}`;
+      return t("Scoring — Black {black}, White {white}", { black: s.black, white: s.white });
     }
     if (game.phase === "over") return resultText(game.result);
-    if (botThinking) return `${BOT_LEVELS[botLevel - 1].name} is thinking`;
-    if (hintThinking) return "Looking for a good move";
-    if (opponent === "online" && !linkOpen) return "Connection lost";
-    if (opponent === "online") return isOpponentTurn() ? `${FriendWord()}'s move` : "Your move";
-    if (opponent === "bot") return "Your move";
-    return `${COLOR_NAME[game.turn]} to play`;
+    if (botThinking) return t("{name} is thinking", { name: botShortName() });
+    if (hintThinking) return t("Looking for a good move");
+    if (opponent === "online" && !linkOpen) return t("Connection lost");
+    if (opponent === "online") return isOpponentTurn() ? t("{name}'s move", { name: FriendWord() }) : t("Your move");
+    if (opponent === "bot") return t("Your move");
+    return game.turn === BLACK ? t("Black to play") : t("White to play");
   }
 
   function updatePanel() {
     const online = opponent === "online";
     $("name-black").textContent = cardName(BLACK);
     $("name-white").textContent = cardName(WHITE);
-    $("info-black").textContent = `Captured: ${game.captures[BLACK]}`;
-    $("info-white").textContent = `Captured: ${game.captures[WHITE]} · Komi 7.5`;
+    $("info-black").textContent = t("Captured: {n}", { n: game.captures[BLACK] });
+    $("info-white").textContent = `${t("Captured: {n}", { n: game.captures[WHITE] })} · ${t("Komi 7.5")}`;
 
     const bottomColor = opponent === "friend" ? BLACK : humanColor;
     for (const color of [BLACK, WHITE]) {
@@ -150,7 +165,8 @@
     const rematchButton = $("btn-rematch");
     $("rematch-row").hidden = !(online && game.phase === "over");
     rematchButton.disabled = !linkOpen || rematchMine;
-    rematchButton.textContent = rematchMine ? `Waiting for your ${friendWord()}…` : rematchFriend ? "Accept rematch" : "Rematch";
+    rematchButton.textContent = rematchMine ? t("Waiting for {yourFriend}…", { yourFriend: yourFriend() })
+      : rematchFriend ? t("Accept rematch") : t("Rematch");
     $("play-buttons").hidden = game.phase === "scoring";
     $("scoring-buttons").hidden = game.phase !== "scoring";
     // No takebacks or hints against an online friend: that would be cheating.
@@ -159,16 +175,16 @@
     passButton.disabled = game.phase !== "play" || isOpponentTurn() || (online && !linkOpen);
     resignButton.disabled = game.phase !== "play" || isBotTurn() || (online && !linkOpen);
     $("btn-finish").disabled = $("btn-resume").disabled = online && !linkOpen;
-    undoButton.title = online ? "Undo is off in online games" : "";
+    undoButton.title = online ? t("Undo is off in online games") : "";
 
     statusEl.classList.toggle("thinking", botThinking || hintThinking);
     statusEl.textContent = statusText();
     if (game.phase === "scoring") {
       messageEl.textContent = online
-        ? "Both passed. Either of you can click dead groups (you both see it), then press Count score."
-        : "Both passed. Click any dead groups to remove them, then press Count score.";
+        ? t("Both passed. Either of you can click dead groups (you both see it), then press Count score.")
+        : t("Both passed. Click any dead groups to remove them, then press Count score.");
     } else if (endedByScore()) {
-      messageEl.textContent = `Final score: Black ${game.result.black}, White ${game.result.white}.`;
+      messageEl.textContent = t("Final score: Black {black}, White {white}.", { black: game.result.black, white: game.result.white });
     }
   }
 
@@ -200,7 +216,7 @@
     const button = soundButton;
     if (!button) return;
     button.textContent = muted ? "🔇" : "🔊";
-    button.title = muted ? "Sound is off. Click to turn it on." : "Sound is on. Click to turn it off.";
+    button.title = muted ? t("Sound is off. Click to turn it on.") : t("Sound is on. Click to turn it off.");
     button.classList.toggle("off", muted);
   }
 
@@ -269,7 +285,7 @@
     $("btn-first").disabled = $("btn-prev").disabled = shown === 0;
     $("btn-next").disabled = $("btn-last").disabled = !viewing;
     $("view-note").textContent = viewing
-      ? `Looking at move ${viewCount} of ${game.moves.length}. Press » to go back to the game.`
+      ? t("Looking at move {n} of {total}. Press » to go back to the game.", { n: viewCount, total: game.moves.length })
       : "";
   }
 
@@ -326,7 +342,7 @@
       const placed = !choice.pass && choice.moves.some(({ x, y }) => game.play(x, y).ok);
       if (!placed) {
         game.pass();
-        messageEl.textContent = game.phase === "play" ? `${BOT_LEVELS[botLevel - 1].name} passed.` : "";
+        messageEl.textContent = game.phase === "play" ? t("{name} passed.", { name: botShortName() }) : "";
       }
       refresh();
     });
@@ -384,13 +400,13 @@
   // Why a rated game became casual, worded for whoever is reading it.
   function casualNote(meta, iAmCreator) {
     const notLoggedIn = (creatorIsMissing) => (creatorIsMissing === iAmCreator
-      ? "You're not logged in, so this game is casual (not rated). "
-      : `Your ${friendWord()} isn't logged in, so this game is casual (not rated). `);
+      ? t("You're not logged in, so this game is casual (not rated).")
+      : t("{yourFriend} isn't logged in, so this game is casual (not rated).", { yourFriend: YourFriend() }));
     switch (meta.casualReason) {
       case "host-logged-out": return notLoggedIn(true);
       case "guest-logged-out": return notLoggedIn(false);
-      case "same-account": return "Both players use the same account, so this game is casual. ";
-      case "error": return `This game is casual (not rated): ${meta.errorText} `;
+      case "same-account": return t("Both players use the same account, so this game is casual.");
+      case "error": return t("This game is casual (not rated): {reason}", { reason: t(meta.errorText) });
       default: return "";
     }
   }
@@ -399,7 +415,7 @@
     window.GoRated.join(gameId, myColor).catch((error) => {
       if (onlineMeta.ratedGameId !== gameId) return;
       onlineMeta.ratedGameId = null;
-      messageEl.textContent = `This game couldn't be rated, so it's casual: ${error.message}`;
+      messageEl.textContent = t("This game couldn't be rated, so it's casual: {reason}", { reason: t(error.message) });
     });
   }
 
@@ -410,20 +426,22 @@
     ratedReported = true;
     const myColorName = window.GoRated.colorName(humanColor);
     const reportNote = $("rated-note");
-    reportNote.textContent = "Saving the rated result…";
+    reportNote.textContent = t("Saving the rated result…");
     window.GoRated.report(gameId, game.result.winner).then((row) => {
       if (onlineMeta.ratedGameId !== gameId) return;
       if (row.winner === "disputed") {
-        reportNote.textContent = "The two browsers reported different results, so this game didn't change ratings.";
+        reportNote.textContent = t("The two browsers reported different results, so this game didn't change ratings.");
       } else if (row.finished_at) {
         const before = row[`${myColorName}_rating_before`], change = row[`${myColorName}_change`];
-        reportNote.textContent = `Your rating: ${before} → ${before + change} (${change >= 0 ? "+" : ""}${change}).`;
+        reportNote.textContent = t("Your rating: {before} → {after} ({change}).",
+          { before, after: before + change, change: `${change >= 0 ? "+" : ""}${change}` });
         window.GoAccounts.refreshProfile();
       } else {
-        reportNote.textContent = `Result saved. Ratings update once your ${friendWord()}'s browser confirms it (or after 10 minutes).`;
+        reportNote.textContent = t("Result saved. Ratings update once {yourFriend}'s browser confirms it (or after 10 minutes).",
+          { yourFriend: yourFriend() });
       }
     }).catch((error) => {
-      reportNote.textContent = `The rated result couldn't be saved: ${error.message}`;
+      reportNote.textContent = t("The rated result couldn't be saved: {reason}", { reason: t(error.message) });
     });
   }
 
@@ -455,7 +473,7 @@
     if (message.type === "rematch-offer") {
       if (game.phase !== "over") return;
       rematchFriend = true;
-      if (!rematchMine) messageEl.textContent = `Your ${friendWord()} wants a rematch!`;
+      if (!rematchMine) messageEl.textContent = t("{yourFriend} wants a rematch!", { yourFriend: YourFriend() });
       maybeStartRematch();
       return refresh();
     }
@@ -468,8 +486,8 @@
       clock.set(otherColor(humanColor), message.left);
     }
 
-    if (message.type === "pass" && game.phase === "play") messageEl.textContent = `Your ${friendWord()} passed.`;
-    else if (message.type === "resume") messageEl.textContent = `Your ${friendWord()} wants to keep playing.`;
+    if (message.type === "pass" && game.phase === "play") messageEl.textContent = t("{name} passed.", { name: YourFriend() });
+    else if (message.type === "resume") messageEl.textContent = t("{yourFriend} wants to keep playing.", { yourFriend: YourFriend() });
     else if (message.type === "move") messageEl.textContent = "";
     refresh();
   }
@@ -502,16 +520,20 @@
 
   function startLocalGame() {
     beginGame(setup.size, setup.mode === "bot" ? "bot" : "friend", pickedColor(), clockSetup());
-    messageEl.textContent = opponent === "bot" ? `You are ${COLOR_NAME[humanColor]}. Black moves first.` : "";
+    messageEl.textContent = opponent === "bot" ? sentences(youAre(humanColor), t("Black moves first.")) : "";
     refresh();
   }
+
+  const youAre = (color) => (color === BLACK ? t("You are Black.") : t("You are White."));
 
   // Play from a position made in the position editor (js/position-editor.js).
   function startFromPosition(board, turn) {
     beginGame(setup.size, setup.mode === "bot" ? "bot" : "friend", pickedColor(), clockSetup());
     game.setPosition(board, turn);
-    const you = opponent === "bot" ? `You are ${COLOR_NAME[humanColor]}. ` : "";
-    messageEl.textContent = `Playing from your position. ${you}${COLOR_NAME[turn]} moves first.`;
+    const parts = [t("Playing from your position.")];
+    if (opponent === "bot") parts.push(youAre(humanColor));
+    parts.push(turn === BLACK ? t("Black moves first.") : t("White moves first."));
+    messageEl.textContent = sentences(...parts);
     refresh();
   }
 
@@ -535,7 +557,7 @@
   $("bot-list").innerHTML = BOT_LEVELS.map((b) => `
     <button data-level="${b.level}" class="${b.level === setup.botLevel ? "selected" : ""}">
       <span class="bot-level">${b.level}</span>
-      <span><span class="bot-name">${b.name}</span><span class="bot-blurb">${b.blurb}</span></span>
+      <span><span class="bot-name">${t(b.name)}</span><span class="bot-blurb">${t(b.blurb)}</span></span>
     </button>`).join("");
 
   boardEl.addEventListener("click", (event) => {
@@ -543,7 +565,7 @@
     if (!spot) return;
     const x = Number(spot.dataset.x), y = Number(spot.dataset.y);
     if (viewCount !== null) {
-      messageEl.textContent = "You're looking at an earlier move. Press » to go back to the game.";
+      messageEl.textContent = t("You're looking at an earlier move. Press » to go back to the game.");
       return;
     }
 
@@ -623,8 +645,8 @@
     const loggedIn = accounts && accounts.ready && accounts.current().profile;
     $("rated-picker").hidden = !(accounts && accounts.ready);
     $("rated-hint").textContent = !setup.rated ? ""
-      : loggedIn ? "Your friend must be logged in too, or the game will be casual."
-      : "Log in (top right) to play rated games.";
+      : loggedIn ? t("Your friend must be logged in too, or the game will be casual.")
+      : t("Log in (top right) to play rated games.");
   }
 
   let staleChecked = false;
@@ -657,20 +679,20 @@
       const move = choice.pass ? null : choice.moves.find(({ x, y }) => game.checkMove(x, y).ok);
       hint = move || { pass: true };
       messageEl.textContent = move
-        ? "Hint: try the green spot."
-        : "Hint: nothing useful left to play. Passing is a good idea.";
+        ? t("Hint: try the green spot.")
+        : t("Hint: nothing useful left to play. Passing is a good idea.");
       refresh();
     });
   });
 
   passButton.addEventListener("click", () => {
-    const who = playerName(game.turn);
+    const who = isYou(game.turn) ? null : playerName(game.turn);
     if (opponent === "online") doOnline({ type: "pass" });
     else {
       pressClock(game.turn);
       game.pass();
     }
-    messageEl.textContent = game.phase === "play" ? `${who} passed.` : "";
+    messageEl.textContent = game.phase !== "play" ? "" : who ? t("{name} passed.", { name: who }) : t("You passed.");
     refresh();
   });
 
@@ -684,8 +706,8 @@
 
   resignButton.addEventListener("click", () => {
     const question = opponent === "friend"
-      ? `${COLOR_NAME[game.turn]}: are you sure you want to resign?`
-      : "Are you sure you want to resign?";
+      ? t("{color}: are you sure you want to resign?", { color: COLOR_NAME[game.turn] })
+      : t("Are you sure you want to resign?");
     if (!confirm(question)) return;
     if (opponent === "online") doOnline({ type: "resign", loser: humanColor });
     else if (opponent === "bot") game.resign(humanColor);
@@ -697,7 +719,7 @@
     if (opponent !== "online" || game.phase !== "over" || !linkOpen || rematchMine) return;
     rematchMine = true;
     sendToFriend({ type: "rematch-offer" });
-    messageEl.textContent = rematchFriend ? "" : `Rematch offered. Waiting for your ${friendWord()} to accept.`;
+    messageEl.textContent = rematchFriend ? "" : t("Rematch offered. Waiting for {yourFriend} to accept.", { yourFriend: yourFriend() });
     maybeStartRematch();
     refresh();
   });
@@ -711,7 +733,7 @@
   $("btn-resume").addEventListener("click", () => {
     if (opponent === "online") doOnline({ type: "resume" });
     else game.resumePlay();
-    messageEl.textContent = "Back to playing.";
+    messageEl.textContent = t("Back to playing.");
     refresh();
   });
 
@@ -722,6 +744,9 @@
     startFromPosition,
     redraw: () => refresh(),
     friendWord,
+    YourFriend,
+    yourFriend,
+    guestName,
     // kind: "new" (first connection), "reconnect" (rebuild from the creator's list) or "rematch".
     // clockSettings come from the creator; times (after a reconnect) are both players' time left.
     // meta: names, ratings and the rated game id (see HostSession.prepareMeta).
@@ -751,10 +776,10 @@
       }
       for (const action of actions) applyOnlineAction(action);
       if (times) for (const color of [BLACK, WHITE]) clock.set(color, times[color]);
-      const colorNote = `You are ${COLOR_NAME[myColor]}. Black moves first.`;
-      const typeNote = onlineMeta.ratedGameId ? "Rated game! " : casualNote(onlineMeta, session.isHost);
-      messageEl.textContent = kind === "reconnect" ? "Reconnected!"
-        : kind === "rematch" ? `Rematch! ${typeNote}${colorNote}` : `Connected! ${typeNote}${colorNote}`;
+      const colorNote = sentences(youAre(myColor), t("Black moves first."));
+      const typeNote = onlineMeta.ratedGameId ? t("Rated game!") : casualNote(onlineMeta, session.isHost);
+      messageEl.textContent = kind === "reconnect" ? t("Reconnected!")
+        : sentences(kind === "rematch" ? t("Rematch!") : t("Connected!"), typeNote, colorNote);
       // The joiner confirms the rated game in the database (the creator already created it).
       if (onlineMeta.ratedGameId && !session.isHost && kind !== "reconnect") joinRatedGame(onlineMeta.ratedGameId, myColor);
       refresh();
@@ -775,6 +800,10 @@
     },
     leaveOnlineGame,
   };
+
+  // Changing the language reloads the page, which would end an online game.
+  window.GoI18n.beforeChange(() => !(opponent === "online" && linkOpen && game.phase !== "over")
+    || confirm(t("Changing the language reloads the page and ends your online game. Continue?")));
 
   // Links from the Puzzles page open a mode directly, e.g. index.html?mode=bot.
   const startMode = new URLSearchParams(window.location.search).get("mode");

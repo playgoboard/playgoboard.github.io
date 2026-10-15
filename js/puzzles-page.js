@@ -6,6 +6,7 @@
   const { renderBoard, COLUMN_LETTERS } = window.GoBoardView;
   const { boardFromDiagram, moveWins, whiteReply } = window.GoPuzzleSolver;
   const PUZZLES = window.GO_PUZZLES;
+  const { t, sentences } = window.GoI18n;
   const SOLVED_KEY = "goboard-puzzles-solved";
   const WHITE_DELAY_MS = 450;
   const WRONG_SHOW_MS = 900;
@@ -58,9 +59,9 @@
       const classes = ["puzzle-chip"];
       if (i === index) classes.push("current");
       if (solved.has(i)) classes.push("solved");
-      return `<button class="${classes.join(" ")}" data-index="${i}" title="${p.title}">${solved.has(i) ? "✓" : i + 1}</button>`;
+      return `<button class="${classes.join(" ")}" data-index="${i}" title="${t(p.title)}">${solved.has(i) ? "✓" : i + 1}</button>`;
     }).join("");
-    $("puzzle-progress").textContent = `Solved ${solved.size} of ${PUZZLES.length}.`;
+    $("puzzle-progress").textContent = t("Solved {n} of {total}.", { n: solved.size, total: PUZZLES.length });
   }
 
   function setStatus(status, message = "") {
@@ -79,16 +80,16 @@
     marks = [];
     busy = false;
     done = false;
-    $("puzzle-title").textContent = `${index + 1}. ${puzzle.title}`;
-    $("puzzle-count").textContent = solved.has(index) ? "Solved ✓" : "";
-    $("puzzle-prompt").textContent = puzzle.prompt;
-    setStatus("Black to play", movesText());
+    $("puzzle-title").textContent = `${index + 1}. ${t(puzzle.title)}`;
+    $("puzzle-count").textContent = solved.has(index) ? t("Solved ✓") : "";
+    $("puzzle-prompt").textContent = t(puzzle.prompt);
+    setStatus(t("Black to play"), movesText());
     draw();
     drawList();
     try { history.replaceState(null, "", `#${index + 1}`); } catch { /* address bar not updated */ }
   }
 
-  const movesText = () => `${movesLeft} move${movesLeft === 1 ? "" : "s"} left to capture.`;
+  const movesText = () => (movesLeft === 1 ? t("1 move left to capture.") : t("{n} moves left to capture.", { n: movesLeft }));
 
   function captures(before) {
     let gone = 0;
@@ -100,8 +101,8 @@
     done = true;
     solved.add(index);
     saveSolved();
-    setStatus("Correct! 🎉", index + 1 < PUZZLES.length ? "Press Next for the next puzzle." : "That was the last puzzle. Well done!");
-    $("puzzle-count").textContent = "Solved ✓";
+    setStatus(t("Correct! 🎉"), index + 1 < PUZZLES.length ? t("Press Next for the next puzzle.") : t("That was the last puzzle. Well done!"));
+    $("puzzle-count").textContent = t("Solved ✓");
     draw();
     drawList();
   }
@@ -109,7 +110,7 @@
   function whiteTurn() {
     const myToken = token;
     busy = true;
-    setStatus("White is answering…", movesText());
+    setStatus(t("White is answering…"), movesText());
     draw();
     setTimeout(() => {
       if (myToken !== token) return;
@@ -120,7 +121,7 @@
         window.GoSounds.stone();
       }
       busy = false;
-      setStatus("Black to play", reply === null ? `White passed. ${movesText()}` : movesText());
+      setStatus(t("Black to play"), reply === null ? sentences(t("White passed."), movesText()) : movesText());
       draw();
     }, WHITE_DELAY_MS);
   }
@@ -128,7 +129,7 @@
   function playBlack(point) {
     if (busy || done) return;
     if (!board.isLegal(point, BLACK)) {
-      setStatus("Black to play", "You can't play there.");
+      setStatus(t("Black to play"), t("You can't play there."));
       return;
     }
     marks = [];
@@ -157,7 +158,7 @@
     busy = true;
     marks = [{ x: point % size, y: Math.floor(point / size), kind: "bad" }];
     window.GoSounds.stone();
-    setStatus("Not quite", "That move doesn't capture in time. Try another one.");
+    setStatus(t("Not quite"), t("That move doesn't capture in time. Try another one."));
     draw();
     setTimeout(() => {
       if (myToken !== token) return;
@@ -165,7 +166,7 @@
       lastMove = savedLast;
       busy = false;
       marks = [];
-      setStatus("Black to play", `Try again. ${movesText()}`);
+      setStatus(t("Black to play"), sentences(t("Try again."), movesText()));
       draw();
     }, WRONG_SHOW_MS);
   }
@@ -189,7 +190,7 @@
   function updateSoundButton() {
     const muted = window.GoSounds.isMuted();
     soundButton.textContent = muted ? "🔇" : "🔊";
-    soundButton.title = muted ? "Sound is off. Click to turn it on." : "Sound is on. Click to turn it off.";
+    soundButton.title = muted ? t("Sound is off. Click to turn it on.") : t("Sound is on. Click to turn it off.");
     soundButton.classList.toggle("off", muted);
   }
   soundButton.addEventListener("click", () => {

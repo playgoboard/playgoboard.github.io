@@ -5,6 +5,7 @@
   const config = window.GOBOARD_SUPABASE || {};
   const ready = Boolean(config.url && config.anonKey && window.supabase);
   const client = ready ? window.supabase.createClient(config.url, config.anonKey) : null;
+  const { t } = window.GoI18n;
   const USERNAME_RULE = /^[A-Za-z0-9_]{3,16}$/;
   const MIN_PASSWORD = 8;
 
@@ -97,7 +98,7 @@
   function busy(button, on) {
     button.disabled = on;
     if (on) button.dataset.label = button.textContent;
-    button.textContent = on ? "Please wait…" : button.dataset.label || button.textContent;
+    button.textContent = on ? t("Please wait…") : button.dataset.label || button.textContent;
   }
 
   function drawButton() {
@@ -106,26 +107,26 @@
       return;
     }
     accountButton.hidden = false;
-    const label = profile ? `${profile.username} · ${profile.rating}` : session ? "My account" : "Log in";
+    const label = profile ? `${profile.username} · ${profile.rating}` : session ? t("My account") : t("Log in");
     accountButton.textContent = badge && session ? `${label} 🔔${badge}` : label;
-    accountButton.title = !session ? "Log in or create an account"
-      : badge ? "You have friend requests waiting" : "Your profile";
-    dialog.querySelector(".friends-badge").textContent = badge ? `(${badge} new)` : "";
+    accountButton.title = !session ? t("Log in or create an account")
+      : badge ? t("You have friend requests waiting") : t("Your profile");
+    dialog.querySelector(".friends-badge").textContent = badge ? t("({n} new)", { n: badge }) : "";
   }
 
   function drawProfile() {
     const box = dialog.querySelector(".profile-stats");
-    dialog.querySelector(".profile-name").textContent = profile ? profile.username : "Your account";
+    dialog.querySelector(".profile-name").textContent = profile ? profile.username : t("Your account");
     if (!profile) {
-      box.textContent = "Loading your profile…";
+      box.textContent = t("Loading your profile…");
       return;
     }
     dialog.querySelector(".my-games").href = `leaderboard.html?player=${encodeURIComponent(profile.username)}`;
     const since = new Date(profile.created_at).toLocaleDateString();
     box.innerHTML = "";
     for (const [label, value] of [
-      ["Rating", profile.rating], ["Rated games", profile.games],
-      ["Wins", profile.wins], ["Losses", profile.losses], ["Member since", since],
+      [t("Rating"), profile.rating], [t("Rated games"), profile.games],
+      [t("Wins"), profile.wins], [t("Losses"), profile.losses], [t("Member since"), since],
     ]) {
       const row = document.createElement("div");
       const name = document.createElement("span");
@@ -140,13 +141,13 @@
   // Supabase's error messages are technical; these are friendlier.
   function friendly(error) {
     const text = (error && error.message) || String(error);
-    if (/invalid login credentials/i.test(text)) return "Wrong email or password.";
-    if (/email not confirmed/i.test(text)) return "Please confirm your email first. Check your inbox (and spam folder) for our email.";
-    if (/already registered|already been registered/i.test(text)) return "There's already an account with that email. Try logging in.";
-    if (/rate limit|too many/i.test(text)) return "Too many tries. Please wait a few minutes and try again.";
-    if (/password/i.test(text) && /least|short|weak/i.test(text)) return `Please use a longer password (at least ${MIN_PASSWORD} characters).`;
-    if (/failed to fetch|network/i.test(text)) return "Can't reach the server. Check your internet connection.";
-    return `Something went wrong: ${text}`;
+    if (/invalid login credentials/i.test(text)) return t("Wrong email or password.");
+    if (/email not confirmed/i.test(text)) return t("Please confirm your email first. Check your inbox (and spam folder) for our email.");
+    if (/already registered|already been registered/i.test(text)) return t("There's already an account with that email. Try logging in.");
+    if (/rate limit|too many/i.test(text)) return t("Too many tries. Please wait a few minutes and try again.");
+    if (/password/i.test(text) && /least|short|weak/i.test(text)) return t("Please use a longer password (at least {n} characters).", { n: MIN_PASSWORD });
+    if (/failed to fetch|network/i.test(text)) return t("Can't reach the server. Check your internet connection.");
+    return t("Something went wrong: {reason}", { reason: t(text) });
   }
 
   const homeAddress = () => window.location.origin + window.location.pathname;
@@ -156,7 +157,7 @@
   const actions = {
     async login(button) {
       const email = field("login", "email").value.trim(), password = field("login", "password").value;
-      if (!email || !password) return showError("Please fill in your email and password.");
+      if (!email || !password) return showError(t("Please fill in your email and password."));
       busy(button, true);
       const { error } = await client.auth.signInWithPassword({ email, password });
       busy(button, false);
@@ -168,44 +169,44 @@
       const username = field("signup", "username").value.trim();
       const email = field("signup", "email").value.trim();
       const password = field("signup", "password").value;
-      if (!USERNAME_RULE.test(username)) return showError("Usernames are 3–16 letters, numbers or _ (no spaces).");
+      if (!USERNAME_RULE.test(username)) return showError(t("Usernames are 3–16 letters, numbers or _ (no spaces)."));
       if (window.GoChatFilter && window.GoChatFilter.cleanMessage(username) !== username) {
-        return showError("Please pick a friendlier username.");
+        return showError(t("Please pick a friendlier username."));
       }
-      if (!email) return showError("Please enter your email.");
-      if (password.length < MIN_PASSWORD) return showError(`Please use a password of at least ${MIN_PASSWORD} characters.`);
+      if (!email) return showError(t("Please enter your email."));
+      if (password.length < MIN_PASSWORD) return showError(t("Please use a password of at least {n} characters.", { n: MIN_PASSWORD }));
       busy(button, true);
       const free = await client.rpc("username_available", { name: username });
       if (free.error) { busy(button, false); return showError(friendly(free.error)); }
-      if (!free.data) { busy(button, false); return showError("That username is taken. Try another one."); }
+      if (!free.data) { busy(button, false); return showError(t("That username is taken. Try another one.")); }
       const { data, error } = await client.auth.signUp({
         email, password, options: { data: { username }, emailRedirectTo: homeAddress() },
       });
       busy(button, false);
       if (error) return showError(friendly(error));
       if (data.session) return dialog.close(); // email confirmation is switched off
-      showView("login", `Almost done! We sent a confirmation link to ${email}. Click it, then log in here.`);
+      showView("login", t("Almost done! We sent a confirmation link to {email}. Click it, then log in here.", { email }));
       field("login", "email").value = email;
     },
 
     async forgot(button) {
       const email = field("forgot", "email").value.trim();
-      if (!email) return showError("Please enter your email.");
+      if (!email) return showError(t("Please enter your email."));
       busy(button, true);
       const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: homeAddress() });
       busy(button, false);
       if (error) return showError(friendly(error));
-      showView("login", "If that email has an account, a link to reset the password is on its way.");
+      showView("login", t("If that email has an account, a link to reset the password is on its way."));
     },
 
     async "new-password"(button) {
       const password = field("new-password", "password").value;
-      if (password.length < MIN_PASSWORD) return showError(`Please use at least ${MIN_PASSWORD} characters.`);
+      if (password.length < MIN_PASSWORD) return showError(t("Please use at least {n} characters.", { n: MIN_PASSWORD }));
       busy(button, true);
       const { error } = await client.auth.updateUser({ password });
       busy(button, false);
       if (error) return showError(friendly(error));
-      showView("profile", "Your new password is saved.");
+      showView("profile", t("Your new password is saved."));
     },
 
     async logout() {
@@ -215,14 +216,14 @@
 
     async delete(button) {
       if (!profile || field("delete", "confirm").value.trim().toLowerCase() !== profile.username.toLowerCase()) {
-        return showError("Type your username exactly to confirm.");
+        return showError(t("Type your username exactly to confirm."));
       }
       busy(button, true);
       const { error } = await client.rpc("delete_my_account");
       busy(button, false);
       if (error) return showError(friendly(error));
       await client.auth.signOut();
-      showView("login", "Your account was deleted.");
+      showView("login", t("Your account was deleted."));
     },
   };
 

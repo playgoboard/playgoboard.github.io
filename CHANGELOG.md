@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.19.0
+- Language menu in the top bar: English, 简体中文 (Simplified Chinese) and 繁體中文 (Traditional Chinese). The whole site is translated, including bots, puzzles, accounts, friends, quick match, the leaderboard and the privacy page. The choice is remembered; Chinese browsers start in Chinese.
+
 ## 0.18.0
 - Chat: only English and Chinese (plus numbers, punctuation and board symbols like ★ ● ← →). Messages in other languages or with emojis are not sent, with a note in both languages.
 - The bad-word filter now also hides common Chinese swear words (simplified and traditional) and pinyin abbreviations, and catches full-width letters.
