@@ -86,6 +86,24 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 .account-footer { margin: 12px 0 0; text-align: center; font-size: 12px; }
 .account-footer a { color: var(--text-dim); }
 .profile-stats { margin-bottom: 14px; }
+.account-dialog [data-view="profile"] .btn { margin-bottom: 8px; }
+.friend-add { margin-bottom: 4px; }
+.friend-add input { margin-top: 0; letter-spacing: normal; text-transform: none; font-weight: 400; }
+.friend-note { min-height: 0; margin: 4px 0 8px; }
+.friend-note:empty { display: none; }
+.friend-note.error { color: #ff8a80; }
+.friend-section h3 { margin: 14px 0 6px; font-size: 14px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; }
+.friend-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 8px 0; border-bottom: 1px solid var(--panel-light);
+}
+.friend-who { display: flex; flex-direction: column; min-width: 0; }
+.friend-who b { overflow: hidden; text-overflow: ellipsis; }
+.friend-detail { font-size: 12px; color: var(--text-dim); }
+.friend-actions { display: flex; gap: 6px; flex: none; }
+.account-dialog .small-btn { width: auto; margin: 0; padding: 6px 10px; font-size: 13px; }
+.friend-empty { margin: 4px 0; }
+.account-dialog { max-height: calc(100vh - 40px); overflow-y: auto; }
 .profile-stats div { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--panel-light); }
 
 .game-layout {

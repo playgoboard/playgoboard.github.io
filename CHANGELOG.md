@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.14.0
+- Friends: open your profile and click Friends. Add players by username; they accept or decline. See your friends' ratings and win/loss record, remove friends, cancel sent requests. A bell on the account button shows new requests. The database only lets players see and change their own friendships.
+
 ## 0.13.0
 - Rated online games: choose Casual or Rated when creating an online game. Rated needs both players logged in. Player cards show usernames and ratings. Ratings (Elo, K = 32) change only when both browsers report the same winner; a lone report counts after 10 minutes. The database checks everything, so ratings can't be faked from the page.
 

@@ -62,7 +62,9 @@
   apply_rating is internal, finalize_my_stale_games after 10 min). `js/rated-games.js` = GoRated.
   Guest hello carries its user id; HostSession.prepareMeta looks up names/ratings and creates the
   rated game; meta {ratedGameId, players, casualReason} rides along in sync/rematch.
-- Next (user asked): simple friends list with friend requests (accept/decline, see ratings).
+- Friends: `supabase/03-friends.sql` (friendships table, select-only RLS for your own rows; send_friend_request,
+  answer_friend_request, remove_friend). `js/friends.js` fills the "friends" view of the account dialog
+  (GoAccounts.onView) and sets the bell badge (GoAccounts.setBadge), re-checking every 60 s.
 - Accounts plan: step 1 accounts (done) → 2 rated online games (both players must report the same
   result before ratings change) → 3 quick match with strangers → 4 leaderboard + game history.
 - Planned next (user picked, in this order):

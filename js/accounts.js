@@ -10,7 +10,9 @@
 
   let session = null;
   let profile = null;
+  let badge = 0;          // e.g. friend requests waiting; shown on the account button
   const listeners = [];
+  const viewHooks = {};   // other files can fill in a view of the window (friends.js does)
 
   // ---- The button in the top bar and the pop-up window ----
 
@@ -57,9 +59,11 @@
     <div class="account-view" data-view="profile">
       <h2 class="profile-name"></h2>
       <div class="profile-stats"></div>
+      <button class="btn btn-primary" data-go="friends">Friends <span class="friends-badge"></span></button>
       <button class="btn" data-action="logout">Log out</button>
       <p class="account-links"><button class="link-button danger" data-go="delete">Delete my account</button></p>
     </div>
+    <div class="account-view" data-view="friends"></div>
     <div class="account-view" data-view="delete">
       <h2>Delete your account?</h2>
       <p>This removes your account, username and rating for good. It can't be undone.
@@ -80,6 +84,7 @@
     message.textContent = note;
     message.classList.remove("error");
     if (view === "profile") drawProfile();
+    if (viewHooks[view]) viewHooks[view](dialog.querySelector(`[data-view="${view}"]`));
     if (!dialog.open) dialog.showModal();
   }
 
@@ -100,8 +105,11 @@
       return;
     }
     accountButton.hidden = false;
-    accountButton.textContent = profile ? `${profile.username} · ${profile.rating}` : session ? "My account" : "Log in";
-    accountButton.title = session ? "Your profile" : "Log in or create an account";
+    const label = profile ? `${profile.username} · ${profile.rating}` : session ? "My account" : "Log in";
+    accountButton.textContent = badge && session ? `${label} 🔔${badge}` : label;
+    accountButton.title = !session ? "Log in or create an account"
+      : badge ? "You have friend requests waiting" : "Your profile";
+    dialog.querySelector(".friends-badge").textContent = badge ? `(${badge} new)` : "";
   }
 
   function drawProfile() {
@@ -225,8 +233,10 @@
   // Enter in a field presses that view's main button.
   dialog.addEventListener("keydown", (event) => {
     if (event.key !== "Enter" || !event.target.matches("input")) return;
+    const mainButton = event.target.closest(".account-view").querySelector("[data-action], [data-main]");
+    if (!mainButton) return;
     event.preventDefault();
-    event.target.closest(".account-view").querySelector("[data-action]").click();
+    mainButton.click();
   });
 
   accountButton.addEventListener("click", () => showView(session ? "profile" : "login"));
@@ -264,5 +274,9 @@
     current: () => ({ session, profile }),
     onChange(fn) { listeners.push(fn); },
     async refreshProfile() { await loadProfile(); announce(); },
+    // For other files: fill a view of the window when it opens, switch views, show a count on the button.
+    onView(view, fn) { viewHooks[view] = fn; },
+    showView,
+    setBadge(count) { badge = count; drawButton(); },
   };
 })();
