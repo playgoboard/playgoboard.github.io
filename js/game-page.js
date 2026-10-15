@@ -59,18 +59,23 @@
 
   // Logged-in online players have a username and rating (from the creator's lookup).
   const onlinePlayer = (color) => (opponent === "online" && onlineMeta.players ? onlineMeta.players[color] : null);
+  // Quick match opponents are strangers, so the texts say "opponent" instead of "friend".
+  const friendWord = () => (opponent === "online" && onlineMeta.quick ? "opponent" : "friend");
+  const FriendWord = () => (friendWord() === "friend" ? "Friend" : "Opponent");
 
   function playerName(color) {
     if (opponent === "friend") return COLOR_NAME[color];
     if (color === humanColor) return "You";
     if (opponent === "bot") return botName();
-    return onlinePlayer(color) ? onlinePlayer(color).username : "Friend";
+    return onlinePlayer(color) ? onlinePlayer(color).username : FriendWord();
   }
 
   // The name on the player card: online it shows usernames with ratings when known.
   function cardName(color) {
     const player = onlinePlayer(color);
-    return player ? `${player.username} (${player.rating})` : playerName(color);
+    if (!player) return playerName(color);
+    if (player.rating !== undefined) return `${player.username} (${player.rating})`;
+    return player.level ? `${player.username} (${player.level})` : player.username;
   }
 
   // Resignation and running out of time end the game without counting.
@@ -119,7 +124,7 @@
     if (botThinking) return `${BOT_LEVELS[botLevel - 1].name} is thinking`;
     if (hintThinking) return "Looking for a good move";
     if (opponent === "online" && !linkOpen) return "Connection lost";
-    if (opponent === "online") return isOpponentTurn() ? "Friend's move" : "Your move";
+    if (opponent === "online") return isOpponentTurn() ? `${FriendWord()}'s move` : "Your move";
     if (opponent === "bot") return "Your move";
     return `${COLOR_NAME[game.turn]} to play`;
   }
@@ -143,7 +148,7 @@
     const rematchButton = $("btn-rematch");
     $("rematch-row").hidden = !(online && game.phase === "over");
     rematchButton.disabled = !linkOpen || rematchMine;
-    rematchButton.textContent = rematchMine ? "Waiting for your friend…" : rematchFriend ? "Accept rematch" : "Rematch";
+    rematchButton.textContent = rematchMine ? `Waiting for your ${friendWord()}…` : rematchFriend ? "Accept rematch" : "Rematch";
     $("play-buttons").hidden = game.phase === "scoring";
     $("scoring-buttons").hidden = game.phase !== "scoring";
     // No takebacks or hints against an online friend: that would be cheating.
@@ -377,7 +382,7 @@
   function casualNote(meta, iAmCreator) {
     const notLoggedIn = (creatorIsMissing) => (creatorIsMissing === iAmCreator
       ? "You're not logged in, so this game is casual (not rated). "
-      : "Your friend isn't logged in, so this game is casual (not rated). ");
+      : `Your ${friendWord()} isn't logged in, so this game is casual (not rated). `);
     switch (meta.casualReason) {
       case "host-logged-out": return notLoggedIn(true);
       case "guest-logged-out": return notLoggedIn(false);
@@ -412,7 +417,7 @@
         reportNote.textContent = `Your rating: ${before} → ${before + change} (${change >= 0 ? "+" : ""}${change}).`;
         window.GoAccounts.refreshProfile();
       } else {
-        reportNote.textContent = "Result saved. Ratings update once your friend's browser confirms it (or after 10 minutes).";
+        reportNote.textContent = `Result saved. Ratings update once your ${friendWord()}'s browser confirms it (or after 10 minutes).`;
       }
     }).catch((error) => {
       reportNote.textContent = `The rated result couldn't be saved: ${error.message}`;
@@ -431,7 +436,7 @@
     if (message.type === "rematch-offer") {
       if (game.phase !== "over") return;
       rematchFriend = true;
-      if (!rematchMine) messageEl.textContent = "Your friend wants a rematch!";
+      if (!rematchMine) messageEl.textContent = `Your ${friendWord()} wants a rematch!`;
       maybeStartRematch();
       return refresh();
     }
@@ -444,8 +449,8 @@
       clock.set(otherColor(humanColor), message.left);
     }
 
-    if (message.type === "pass" && game.phase === "play") messageEl.textContent = "Your friend passed.";
-    else if (message.type === "resume") messageEl.textContent = "Your friend wants to keep playing.";
+    if (message.type === "pass" && game.phase === "play") messageEl.textContent = `Your ${friendWord()} passed.`;
+    else if (message.type === "resume") messageEl.textContent = `Your ${friendWord()} wants to keep playing.`;
     else if (message.type === "move") messageEl.textContent = "";
     refresh();
   }
@@ -663,7 +668,7 @@
     if (opponent !== "online" || game.phase !== "over" || !linkOpen || rematchMine) return;
     rematchMine = true;
     sendToFriend({ type: "rematch-offer" });
-    messageEl.textContent = rematchFriend ? "" : "Rematch offered. Waiting for your friend to accept.";
+    messageEl.textContent = rematchFriend ? "" : `Rematch offered. Waiting for your ${friendWord()} to accept.`;
     maybeStartRematch();
     refresh();
   });
@@ -685,6 +690,7 @@
   window.GoPage = {
     getSetup: () => ({ size: setup.size, color: pickedColor(), clock: clockSetup(), rated: setup.rated }),
     setMode,
+    friendWord,
     // kind: "new" (first connection), "reconnect" (rebuild from the creator's list) or "rematch".
     // clockSettings come from the creator; times (after a reconnect) are both players' time left.
     // meta: names, ratings and the rated game id (see HostSession.prepareMeta).

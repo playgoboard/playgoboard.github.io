@@ -51,7 +51,7 @@
     receive(text) {
       if (typeof text !== "string") return;
       const clean = window.GoChatFilter.cleanMessage(text.trim().slice(0, MAX_LENGTH));
-      if (clean) add("Friend", clean, false);
+      if (clean) add(window.GoPage.friendWord() === "opponent" ? "Opponent" : "Friend", clean, false);
     },
     // Shown only during online games; a new game starts with an empty chat.
     show(visible) {
@@ -59,7 +59,7 @@
     },
     clear() {
       list.textContent = "";
-      note("Chat with your friend. Bad words are hidden automatically.");
+      note("Say hi! Bad words are hidden automatically.");
     },
   };
 })();

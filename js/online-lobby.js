@@ -129,8 +129,11 @@
   // friend can always find it again after a drop. The creator's board is the
   // "official" one that gets re-sent after a reconnect.
   class HostSession extends Session {
-    constructor(size, hostColor, clockSettings, ratedWanted, ui) {
+    // options: { quick: true } for Quick match, level: your chosen level when not logged in.
+    constructor(size, hostColor, clockSettings, ratedWanted, ui, options = {}) {
       super();
+      this.options = options;
+      this.guestLevel = null;
       this.size = size;
       this.clockSettings = clockSettings; // the creator's clock choice counts for both players
       this.ratedWanted = ratedWanted;
@@ -150,12 +153,15 @@
     // Names and ratings of both players, and a rated game in the database if one was asked for.
     async prepareMeta() {
       // casualReason says why a wanted rated game became casual; each side words it for itself.
-      const meta = { ratedGameId: null, players: {}, casualReason: null, errorText: "" };
+      const meta = { ratedGameId: null, players: {}, casualReason: null, errorText: "", quick: Boolean(this.options.quick) };
       const me = window.GoAccounts && window.GoAccounts.ready ? window.GoAccounts.current().profile : null;
       const guest = this.guestUserId && window.GoRated
         ? await window.GoRated.profile(this.guestUserId).catch(() => null) : null;
       if (me) meta.players[this.hostColor] = { username: me.username, rating: me.rating };
       if (guest) meta.players[this.guestColor] = { username: guest.username, rating: guest.rating };
+      // Quick match guests without an account show the level they picked.
+      if (!me && this.options.level) meta.players[this.hostColor] = { username: "Guest", level: this.options.level };
+      if (!guest && this.guestLevel) meta.players[this.guestColor] = { username: "Guest", level: this.guestLevel };
       if (this.ratedWanted) {
         if (!me) meta.casualReason = "host-logged-out";
         else if (!guest) meta.casualReason = "guest-logged-out";
@@ -227,6 +233,7 @@
         if (this.preparing) return;
         this.preparing = true;
         this.guestUserId = typeof msg.user === "string" ? msg.user : null;
+        this.guestLevel = window.GoLevels && window.GoLevels.isLevel(msg.level) ? msg.level : null;
         this.prepareMeta().then((meta) => {
           this.preparing = false;
           if (this.closed) return;
@@ -246,7 +253,7 @@
       if (!this.connected) {
         const cameBack = this.everConnected;
         this.connected = this.everConnected = true;
-        if (cameBack) window.GoPage.setConnection(true, "Your friend is back!");
+        if (cameBack) window.GoPage.setConnection(true, `Your ${window.GoPage.friendWord()} is back!`);
       }
     }
 
@@ -256,15 +263,16 @@
     }
 
     onLost() {
-      window.GoPage.setConnection(false, "Your friend's connection dropped. Waiting for them to come back…");
+      window.GoPage.setConnection(false, `Your ${window.GoPage.friendWord()}'s connection dropped. Waiting for them to come back…`);
     }
   }
 
   // The joiner. Keeps dialing and saying hello until the creator sends the game.
   class GuestSession extends Session {
-    constructor(code, ui) {
+    constructor(code, ui, options = {}) {
       super();
       this.code = code;
+      this.options = options;
       this.token = randomCode() + randomCode();
       this.isHost = false;
       this.ui = ui;
@@ -294,7 +302,7 @@
     onOpen() {
       // If logged in, say who we are so the game can show names and be rated.
       const profile = window.GoAccounts && window.GoAccounts.ready ? window.GoAccounts.current().profile : null;
-      this.send({ type: "hello", token: this.token, user: profile ? profile.id : null });
+      this.send({ type: "hello", token: this.token, user: profile ? profile.id : null, level: this.options.level || null });
     }
 
     onTick() {
@@ -304,7 +312,7 @@
         return this.ui.onFail(this.lastError === "peer-unavailable" ? "peer-unavailable" : "timeout");
       }
       if (this.everConnected && now - this.lostAt > RECONNECT_LIMIT_MS) {
-        window.GoPage.setConnection(false, "Couldn't reconnect to your friend. Start a new game to play again.");
+        window.GoPage.setConnection(false, `Couldn't reconnect to your ${window.GoPage.friendWord()}. Start a new game to play again.`);
         return this.close();
       }
       if (this.conn && this.conn.open) return this.onOpen(); // say hello again until the game arrives
@@ -372,24 +380,51 @@
     stopCurrent();
   }
 
-  // The creator picks the board size and colors.
-  function createGame() {
-    if (peerJsMissing()) return;
+  // Hosting a room, for "Create online game" and Quick match.
+  // hooks: onCode(code) once the room exists, onStart() when the game begins, onFail(type).
+  function startHost({ size, color, clock, rated }, hooks, options) {
     window.GoPage.leaveOnlineGame();
     stopCurrent();
-    const { size, color, clock, rated } = window.GoPage.getSetup();
-    showStatus("Creating your game…");
     const session = new HostSession(size, color, clock, rated, {
-      onCode: (code) => { if (session === current) { showInvite(code); showStatus(""); } },
+      onCode: (code) => { if (session === current) hooks.onCode(code); },
       onStart: (gameSize, myColor, meta) => {
         if (session !== current) return;
+        if (hooks.onStart) hooks.onStart();
         hideInvite();
         showStatus("");
         window.GoPage.startOnlineGame(gameSize, myColor, [], session, "new", clock, null, meta);
       },
+      onFail: (type) => { if (session === current) hooks.onFail(type); },
+    }, options);
+    current = session;
+    return session;
+  }
+
+  // Joining someone's room by its code.
+  function startGuest(code, hooks, options) {
+    window.GoPage.leaveOnlineGame();
+    stopCurrent();
+    const session = new GuestSession(code, {
+      onSync: (msg, kind) => {
+        if (session !== current) return;
+        if (hooks.onStart) hooks.onStart();
+        showStatus("");
+        window.GoPage.startOnlineGame(msg.size, msg.yourColor, msg.actions, session, kind, msg.clock, kind === "reconnect" ? msg.times : null, msg.meta);
+      },
+      onFail: (type) => { if (session === current) hooks.onFail(type); },
+    }, options);
+    current = session;
+    return session;
+  }
+
+  // The creator picks the board size and colors.
+  function createGame() {
+    if (peerJsMissing()) return;
+    showStatus("Creating your game…");
+    const session = startHost(window.GoPage.getSetup(), {
+      onCode: (code) => { showInvite(code); showStatus(""); },
       onFail: (type) => failed(session, type),
     });
-    current = session;
   }
 
   function joinGame(rawCode) {
@@ -399,19 +434,20 @@
       showStatus(`Codes are ${CODE_LENGTH} letters and numbers.`);
       return;
     }
-    window.GoPage.leaveOnlineGame();
-    stopCurrent();
     showStatus("Connecting to your friend…");
-    const session = new GuestSession(code, {
-      onSync: (msg, kind) => {
-        if (session !== current) return;
-        showStatus("");
-        window.GoPage.startOnlineGame(msg.size, msg.yourColor, msg.actions, session, kind, msg.clock, kind === "reconnect" ? msg.times : null, msg.meta);
-      },
-      onFail: (type) => failed(session, type),
-    });
-    current = session;
+    const session = startGuest(code, { onFail: (type) => failed(session, type) });
   }
+
+  // For quick-match.js.
+  window.GoLobby = {
+    startHost,
+    startGuest,
+    isCurrent: (session) => session === current,
+    stop: stopCurrent,
+    showStatus,
+    errorText,
+    peerJsMissing,
+  };
 
   function inviteLink(code) {
     const url = new URL(window.location.href);

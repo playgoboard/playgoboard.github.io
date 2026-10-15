@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.15.0
+- Quick match: in Online, press Quick match to play a stranger with the same board size, clock and game type (Casual or Rated). Pairs players with close ratings first and widens the range the longer you wait. No account needed for casual games: guests pick a level from Beginner to Expert. Colors are random. If the opponent leaves before the game starts, searching continues.
+- Online texts say "opponent" instead of "friend" in quick matches.
+
 ## 0.14.0
 - Friends: open your profile and click Friends. Add players by username; they accept or decline. See your friends' ratings and win/loss record, remove friends, cancel sent requests. A bell on the account button shows new requests. The database only lets players see and change their own friendships.
 

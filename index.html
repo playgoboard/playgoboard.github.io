@@ -19,7 +19,7 @@
   <meta property="og:image:alt" content="A Go board with black and white stones next to the GoBoard name">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#302e2b">
-  <link rel="stylesheet" href="css/style.css?v=19">
+  <link rel="stylesheet" href="css/style.css?v=20">
 </head>
 <body>
   <header class="top-bar">
@@ -57,7 +57,7 @@
         <div class="choice-row" id="mode-picker">
           <button data-mode="friend" class="selected">Same computer</button>
           <button data-mode="bot">Computer</button>
-          <button data-mode="online">Online friend</button>
+          <button data-mode="online">Online</button>
         </div>
         <div id="bot-options" hidden>
           <p class="label">Bot level</p>
@@ -105,6 +105,15 @@
             <button data-rated="yes">Rated</button>
           </div>
           <p class="rated-hint" id="rated-hint"></p>
+          <div id="quick-section" hidden>
+            <div id="level-options" hidden>
+              <p class="label">Your level</p>
+              <div class="choice-row wrap" id="level-picker"></div>
+            </div>
+            <button id="btn-quick" class="btn btn-primary">Quick match</button>
+            <p class="rated-hint">Play someone new with the board, clock and game type above. Colors are random.</p>
+            <p class="label spaced">Or play a friend</p>
+          </div>
           <button id="btn-create" class="btn btn-primary">Create online game</button>
           <p class="label spaced">Or join a friend's game</p>
           <div class="join-row">
@@ -119,6 +128,13 @@
           <button id="btn-copy-link" class="btn">Copy invite link</button>
           <p class="thinking">Waiting for your friend to join</p>
           <button id="btn-cancel-invite" class="btn">Cancel</button>
+        </div>
+
+        <div id="quick-box" class="invite-box" hidden>
+          <p id="quick-settings"></p>
+          <p class="thinking" id="quick-text">Looking for an opponent</p>
+          <p id="quick-time"></p>
+          <button id="btn-cancel-quick" class="btn">Cancel</button>
         </div>
         <p id="online-status" class="message online-status"></p>
       </div>
@@ -176,20 +192,21 @@
 
   <!-- PeerJS connects two browsers for online games (free public service). -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="js/go-rules.js?v=19"></script>
-  <script src="js/go-bot.js?v=19"></script>
-  <script src="js/sounds.js?v=19"></script>
+  <script src="js/go-rules.js?v=20"></script>
+  <script src="js/go-bot.js?v=20"></script>
+  <script src="js/sounds.js?v=20"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.js"></script>
-  <script src="js/supabase-config.js?v=19"></script>
-  <script src="js/game-clock.js?v=19"></script>
-  <script src="js/board-view.js?v=19"></script>
-  <script src="js/chat-filter.js?v=19"></script>
-  <script src="js/accounts.js?v=19"></script>
-  <script src="js/friends.js?v=19"></script>
-  <script src="js/rated-games.js?v=19"></script>
-  <script src="js/online-chat.js?v=19"></script>
-  <script src="js/move-list.js?v=19"></script>
-  <script src="js/game-page.js?v=19"></script>
-  <script src="js/online-lobby.js?v=19"></script>
+  <script src="js/supabase-config.js?v=20"></script>
+  <script src="js/game-clock.js?v=20"></script>
+  <script src="js/board-view.js?v=20"></script>
+  <script src="js/chat-filter.js?v=20"></script>
+  <script src="js/accounts.js?v=20"></script>
+  <script src="js/friends.js?v=20"></script>
+  <script src="js/rated-games.js?v=20"></script>
+  <script src="js/online-chat.js?v=20"></script>
+  <script src="js/move-list.js?v=20"></script>
+  <script src="js/game-page.js?v=20"></script>
+  <script src="js/online-lobby.js?v=20"></script>
+  <script src="js/quick-match.js?v=20"></script>
 </body>
 </html>

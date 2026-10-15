@@ -65,8 +65,12 @@
 - Friends: `supabase/03-friends.sql` (friendships table, select-only RLS for your own rows; send_friend_request,
   answer_friend_request, remove_friend). `js/friends.js` fills the "friends" view of the account dialog
   (GoAccounts.onView) and sets the bell badge (GoAccounts.setBadge), re-checking every 60 s.
-- Accounts plan: step 1 accounts (done) → 2 rated online games (both players must report the same
-  result before ratings change) → 3 quick match with strangers → 4 leaderboard + game history.
+- Quick match: `supabase/04-quick-match.sql` (quick_match_queue, no client access; quick_match() polled every
+  ~2.5 s returns waiting | found{room} | matched; quick_match_leave()). Rows expire after 15 s without a check-in.
+  `js/quick-match.js`: each searcher HOSTS a room while waiting; whoever gets "found" joins the other's room
+  (GoLobby.startHost/startGuest from online-lobby.js). Guests pick a level (GoLevels, 400-2000) stored in
+  localStorage "goboard-level"; meta.quick=true makes texts say "opponent" (GoPage.friendWord).
+- Accounts plan: step 1 accounts (done) → 2 rated online games (done; both players must report the same  result before ratings change) → 3 quick match with strangers → 4 leaderboard + game history.
 - Planned next (user picked, in this order):
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).
