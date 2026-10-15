@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.18.0
+- Chat: only English and Chinese (plus numbers, punctuation and board symbols like ★ ● ← →). Messages in other languages or with emojis are not sent, with a note in both languages.
+- The bad-word filter now also hides common Chinese swear words (simplified and traditional) and pinyin abbreviations, and catches full-width letters.
+
 ## 0.17.0
 - Set up position: place black and white stones (Black / White / Eraser), pick who moves first, then play from there on the same computer or against a bot. Stones without liberties are not allowed.
 

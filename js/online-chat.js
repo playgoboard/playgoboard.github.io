@@ -31,8 +31,13 @@
   }
 
   function send() {
-    const text = window.GoChatFilter.cleanMessage(input.value.trim().slice(0, MAX_LENGTH));
-    if (!text) return;
+    const typed = input.value.trim().slice(0, MAX_LENGTH);
+    if (!typed) return;
+    if (!window.GoChatFilter.isAllowedText(typed)) {
+      note("Only English and Chinese are allowed in chat. 聊天只能使用英文和中文。");
+      return;
+    }
+    const text = window.GoChatFilter.cleanMessage(typed);
     if (Date.now() - lastSent < MIN_GAP_MS) return;
     if (!window.GoPage.sendChat(text)) {
       note("Not connected right now, so the message wasn't sent.");
@@ -49,7 +54,8 @@
 
   window.GoChat = {
     receive(text) {
-      if (typeof text !== "string") return;
+      // Messages in other languages are dropped (only a changed page could send them).
+      if (typeof text !== "string" || !window.GoChatFilter.isAllowedText(text)) return;
       const clean = window.GoChatFilter.cleanMessage(text.trim().slice(0, MAX_LENGTH));
       if (clean) add(window.GoPage.friendWord() === "opponent" ? "Opponent" : "Friend", clean, false);
     },
