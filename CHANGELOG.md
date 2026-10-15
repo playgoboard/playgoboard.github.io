@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.0
+- Chat in online games, with a bad-word filter on both sides (catches tricks like sh1t, fuuuck and f u c k). Messages are plain text only.
+
 ## 0.6.0
 - Stone sounds: a wooden clack when any stone is placed and a pebble rattle for captures. Mute button (🔊/🔇) at the top, remembered between visits.
 - Script and style links carry a version tag so browsers don't mix old and new files after an update.

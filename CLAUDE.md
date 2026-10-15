@@ -30,7 +30,9 @@
   game-page.js plays them when a new stone appears (not on undo/new game).
 - index.html loads css/js with `?v=N`. Bump N in every upload that changes css/js, so browsers
   never mix old and new files.
-- Planned next (user picked, in this order): online chat with a bad-word filter, rematch button
+- `js/chat-filter.js` (word lists + cleanMessage) and `js/online-chat.js` (chat box UI): chat only in
+  online games, message {type:"chat", text}, filtered on send AND receive, shown via textContent only.
+- Planned next (user picked, in this order): rematch button
   (random colors, not swapped), link preview, game clock (with an Off option), move list + replay,
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).

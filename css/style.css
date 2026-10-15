@@ -142,13 +142,23 @@ nav { display: flex; gap: 18px; }
 .online-status { margin: 10px 0 0; }
 .online-status:empty { display: none; }
 
+.chat-messages {
+  height: 150px; overflow-y: auto; margin-bottom: 8px; padding: 8px;
+  background: var(--bg); border-radius: 6px; font-size: 14px; line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.chat-line { margin-bottom: 4px; }
+.chat-line.mine b { color: var(--accent); }
+.chat-line.note { color: var(--text-dim); font-style: italic; }
+.chat-block .join-row input { letter-spacing: normal; text-transform: none; font-weight: 400; font-size: 15px; }
+
 /* Phones and small windows: the panel drops under the board, so put the game
    buttons first instead of below the whole "New game" box. */
 @media (max-width: 1000px) {
   .top-bar { gap: 14px; padding: 10px 12px; }
   .game-layout { gap: 12px; padding-top: 10px; }
   .side-panel { width: min(720px, 100%); }
-  .controls-block { order: -1; }
+  .controls-block, .chat-block { order: -1; }
 }
 
 .thinking::after { content: ""; animation: dots 1.2s steps(4) infinite; }

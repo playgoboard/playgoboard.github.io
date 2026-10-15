@@ -164,6 +164,7 @@
       card.classList.toggle("top-seat", color !== bottomColor);
     }
 
+    window.GoChat.show(online);
     $("play-buttons").hidden = game.phase === "scoring";
     $("scoring-buttons").hidden = game.phase !== "scoring";
     // No takebacks or hints against an online friend: that would be cheating.
@@ -297,6 +298,7 @@
 
   // Your friend's actions arrive here.
   function receiveFromFriend(message) {
+    if (message.type === "chat") return window.GoChat.receive(message.text);
     const yourTurnOnly = message.type === "move" || message.type === "pass";
     if (yourTurnOnly && !isOpponentTurn()) return;
     if (message.type === "resign" && message.loser !== otherColor(humanColor)) return;
@@ -474,7 +476,10 @@
     // Starts an online game, or rebuilds it from the creator's list after a reconnect.
     startOnlineGame(size, myColor, actions, session) {
       const reconnect = link === session;
-      if (!reconnect) beginGame(size, "online", myColor);
+      if (!reconnect) {
+        beginGame(size, "online", myColor);
+        window.GoChat.clear();
+      }
       else { cancelBot(); onlineActions = []; game = new GoGame(size); gameNumber++; }
       link = session;
       linkOpen = true;
@@ -483,6 +488,11 @@
       refresh();
     },
     onlineActions: () => onlineActions.slice(),
+    sendChat(text) {
+      if (opponent !== "online" || !linkOpen) return false;
+      sendToFriend({ type: "chat", text });
+      return true;
+    },
     receiveFromFriend,
     setConnection(open, note) {
       if (opponent !== "online") return;
