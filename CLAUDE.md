@@ -51,6 +51,15 @@
   GoBot.FastBoard: moveWins() judges the player's move, whiteReply() picks the toughest defence.
   When adding puzzles, check with the solver that exactly one first move wins. Solved list is in
   localStorage "goboard-puzzles-solved". index.html?mode=bot|online|friend opens that mode.
+- Accounts: Supabase project `iosvimeihfhpxsztqkkv` (free tier; pauses after ~1 week idle, the user
+  restores it in the dashboard). URL + publishable key in `js/supabase-config.js` (public by design;
+  NEVER the secret/service_role key). supabase-js 2.115.0 from jsDelivr. `js/accounts.js` adds the
+  top-bar button + dialog and exposes window.GoAccounts. Database SQL lives in `supabase/NN-*.sql`;
+  the USER runs it in the Supabase SQL Editor (I can't). profiles table is read-only to clients;
+  ratings must only change through security-definer functions. Claude must not create real
+  accounts itself (sends email/password to an outside host); the user does sign-up tests.
+- Accounts plan: step 1 accounts (done) → 2 rated online games (both players must report the same
+  result before ratings change) → 3 quick match with strangers → 4 leaderboard + game history.
 - Planned next (user picked, in this order):
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).

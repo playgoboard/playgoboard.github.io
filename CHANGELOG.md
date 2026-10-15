@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.12.0
+- Accounts (Supabase): sign up with username, email and password, log in, forgotten password, profile with rating and record, log out, delete account. Everyone starts at 1200. Profiles are read-only for the website; ratings can't be edited directly.
+- Privacy page explaining what is stored.
+- On small screens the top menu gets its own line.
+
 ## 0.11.0
 - Puzzles page with 20 beginner puzzles (captures, chasing, correct-side atari, double atari, ladders, nets). A small solver checks your moves, so any truly correct answer counts, and plays White's defence. Progress is remembered in your browser.
 - The board drawing code now lives in its own file (board-view.js), shared by the game and puzzle pages.
