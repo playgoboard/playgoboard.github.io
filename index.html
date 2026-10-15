@@ -19,7 +19,7 @@
   <meta property="og:image:alt" content="A Go board with black and white stones next to the GoBoard name">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#302e2b">
-  <link rel="stylesheet" href="css/style.css?v=21">
+  <link rel="stylesheet" href="css/style.css?v=22">
 </head>
 <body>
   <header class="top-bar">
@@ -98,6 +98,7 @@
           </div>
         </div>
         <button id="btn-new" class="btn btn-primary">Start new game</button>
+        <button id="btn-setup" class="btn setup-button">Set up position</button>
 
         <div id="online-options" hidden>
           <p class="label">Game type</p>
@@ -138,6 +139,27 @@
           <button id="btn-cancel-quick" class="btn">Cancel</button>
         </div>
         <p id="online-status" class="message online-status"></p>
+      </div>
+
+      <div class="panel-block editor-block" id="editor-block" hidden>
+        <h2>Set up position</h2>
+        <p class="label">Place</p>
+        <div class="choice-row" id="editor-tools">
+          <button data-tool="black" class="selected">Black</button>
+          <button data-tool="white">White</button>
+          <button data-tool="erase">Eraser</button>
+        </div>
+        <p class="label">Who moves first</p>
+        <div class="choice-row" id="editor-turn">
+          <button data-turn="black" class="selected">Black</button>
+          <button data-turn="white">White</button>
+        </div>
+        <p class="message" id="editor-message"></p>
+        <button id="btn-editor-play" class="btn btn-primary">Play from here</button>
+        <div class="button-row editor-row">
+          <button id="btn-editor-clear" class="btn">Clear board</button>
+          <button id="btn-editor-cancel" class="btn">Cancel</button>
+        </div>
       </div>
 
       <div class="panel-block controls-block">
@@ -193,22 +215,23 @@
 
   <!-- PeerJS connects two browsers for online games (free public service). -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="js/go-rules.js?v=21"></script>
-  <script src="js/go-bot.js?v=21"></script>
-  <script src="js/sounds.js?v=21"></script>
+  <script src="js/go-rules.js?v=22"></script>
+  <script src="js/go-bot.js?v=22"></script>
+  <script src="js/sounds.js?v=22"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.js"></script>
-  <script src="js/supabase-config.js?v=21"></script>
-  <script src="js/game-clock.js?v=21"></script>
-  <script src="js/board-view.js?v=21"></script>
-  <script src="js/chat-filter.js?v=21"></script>
-  <script src="js/accounts.js?v=21"></script>
-  <script src="js/friends.js?v=21"></script>
-  <script src="js/rated-games.js?v=21"></script>
-  <script src="js/online-chat.js?v=21"></script>
-  <script src="js/move-list.js?v=21"></script>
-  <script src="js/game-history.js?v=21"></script>
-  <script src="js/game-page.js?v=21"></script>
-  <script src="js/online-lobby.js?v=21"></script>
-  <script src="js/quick-match.js?v=21"></script>
+  <script src="js/supabase-config.js?v=22"></script>
+  <script src="js/game-clock.js?v=22"></script>
+  <script src="js/board-view.js?v=22"></script>
+  <script src="js/chat-filter.js?v=22"></script>
+  <script src="js/accounts.js?v=22"></script>
+  <script src="js/friends.js?v=22"></script>
+  <script src="js/rated-games.js?v=22"></script>
+  <script src="js/online-chat.js?v=22"></script>
+  <script src="js/move-list.js?v=22"></script>
+  <script src="js/game-history.js?v=22"></script>
+  <script src="js/game-page.js?v=22"></script>
+  <script src="js/position-editor.js?v=22"></script>
+  <script src="js/online-lobby.js?v=22"></script>
+  <script src="js/quick-match.js?v=22"></script>
 </body>
 </html>

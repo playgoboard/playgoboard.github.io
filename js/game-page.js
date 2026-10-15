@@ -92,6 +92,7 @@
   // ---- Board drawing ----
 
   function drawBoard() {
+    if (window.GoEditor && window.GoEditor.isOpen()) return; // the position editor owns the board for now
     // While replaying, show the old position plainly: no territory, dead marks, hints or ghost stones.
     const viewing = viewCount !== null;
     const scoring = !viewing && (game.phase === "scoring" || endedByScore());
@@ -505,6 +506,15 @@
     refresh();
   }
 
+  // Play from a position made in the position editor (js/position-editor.js).
+  function startFromPosition(board, turn) {
+    beginGame(setup.size, setup.mode === "bot" ? "bot" : "friend", pickedColor(), clockSetup());
+    game.setPosition(board, turn);
+    const you = opponent === "bot" ? `You are ${COLOR_NAME[humanColor]}. ` : "";
+    messageEl.textContent = `Playing from your position. ${you}${COLOR_NAME[turn]} moves first.`;
+    refresh();
+  }
+
   function pickOne(container, button) {
     for (const b of container.querySelectorAll("button")) b.classList.toggle("selected", b === button);
   }
@@ -515,6 +525,7 @@
     $("color-options").hidden = mode === "friend";
     $("online-options").hidden = mode !== "online";
     $("btn-new").hidden = mode === "online";
+    $("btn-setup").hidden = mode === "online";
     pickOne($("mode-picker"), $("mode-picker").querySelector(`[data-mode="${mode}"]`));
     for (const item of $("nav").querySelectorAll("button")) item.classList.toggle("active", item.dataset.mode === mode);
   }
@@ -706,8 +717,10 @@
 
   // What online-lobby.js needs from this page.
   window.GoPage = {
-    getSetup: () => ({ size: setup.size, color: pickedColor(), clock: clockSetup(), rated: setup.rated }),
+    getSetup: () => ({ mode: setup.mode, size: setup.size, color: pickedColor(), clock: clockSetup(), rated: setup.rated }),
     setMode,
+    startFromPosition,
+    redraw: () => refresh(),
     friendWord,
     // kind: "new" (first connection), "reconnect" (rebuild from the creator's list) or "rematch".
     // clockSettings come from the creator; times (after a reconnect) are both players' time left.

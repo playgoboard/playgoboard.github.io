@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.17.0
+- Set up position: place black and white stones (Black / White / Eraser), pick who moves first, then play from there on the same computer or against a bot. Stones without liberties are not allowed.
+
 ## 0.16.0
 - Leaderboard page (top menu): the top 100 players with at least one rated game. Click a name to see their profile and game history.
 - Game history: finished online games (rated, casual and quick match) are saved for each logged-in player, with moves. Rated games show the rating change. Older rated games appear without a replay.

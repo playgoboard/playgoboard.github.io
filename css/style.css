@@ -255,6 +255,11 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 .text-page a { color: var(--accent); }
 .text-page .back-link { display: inline-block; width: auto; margin-top: 16px; color: #fff; text-decoration: none; }
 
+/* Position editor */
+.setup-button { width: 100%; margin-top: 14px; }
+.editor-row { margin-top: 14px; }
+#editor-message.error { color: #ff8a80; }
+
 /* Leaderboard page */
 .list-page { max-width: 860px; margin: 0 auto; padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 14px; }
 .list-page h1 { margin: 6px 0 8px; font-size: 26px; overflow-wrap: anywhere; }
@@ -285,7 +290,7 @@ a.link-button { display: inline-block; }
   .top-bar nav { order: 3; width: 100%; gap: 16px; }
   .game-layout { gap: 12px; padding-top: 10px; }
   .side-panel { width: min(720px, 100%); }
-  .controls-block, .chat-block, .moves-block { order: -1; }
+  .editor-block, .controls-block, .chat-block, .moves-block { order: -1; }
 }
 
 .thinking::after { content: ""; animation: dots 1.2s steps(4) infinite; }

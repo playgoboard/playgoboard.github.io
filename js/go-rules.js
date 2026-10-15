@@ -30,6 +30,24 @@
       return y * this.size + x;
     }
 
+    // A set-up position (from the position editor) to play from, before any moves.
+    setPosition(board, turn) {
+      this.board = board.slice();
+      this.turn = turn;
+    }
+
+    // Groups with no liberties, which can't happen in a real game.
+    breathlessStones(board = this.board) {
+      const out = [], seen = new Set();
+      for (let i = 0; i < board.length; i++) {
+        if (board[i] === EMPTY || seen.has(i)) continue;
+        const group = this.groupAt(board, i);
+        for (const s of group.stones) seen.add(s);
+        if (group.liberties.size === 0) out.push(...group.stones);
+      }
+      return out;
+    }
+
     neighbors(i) {
       const s = this.size, x = i % s, y = Math.floor(i / s), out = [];
       if (x > 0) out.push(i - 1);
