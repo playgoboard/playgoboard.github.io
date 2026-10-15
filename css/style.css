@@ -136,6 +136,14 @@ nav { display: flex; gap: 18px; }
 .online-status { margin: 10px 0 0; }
 .online-status:empty { display: none; }
 
+/* Phones and small windows: the panel drops under the board, so put the game
+   buttons first instead of below the whole "New game" box. */
+@media (max-width: 1000px) {
+  .game-layout { gap: 12px; padding-top: 10px; }
+  .side-panel { width: min(720px, 100%); }
+  .controls-block { order: -1; }
+}
+
 .thinking::after { content: ""; animation: dots 1.2s steps(4) infinite; }
 @keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
 

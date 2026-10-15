@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.1
+- Phones: the game buttons (Hint, Pass, Undo, Resign) now sit right under the board instead of below the New game box.
+
 ## 0.5.0
 - Online play is sturdier: the joiner keeps asking until the game starts, hiccups with the online service no longer end a game, and a dropped connection reconnects by itself (both boards are rebuilt from the creator's move list). Status shows "Connecting…", "Connection lost / Reconnecting…" and "Reconnected!". Strangers with the code are turned away.
 
