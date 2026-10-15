@@ -42,7 +42,10 @@
   Online: move/pass actions carry `left` (mover's time), {type:"timeout", loser} ends the game
   (you call your own time at 0, your friend's after a 2 s grace). Host sends clock settings in
   sync/rematch, plus `times` in sync for reconnects. GoGame.loseOnTime gives result.byTimeout.
-- Planned next (user picked, in this order): move list + replay,
+- Move list/replay: GoGame.moves + GoGame.boardAfter(count) (uses history snapshots). `js/move-list.js`
+  renders the list; game-page `viewCount` (null = live) drives drawBoard; board clicks are blocked
+  while viewing; ← → keys step (ignored while typing).
+- Planned next (user picked, in this order):
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).
 - Rules: area scoring, komi 7.5, simple ko, suicide not allowed.

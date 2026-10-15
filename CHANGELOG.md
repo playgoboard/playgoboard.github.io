@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.10.0
+- Move list and replay: every move is listed (Black/White pairs, passes shown). Step through the game with « ‹ › », the ← → keys, or by clicking a move. The board is read-only while looking back.
+
 ## 0.9.0
 - Game clock: Off (default), 1, 3, 5, 10 or 30 minutes each, with optional bonus seconds per move (+0, +2, +5, +10, +30). Run out and you lose on time. Online, the creator's choice counts for both, times stay in sync, and clocks pause while the connection is down. Bots have no clock.
 

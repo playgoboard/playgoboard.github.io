@@ -19,7 +19,7 @@
   <meta property="og:image:alt" content="A Go board with black and white stones next to the GoBoard name">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#302e2b">
-  <link rel="stylesheet" href="css/style.css?v=10">
+  <link rel="stylesheet" href="css/style.css?v=12">
 </head>
 <body>
   <header class="top-bar">
@@ -143,6 +143,18 @@
         </div>
       </div>
 
+      <div class="panel-block moves-block">
+        <h2>Moves</h2>
+        <div class="move-list" id="move-list"></div>
+        <div class="button-row replay-row">
+          <button id="btn-first" class="btn" title="Go to the start">«</button>
+          <button id="btn-prev" class="btn" title="Back one move (← key)">‹</button>
+          <button id="btn-next" class="btn" title="Forward one move (→ key)">›</button>
+          <button id="btn-last" class="btn" title="Back to the game">»</button>
+        </div>
+        <p class="message view-note" id="view-note"></p>
+      </div>
+
       <div class="panel-block small">
         <h2>How to play</h2>
         <p>Click a point to place a stone. Surround stones to capture them.
@@ -156,13 +168,14 @@
 
   <!-- PeerJS connects two browsers for online games (free public service). -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="js/go-rules.js?v=10"></script>
-  <script src="js/go-bot.js?v=10"></script>
-  <script src="js/sounds.js?v=10"></script>
-  <script src="js/game-clock.js?v=10"></script>
-  <script src="js/chat-filter.js?v=10"></script>
-  <script src="js/online-chat.js?v=10"></script>
-  <script src="js/game-page.js?v=10"></script>
-  <script src="js/online-lobby.js?v=10"></script>
+  <script src="js/go-rules.js?v=12"></script>
+  <script src="js/go-bot.js?v=12"></script>
+  <script src="js/sounds.js?v=12"></script>
+  <script src="js/game-clock.js?v=12"></script>
+  <script src="js/chat-filter.js?v=12"></script>
+  <script src="js/online-chat.js?v=12"></script>
+  <script src="js/move-list.js?v=12"></script>
+  <script src="js/game-page.js?v=12"></script>
+  <script src="js/online-lobby.js?v=12"></script>
 </body>
 </html>

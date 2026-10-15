@@ -41,6 +41,7 @@
   let link = null;         // the online connection, if any
   let linkOpen = false;
   let onlineActions = [];  // everything that happened in this online game, in order (replayed after a reconnect)
+  let viewCount = null;      // replay: show the board after this many moves (null = the live game)
   let rematchMine = false;   // you asked for a rematch
   let rematchFriend = false; // your friend asked for one
 
@@ -81,8 +82,19 @@
 
   function drawBoard() {
     const s = game.size, end = s, parts = [];
-    const scoring = game.phase === "scoring" || endedByScore();
+    // While replaying, show the old position plainly: no territory, dead marks, hints or ghost stones.
+    const viewing = viewCount !== null;
+    const board = viewing ? game.boardAfter(viewCount) : game.board;
+    const dead = viewing ? new Set() : game.dead;
+    const scoring = !viewing && (game.phase === "scoring" || endedByScore());
     const territory = scoring ? game.score().territory : null;
+    let lastMove = null;
+    if (viewing) {
+      const move = game.moves[viewCount - 1];
+      if (move && !move.pass) lastMove = game.index(move.x, move.y);
+    } else if (typeof game.lastMove === "number" && game.phase === "play") {
+      lastMove = game.lastMove;
+    }
 
     parts.push(`<svg viewBox="0 0 ${s + 1} ${s + 1}" xmlns="http://www.w3.org/2000/svg">
       <defs>
@@ -111,28 +123,28 @@
     }
 
     for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
-      const i = game.index(x, y), color = game.board[i];
+      const i = game.index(x, y), color = board[i];
       if (color !== EMPTY) {
-        parts.push(stoneSvg(x, y, color, game.dead.has(i) ? 'opacity="0.35"' : ""));
+        parts.push(stoneSvg(x, y, color, dead.has(i) ? 'opacity="0.35"' : ""));
       }
-      if (territory && territory[i] !== EMPTY && (color === EMPTY || game.dead.has(i))) {
+      if (territory && territory[i] !== EMPTY && (color === EMPTY || dead.has(i))) {
         const fill = territory[i] === BLACK ? "#000" : "#fff";
         parts.push(`<rect x="${x + 0.8}" y="${y + 0.8}" width="0.4" height="0.4" fill="${fill}" stroke="#555" stroke-width="0.02"/>`);
       }
     }
 
-    if (typeof game.lastMove === "number" && game.phase === "play") {
-      const lx = game.lastMove % s, ly = Math.floor(game.lastMove / s);
-      const ring = game.board[game.lastMove] === BLACK ? "#fff" : "#000";
+    if (lastMove !== null) {
+      const lx = lastMove % s, ly = Math.floor(lastMove / s);
+      const ring = board[lastMove] === BLACK ? "#fff" : "#000";
       parts.push(`<circle cx="${lx + 1}" cy="${ly + 1}" r="0.22" fill="none" stroke="${ring}" stroke-width="0.06"/>`);
     }
 
-    if (hint && !hint.pass) {
+    if (hint && !hint.pass && !viewing) {
       parts.push(`<circle cx="${hint.x + 1}" cy="${hint.y + 1}" r="0.42" fill="rgba(129,182,76,0.45)" stroke="#5d8a32" stroke-width="0.07"/>`);
     }
 
     // Invisible click targets, one per point, with a see-through "ghost" stone on hover.
-    const ghostsOn = game.phase === "play" && !isOpponentTurn();
+    const ghostsOn = game.phase === "play" && !isOpponentTurn() && !viewing;
     for (let y = 0; y < s; y++) for (let x = 0; x < s; x++) {
       const showGhost = ghostsOn && game.board[game.index(x, y)] === EMPTY;
       parts.push(`<g class="spot" data-x="${x}" data-y="${y}">
@@ -289,12 +301,53 @@
     return clock.press(color);
   }
 
+  // ---- Move list and replay ----
+
+  function showMoveList() {
+    if (viewCount !== null && viewCount >= game.moves.length) viewCount = null; // caught up with the game
+    const shown = viewCount === null ? game.moves.length : viewCount;
+    window.GoMoveList.render($("move-list"), game.moves, game.size, shown);
+    const viewing = viewCount !== null;
+    $("btn-first").disabled = $("btn-prev").disabled = shown === 0;
+    $("btn-next").disabled = $("btn-last").disabled = !viewing;
+    $("view-note").textContent = viewing
+      ? `Looking at move ${viewCount} of ${game.moves.length}. Press » to go back to the game.`
+      : "";
+  }
+
+  function viewMove(count) {
+    const total = game.moves.length;
+    viewCount = count >= total ? null : Math.max(0, count);
+    drawBoard();
+    showMoveList();
+  }
+
+  const shownCount = () => (viewCount === null ? game.moves.length : viewCount);
+  $("btn-first").addEventListener("click", () => viewMove(0));
+  $("btn-prev").addEventListener("click", () => viewMove(shownCount() - 1));
+  $("btn-next").addEventListener("click", () => viewMove(shownCount() + 1));
+  $("btn-last").addEventListener("click", () => viewMove(game.moves.length));
+  $("move-list").addEventListener("click", (event) => {
+    const move = event.target.closest(".move");
+    if (move) viewMove(Number(move.dataset.count));
+  });
+  // Arrow keys step through the game, unless you're typing (chat or the join code).
+  document.addEventListener("keydown", (event) => {
+    const typing = event.target instanceof Element && event.target.closest("input, textarea");
+    if (typing || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.key === "ArrowLeft") viewMove(shownCount() - 1);
+    else if (event.key === "ArrowRight") viewMove(shownCount() + 1);
+    else return;
+    event.preventDefault();
+  });
+
   function refresh() {
     playMoveSounds();
     dropStaleHint();
     clock.run(clockRunner());
     drawBoard();
     updatePanel();
+    showMoveList();
     showClocks();
     startBotIfItsTurn();
   }
@@ -404,6 +457,7 @@
     leaveOnlineGame();
     onlineActions = [];
     clock = new GameClock(clockSettings.minutes, clockSettings.bonus);
+    viewCount = null;
     game = new GoGame(size);
     gameNumber++;
     opponent = newOpponent;
@@ -451,6 +505,10 @@
     const spot = event.target.closest(".spot");
     if (!spot) return;
     const x = Number(spot.dataset.x), y = Number(spot.dataset.y);
+    if (viewCount !== null) {
+      messageEl.textContent = "You're looking at an earlier move. Press » to go back to the game.";
+      return;
+    }
 
     const online = opponent === "online";
     if (game.phase === "scoring") {
@@ -604,6 +662,7 @@
         cancelBot();
         onlineActions = [];
         clock = new GameClock(settings.minutes, settings.bonus);
+        if (kind === "rematch") viewCount = null;
         game = new GoGame(size);
         gameNumber++;
         humanColor = myColor;

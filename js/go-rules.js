@@ -22,7 +22,8 @@
       this.phase = "play";    // "play" -> "scoring" -> "over"
       this.dead = new Set();  // stones marked dead while scoring
       this.result = null;
-      this.history = [];      // snapshots taken before each move, for undo and ko
+      this.history = [];      // snapshots taken before each move, for undo, ko and replay
+      this.moves = [];        // { color, x, y } or { color, pass: true }, in order
     }
 
     index(x, y) {
@@ -68,6 +69,11 @@
       Object.assign(this, snap, { board: snap.board.slice(), captures: { ...snap.captures } });
     }
 
+    // The board as it was after `count` moves (passes count as moves).
+    boardAfter(count) {
+      return count >= this.moves.length ? this.board : this.history[count].board;
+    }
+
     // Works out a move without making it.
     // Returns { ok: true, next, captured } or { ok: false, reason: "occupied" | "suicide" | "ko" | "not-playing" }.
     checkMove(x, y) {
@@ -106,6 +112,7 @@
       this.board = check.next;
       this.captures[me] += check.captured;
       this.lastMove = this.index(x, y);
+      this.moves.push({ color: me, x, y });
       this.passesInRow = 0;
       this.moveNumber++;
       this.turn = otherColor(me);
@@ -115,6 +122,7 @@
     pass() {
       if (this.phase !== "play") return;
       this.history.push(this.snapshot());
+      this.moves.push({ color: this.turn, pass: true });
       this.passesInRow++;
       this.lastMove = "pass";
       this.moveNumber++;
@@ -142,6 +150,7 @@
     undo() {
       if (!this.canUndo()) return;
       this.restore(this.history.pop());
+      this.moves.pop();
       this.phase = "play";
       this.dead.clear();
     }

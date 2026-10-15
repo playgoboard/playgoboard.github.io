@@ -160,13 +160,31 @@ nav { display: flex; gap: 18px; }
 .chat-line.note { color: var(--text-dim); font-style: italic; }
 .chat-block .join-row input { letter-spacing: normal; text-transform: none; font-weight: 400; font-size: 15px; }
 
+.move-list {
+  position: relative; /* so the current move can be scrolled into view inside the list */
+  max-height: 160px; overflow-y: auto; margin-bottom: 8px; padding: 4px;
+  background: var(--bg); border-radius: 6px; font-size: 14px;
+}
+.move-row { display: grid; grid-template-columns: 40px 1fr 1fr; align-items: center; }
+.move-number { color: var(--text-dim); text-align: right; padding-right: 6px; }
+.move {
+  border: none; background: none; color: var(--text); text-align: left; padding: 3px 8px;
+  border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 14px;
+}
+.move:hover { background: var(--panel-light); }
+.move.current { background: var(--accent); color: #fff; font-weight: 700; }
+.move-empty { margin: 6px; color: var(--text-dim); }
+.replay-row .btn { font-size: 20px; padding: 6px; }
+.view-note { margin: 8px 0 0; }
+.view-note:empty { display: none; }
+
 /* Phones and small windows: the panel drops under the board, so put the game
    buttons first instead of below the whole "New game" box. */
 @media (max-width: 1000px) {
   .top-bar { gap: 14px; padding: 10px 12px; }
   .game-layout { gap: 12px; padding-top: 10px; }
   .side-panel { width: min(720px, 100%); }
-  .controls-block, .chat-block { order: -1; }
+  .controls-block, .chat-block, .moves-block { order: -1; }
 }
 
 .thinking::after { content: ""; animation: dots 1.2s steps(4) infinite; }
