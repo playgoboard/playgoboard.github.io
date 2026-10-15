@@ -19,7 +19,7 @@
   <meta property="og:image:alt" content="A Go board with black and white stones next to the GoBoard name">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#302e2b">
-  <link rel="stylesheet" href="css/style.css?v=9">
+  <link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body>
   <header class="top-bar">
@@ -38,12 +38,14 @@
         <span class="stone-icon white"></span>
         <span class="player-name" id="name-white">White</span>
         <span class="player-info" id="info-white"></span>
+        <span class="clock" id="clock-white" hidden></span>
       </div>
       <div id="board" class="board"></div>
       <div class="player-card" id="card-black">
         <span class="stone-icon black"></span>
         <span class="player-name" id="name-black">Black</span>
         <span class="player-info" id="info-black"></span>
+        <span class="clock" id="clock-black" hidden></span>
       </div>
     </section>
 
@@ -73,6 +75,25 @@
           <button data-size="9">9×9</button>
           <button data-size="13">13×13</button>
           <button data-size="19" class="selected">19×19</button>
+        </div>
+        <p class="label">Clock (minutes each)</p>
+        <div class="choice-row wrap" id="clock-picker">
+          <button data-minutes="0" class="selected">Off</button>
+          <button data-minutes="1">1</button>
+          <button data-minutes="3">3</button>
+          <button data-minutes="5">5</button>
+          <button data-minutes="10">10</button>
+          <button data-minutes="30">30</button>
+        </div>
+        <div id="bonus-options" hidden>
+          <p class="label">Bonus seconds per move</p>
+          <div class="choice-row wrap" id="bonus-picker">
+            <button data-bonus="0" class="selected">+0</button>
+            <button data-bonus="2">+2</button>
+            <button data-bonus="5">+5</button>
+            <button data-bonus="10">+10</button>
+            <button data-bonus="30">+30</button>
+          </div>
         </div>
         <button id="btn-new" class="btn btn-primary">Start new game</button>
 
@@ -135,12 +156,13 @@
 
   <!-- PeerJS connects two browsers for online games (free public service). -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="js/go-rules.js?v=9"></script>
-  <script src="js/go-bot.js?v=9"></script>
-  <script src="js/sounds.js?v=9"></script>
-  <script src="js/chat-filter.js?v=9"></script>
-  <script src="js/online-chat.js?v=9"></script>
-  <script src="js/game-page.js?v=9"></script>
-  <script src="js/online-lobby.js?v=9"></script>
+  <script src="js/go-rules.js?v=10"></script>
+  <script src="js/go-bot.js?v=10"></script>
+  <script src="js/sounds.js?v=10"></script>
+  <script src="js/game-clock.js?v=10"></script>
+  <script src="js/chat-filter.js?v=10"></script>
+  <script src="js/online-chat.js?v=10"></script>
+  <script src="js/game-page.js?v=10"></script>
+  <script src="js/online-lobby.js?v=10"></script>
 </body>
 </html>

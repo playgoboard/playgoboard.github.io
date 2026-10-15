@@ -129,9 +129,10 @@
   // friend can always find it again after a drop. The creator's board is the
   // "official" one that gets re-sent after a reconnect.
   class HostSession extends Session {
-    constructor(size, hostColor, ui) {
+    constructor(size, hostColor, clockSettings, ui) {
       super();
       this.size = size;
+      this.clockSettings = clockSettings; // the creator's clock choice counts for both players
       this.hostColor = hostColor;
       this.guestColor = hostColor === window.Go.BLACK ? window.Go.WHITE : window.Go.BLACK;
       this.guestToken = null;
@@ -147,8 +148,8 @@
       const { BLACK, WHITE } = window.Go;
       this.hostColor = Math.random() < 0.5 ? BLACK : WHITE;
       this.guestColor = this.hostColor === BLACK ? WHITE : BLACK;
-      window.GoPage.startOnlineGame(this.size, this.hostColor, [], this, "rematch");
-      this.send({ type: "rematch", size: this.size, yourColor: this.guestColor });
+      window.GoPage.startOnlineGame(this.size, this.hostColor, [], this, "rematch", this.clockSettings);
+      this.send({ type: "rematch", size: this.size, yourColor: this.guestColor, clock: this.clockSettings });
     }
 
     register(attempt) {
@@ -193,7 +194,10 @@
           this.started = true;
           this.ui.onStart(this.size, this.hostColor, this);
         }
-        this.send({ type: "sync", size: this.size, yourColor: this.guestColor, actions: window.GoPage.onlineActions() });
+        this.send({
+          type: "sync", size: this.size, yourColor: this.guestColor, actions: window.GoPage.onlineActions(),
+          clock: this.clockSettings, times: window.GoPage.clockTimes(),
+        });
         if (!this.connected) {
           const cameBack = this.everConnected;
           this.connected = this.everConnected = true;
@@ -270,7 +274,7 @@
         this.connected = this.everConnected = true;
         this.ui.onSync(msg, kind);
       } else if (msg.type === "rematch") {
-        window.GoPage.startOnlineGame(msg.size, msg.yourColor, [], this, "rematch");
+        window.GoPage.startOnlineGame(msg.size, msg.yourColor, [], this, "rematch", msg.clock);
       } else if (msg.type === "busy") {
         this.ui.onFail("busy");
       } else {
@@ -327,15 +331,15 @@
     if (peerJsMissing()) return;
     window.GoPage.leaveOnlineGame();
     stopCurrent();
-    const { size, color } = window.GoPage.getSetup();
+    const { size, color, clock } = window.GoPage.getSetup();
     showStatus("Creating your game…");
-    const session = new HostSession(size, color, {
+    const session = new HostSession(size, color, clock, {
       onCode: (code) => { if (session === current) { showInvite(code); showStatus(""); } },
       onStart: (gameSize, myColor) => {
         if (session !== current) return;
         hideInvite();
         showStatus("");
-        window.GoPage.startOnlineGame(gameSize, myColor, [], session, "new");
+        window.GoPage.startOnlineGame(gameSize, myColor, [], session, "new", clock);
       },
       onFail: (type) => failed(session, type),
     });
@@ -356,7 +360,7 @@
       onSync: (msg, kind) => {
         if (session !== current) return;
         showStatus("");
-        window.GoPage.startOnlineGame(msg.size, msg.yourColor, msg.actions, session, kind);
+        window.GoPage.startOnlineGame(msg.size, msg.yourColor, msg.actions, session, kind, msg.clock, kind === "reconnect" ? msg.times : null);
       },
       onFail: (type) => failed(session, type),
     });

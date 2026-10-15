@@ -37,7 +37,12 @@
   GoPage.startOnlineGame(size, color, actions, session, kind) with kind "new" | "reconnect" | "rematch".
 - Link preview: Open Graph tags in index.html + preview.png (1200x630), drawn by
   `java -Djava.awt.headless=true tools/MakePreviewImage.java` (run from the project folder).
-- Planned next (user picked, in this order): game clock (with an Off option), move list + replay,
+- `js/game-clock.js`: GameClock (run/press/set/snapshot). game-page: clockRunner() decides whose clock
+  runs (none for bots, none while an online link is down); pressClock() adds the bonus after a move/pass.
+  Online: move/pass actions carry `left` (mover's time), {type:"timeout", loser} ends the game
+  (you call your own time at 0, your friend's after a 2 s grace). Host sends clock settings in
+  sync/rematch, plus `times` in sync for reconnects. GoGame.loseOnTime gives result.byTimeout.
+- Planned next (user picked, in this order): move list + replay,
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).
 - Rules: area scoring, komi 7.5, simple ko, suicide not allowed.

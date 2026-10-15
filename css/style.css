@@ -79,6 +79,14 @@ nav { display: flex; gap: 18px; }
 }
 .player-card.to-move { border-left-color: var(--accent); padding-left: 10px; }
 .player-info { margin-left: auto; color: var(--text-dim); font-weight: 400; }
+.clock {
+  min-width: 70px; padding: 4px 10px; border-radius: 6px; text-align: right;
+  background: var(--panel); color: var(--text-dim); font-size: 18px; font-variant-numeric: tabular-nums;
+}
+.to-move .clock { background: var(--text); color: var(--bg); }
+.to-move .clock.low { background: var(--danger); color: #fff; }
+.choice-row.wrap { flex-wrap: wrap; }
+.choice-row.wrap button { flex: 1 0 40px; }
 
 .stone-icon { width: 20px; height: 20px; border-radius: 50%; display: inline-block; }
 .stone-icon.black { background: radial-gradient(circle at 35% 35%, #666, #000 70%); }

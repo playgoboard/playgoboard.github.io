@@ -4,6 +4,9 @@
 (function () {
   const { GoGame, EMPTY, BLACK, WHITE, otherColor } = window.Go;
   const { BOT_LEVELS, chooseBotMove } = window.GoBot;
+  const { GameClock, formatTime } = window.GoClock;
+  const LOW_TIME_MS = 20000;      // the clock turns red below this
+  const TIMEOUT_GRACE_MS = 2000;  // online: wait a moment before calling your friend's time, in case their move is on its way
 
   const COLOR_NAME = { [BLACK]: "Black", [WHITE]: "White" };
   const COLUMN_LETTERS = "ABCDEFGHJKLMNOPQRST"; // Go boards skip the letter I
@@ -24,10 +27,11 @@
   const hintButton = $("btn-hint");
 
   // Choices in the "New game" box (only used when a game starts).
-  const setup = { mode: "friend", size: 19, botLevel: 1, color: "black" };
+  const setup = { mode: "friend", size: 19, botLevel: 1, color: "black", clockMinutes: 0, bonusSeconds: 0 };
 
   // The game being played right now.
   let game = new GoGame(setup.size);
+  let clock = new GameClock(0, 0);
   let gameNumber = 0;
   let opponent = "friend"; // "friend" (same computer), "bot" or "online"
   let humanColor = BLACK;  // your color against a bot or an online friend
@@ -58,6 +62,16 @@
     return opponent === "bot" ? botName() : "Friend";
   }
 
+  // Resignation and running out of time end the game without counting.
+  const endedByScore = () => game.phase === "over" && game.result && game.result.margin !== undefined;
+
+  function resultText(r) {
+    const winner = playerName(r.winner), verb = winner === "You" ? "win" : "wins";
+    if (r.byResignation) return `${winner} ${verb} by resignation`;
+    if (r.byTimeout) return `${winner} ${verb} on time`;
+    return `${winner} ${verb} by ${r.margin} points`;
+  }
+
   // ---- Board drawing ----
 
   function stoneSvg(x, y, color, extraAttrs = "") {
@@ -67,7 +81,7 @@
 
   function drawBoard() {
     const s = game.size, end = s, parts = [];
-    const scoring = game.phase === "scoring" || (game.phase === "over" && game.result && !game.result.byResignation);
+    const scoring = game.phase === "scoring" || endedByScore();
     const territory = scoring ? game.score().territory : null;
 
     parts.push(`<svg viewBox="0 0 ${s + 1} ${s + 1}" xmlns="http://www.w3.org/2000/svg">
@@ -138,11 +152,7 @@
       const s = game.score();
       return `Scoring — Black ${s.black}, White ${s.white}`;
     }
-    if (game.phase === "over") {
-      const r = game.result, winner = playerName(r.winner);
-      const verb = winner === "You" ? "win" : "wins";
-      return r.byResignation ? `${winner} ${verb} by resignation` : `${winner} ${verb} by ${r.margin} points`;
-    }
+    if (game.phase === "over") return resultText(game.result);
     if (botThinking) return `${BOT_LEVELS[botLevel - 1].name} is thinking`;
     if (hintThinking) return "Looking for a good move";
     if (opponent === "online" && !linkOpen) return "Connection lost";
@@ -187,7 +197,7 @@
       messageEl.textContent = online
         ? "Both passed. Either of you can click dead groups (you both see it), then press Count score."
         : "Both passed. Click any dead groups to remove them, then press Count score.";
-    } else if (game.phase === "over" && !game.result.byResignation) {
+    } else if (endedByScore()) {
       messageEl.textContent = `Final score: Black ${game.result.black}, White ${game.result.white}.`;
     }
   }
@@ -231,11 +241,61 @@
   });
   updateSoundButton();
 
+  // ---- Game clock ----
+
+  // Whose clock should run right now (null = nobody's). Bots have no clock, and
+  // online clocks pause while the connection is down.
+  function clockRunner() {
+    if (!clock.on || game.phase !== "play" || isBotTurn()) return null;
+    if (opponent === "online" && !linkOpen) return null;
+    return game.turn;
+  }
+
+  function showClocks() {
+    for (const color of [BLACK, WHITE]) {
+      const el = $(color === BLACK ? "clock-black" : "clock-white");
+      if (!el) continue;
+      el.hidden = !clock.on || (opponent === "bot" && color !== humanColor);
+      const left = clock.timeLeft(color);
+      el.textContent = formatTime(left);
+      el.classList.toggle("low", left < LOW_TIME_MS);
+    }
+  }
+
+  // Ran out of time? Online, you call your own time at once and your friend's
+  // only after a short grace period, in case their move is still on its way.
+  function checkTimeout() {
+    const color = clock.running;
+    if (!color || game.phase !== "play") return;
+    const left = clock.timeLeft(color);
+    const online = opponent === "online";
+    const limit = online && color !== humanColor ? -TIMEOUT_GRACE_MS : 0;
+    if (left > limit) return;
+    clock.run(null);
+    clock.set(color, 0);
+    if (online) doOnline({ type: "timeout", loser: color });
+    else game.loseOnTime(color);
+    refresh();
+  }
+
+  setInterval(() => {
+    if (!clock.on) return;
+    showClocks();
+    checkTimeout();
+  }, 200);
+
+  // The player who just moved or passed stops their clock and gets the bonus seconds.
+  function pressClock(color) {
+    return clock.press(color);
+  }
+
   function refresh() {
     playMoveSounds();
     dropStaleHint();
+    clock.run(clockRunner());
     drawBoard();
     updatePanel();
+    showClocks();
     startBotIfItsTurn();
   }
 
@@ -288,6 +348,7 @@
       case "toggle-dead": game.toggleDead(action.x, action.y); break;
       case "finish": game.finishScoring(); break;
       case "resign": game.resign(action.loser); break;
+      case "timeout": game.loseOnTime(action.loser); clock.set(action.loser, 0); break;
       default: ok = false;
     }
     if (ok) onlineActions.push(action);
@@ -295,20 +356,23 @@
   }
 
   // Your own action in an online game: do it here, then tell your friend.
+  // Moves and passes carry your time left, so both screens show the same clocks.
   function doOnline(action) {
     if (!linkOpen) return false;
+    const mover = game.turn;
     const ok = applyOnlineAction(action);
+    if (ok && (action.type === "move" || action.type === "pass")) action.left = pressClock(mover);
     if (ok) sendToFriend(action);
     return ok;
   }
 
-  // Your friend's actions arrive here.
   // A rematch starts once both players asked. The creator's browser picks random
   // colors and tells the joiner (see HostSession.startRematch in online-lobby.js).
   function maybeStartRematch() {
     if (rematchMine && rematchFriend && link && link.isHost) link.startRematch();
   }
 
+  // Your friend's actions arrive here.
   function receiveFromFriend(message) {
     if (message.type === "chat") return window.GoChat.receive(message.text);
     if (message.type === "rematch-offer") {
@@ -322,6 +386,10 @@
     if (yourTurnOnly && !isOpponentTurn()) return;
     if (message.type === "resign" && message.loser !== otherColor(humanColor)) return;
     if (!applyOnlineAction(message)) return;
+    if (yourTurnOnly && typeof message.left === "number") {
+      clock.run(null);
+      clock.set(otherColor(humanColor), message.left);
+    }
 
     if (message.type === "pass" && game.phase === "play") messageEl.textContent = "Your friend passed.";
     else if (message.type === "resume") messageEl.textContent = "Your friend wants to keep playing.";
@@ -331,10 +399,11 @@
 
   // ---- Starting games ----
 
-  function beginGame(size, newOpponent, myColor) {
+  function beginGame(size, newOpponent, myColor, clockSettings) {
     cancelBot();
     leaveOnlineGame();
     onlineActions = [];
+    clock = new GameClock(clockSettings.minutes, clockSettings.bonus);
     game = new GoGame(size);
     gameNumber++;
     opponent = newOpponent;
@@ -348,8 +417,10 @@
     return BLACK;
   }
 
+  const clockSetup = () => ({ minutes: setup.clockMinutes, bonus: setup.bonusSeconds });
+
   function startLocalGame() {
-    beginGame(setup.size, setup.mode === "bot" ? "bot" : "friend", pickedColor());
+    beginGame(setup.size, setup.mode === "bot" ? "bot" : "friend", pickedColor(), clockSetup());
     messageEl.textContent = opponent === "bot" ? `You are ${COLOR_NAME[humanColor]}. Black moves first.` : "";
     refresh();
   }
@@ -389,7 +460,10 @@
       const check = game.checkMove(x, y);
       messageEl.textContent = check.ok ? "" : ILLEGAL_MOVE_TEXT[check.reason] || "";
       if (check.ok && online) doOnline({ type: "move", x, y });
-      else if (check.ok) game.play(x, y);
+      else if (check.ok) {
+        pressClock(game.turn);
+        game.play(x, y);
+      }
     }
     refresh();
   });
@@ -425,6 +499,21 @@
     pickOne(event.currentTarget, button);
   });
 
+  $("clock-picker").addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    setup.clockMinutes = Number(button.dataset.minutes);
+    pickOne(event.currentTarget, button);
+    $("bonus-options").hidden = setup.clockMinutes === 0;
+  });
+
+  $("bonus-picker").addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    setup.bonusSeconds = Number(button.dataset.bonus);
+    pickOne(event.currentTarget, button);
+  });
+
   $("btn-new").addEventListener("click", startLocalGame);
 
   hintButton.addEventListener("click", () => {
@@ -451,7 +540,10 @@
   passButton.addEventListener("click", () => {
     const who = playerName(game.turn);
     if (opponent === "online") doOnline({ type: "pass" });
-    else game.pass();
+    else {
+      pressClock(game.turn);
+      game.pass();
+    }
     messageEl.textContent = game.phase === "play" ? `${who} passed.` : "";
     refresh();
   });
@@ -499,16 +591,19 @@
 
   // What online-lobby.js needs from this page.
   window.GoPage = {
-    getSetup: () => ({ size: setup.size, color: pickedColor() }),
+    getSetup: () => ({ size: setup.size, color: pickedColor(), clock: clockSetup() }),
     setMode,
     // kind: "new" (first connection), "reconnect" (rebuild from the creator's list) or "rematch".
-    startOnlineGame(size, myColor, actions, session, kind) {
+    // clockSettings come from the creator; times (after a reconnect) are both players' time left.
+    startOnlineGame(size, myColor, actions, session, kind, clockSettings, times) {
+      const settings = clockSettings || { minutes: 0, bonus: 0 };
       if (kind === "new") {
-        beginGame(size, "online", myColor);
+        beginGame(size, "online", myColor, settings);
         window.GoChat.clear();
       } else {
         cancelBot();
         onlineActions = [];
+        clock = new GameClock(settings.minutes, settings.bonus);
         game = new GoGame(size);
         gameNumber++;
         humanColor = myColor;
@@ -517,12 +612,14 @@
       linkOpen = true;
       rematchMine = rematchFriend = false;
       for (const action of actions) applyOnlineAction(action);
+      if (times) for (const color of [BLACK, WHITE]) clock.set(color, times[color]);
       const colorNote = `You are ${COLOR_NAME[myColor]}. Black moves first.`;
       messageEl.textContent = kind === "reconnect" ? "Reconnected!"
         : kind === "rematch" ? `Rematch! ${colorNote}` : `Connected! ${colorNote}`;
       refresh();
     },
     onlineActions: () => onlineActions.slice(),
+    clockTimes: () => clock.snapshot(),
     sendChat(text) {
       if (opponent !== "online" || !linkOpen) return false;
       sendToFriend({ type: "chat", text });

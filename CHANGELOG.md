@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.0
+- Game clock: Off (default), 1, 3, 5, 10 or 30 minutes each, with optional bonus seconds per move (+0, +2, +5, +10, +30). Run out and you lose on time. Online, the creator's choice counts for both, times stay in sync, and clocks pause while the connection is down. Bots have no clock.
+
 ## 0.8.1
 - Link preview: sharing the site in WhatsApp, Discord etc. shows a picture (preview.png), title and description.
 

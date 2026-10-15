@@ -129,6 +129,12 @@
       this.result = { winner: otherColor(loser), byResignation: true };
     }
 
+    loseOnTime(loser) {
+      if (this.phase === "over") return;
+      this.phase = "over";
+      this.result = { winner: otherColor(loser), byTimeout: true };
+    }
+
     canUndo() {
       return this.history.length > 0 && this.phase !== "over";
     }
