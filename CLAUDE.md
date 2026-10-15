@@ -76,6 +76,7 @@
   (GoHistory.save/rebuild/resultWords). `leaderboard.html` + `js/leaderboard-page.js`: ?player=NAME, ?game=ID.
   Usernames are shown with textContent only.
 - Accounts plan: step 1 accounts (done) → 2 rated online games (done; both players must report the same  result before ratings change) → 3 quick match (done) → 4 leaderboard + game history (done).
+- Next (user asked): set up a custom position (board editor) to play from. "Play against yourself" = Same computer.
 - Planned next (user picked, in this order):
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).
