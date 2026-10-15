@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.16.0
+- Leaderboard page (top menu): the top 100 players with at least one rated game. Click a name to see their profile and game history.
+- Game history: finished online games (rated, casual and quick match) are saved for each logged-in player, with moves. Rated games show the rating change. Older rated games appear without a replay.
+- Replay any saved game move by move (buttons, the move list, or the arrow keys).
+- "My games" button in your profile. Privacy page updated.
+
 ## 0.15.0
 - Quick match: in Online, press Quick match to play a stranger with the same board size, clock and game type (Casual or Rated). Pairs players with close ratings first and widens the range the longer you wait. No account needed for casual games: guests pick a level from Beginner to Expert. Colors are random. If the opponent leaves before the game starts, searching continues.
 - Online texts say "opponent" instead of "friend" in quick matches.

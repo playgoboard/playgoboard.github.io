@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GoBoard — Leaderboard</title>
+  <meta name="description" content="The top rated Go players on GoBoard, their game history and replays.">
+  <link rel="canonical" href="https://playgoboard.netlify.app/leaderboard.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GoBoard">
+  <meta property="og:title" content="GoBoard — Leaderboard">
+  <meta property="og:description" content="The top rated Go players on GoBoard, their game history and replays.">
+  <meta property="og:url" content="https://playgoboard.netlify.app/leaderboard.html">
+  <meta property="og:image" content="https://playgoboard.netlify.app/preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#302e2b">
+  <link rel="stylesheet" href="css/style.css?v=21">
+</head>
+<body>
+  <header class="top-bar">
+    <div class="logo"><span class="logo-stone"></span>GoBoard</div>
+    <nav id="nav">
+      <a class="nav-item" href="index.html?mode=friend">Play a friend</a>
+      <a class="nav-item" href="index.html?mode=bot">Bots</a>
+      <a class="nav-item" href="index.html?mode=online">Online</a>
+      <a class="nav-item" href="puzzles.html">Puzzles</a>
+      <a class="nav-item active" href="leaderboard.html">Leaderboard</a>
+    </nav>
+    <button id="btn-sound" class="sound-toggle" type="button"></button>
+  </header>
+
+  <!-- Top players, or one player's profile and games. Filled in by js/leaderboard-page.js. -->
+  <main class="list-page" id="list-view" hidden></main>
+
+  <!-- Replaying one saved game. -->
+  <main class="game-layout" id="replay-view" hidden>
+    <section class="board-column">
+      <div class="player-card top-seat" id="card-top">
+        <span class="stone-icon" id="stone-top"></span>
+        <span class="player-name" id="name-top"></span>
+        <span class="player-info" id="info-top"></span>
+      </div>
+      <div id="board" class="board no-ghost"></div>
+      <div class="player-card bottom-seat" id="card-bottom">
+        <span class="stone-icon" id="stone-bottom"></span>
+        <span class="player-name" id="name-bottom"></span>
+        <span class="player-info" id="info-bottom"></span>
+      </div>
+    </section>
+    <aside class="side-panel">
+      <div class="panel-block controls-block">
+        <p class="status" id="replay-result"></p>
+        <p class="message" id="replay-details"></p>
+        <a class="link-button" id="replay-back" href="leaderboard.html">‹ Back</a>
+      </div>
+      <div class="panel-block moves-block">
+        <h2>Moves</h2>
+        <div class="move-list" id="move-list"></div>
+        <div class="button-row replay-row">
+          <button id="btn-first" class="btn" title="Go to the start">«</button>
+          <button id="btn-prev" class="btn" title="Back one move (← key)">‹</button>
+          <button id="btn-next" class="btn" title="Forward one move (→ key)">›</button>
+          <button id="btn-last" class="btn" title="Go to the end">»</button>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script src="js/go-rules.js?v=21"></script>
+  <script src="js/sounds.js?v=21"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.js"></script>
+  <script src="js/supabase-config.js?v=21"></script>
+  <script src="js/board-view.js?v=21"></script>
+  <script src="js/move-list.js?v=21"></script>
+  <script src="js/chat-filter.js?v=21"></script>
+  <script src="js/accounts.js?v=21"></script>
+  <script src="js/friends.js?v=21"></script>
+  <script src="js/game-history.js?v=21"></script>
+  <script src="js/leaderboard-page.js?v=21"></script>
+</body>
+</html>

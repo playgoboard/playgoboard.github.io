@@ -255,6 +255,28 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 .text-page a { color: var(--accent); }
 .text-page .back-link { display: inline-block; width: auto; margin-top: 16px; color: #fff; text-decoration: none; }
 
+/* Leaderboard page */
+.list-page { max-width: 860px; margin: 0 auto; padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 14px; }
+.list-page h1 { margin: 6px 0 8px; font-size: 26px; overflow-wrap: anywhere; }
+.list-page .message { margin-bottom: 8px; }
+.table-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 15px; }
+.data-table th { text-align: left; font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; padding: 6px 8px; }
+.data-table td { padding: 8px; border-top: 1px solid var(--panel-light); white-space: nowrap; }
+.data-table a { color: var(--text); font-weight: 600; }
+.data-table tr.me td { background: rgba(129, 182, 76, 0.15); }
+.data-table tr.won td:nth-child(5) { color: var(--accent); font-weight: 600; }
+.data-table tr.lost td:nth-child(5) { color: #ff8a80; }
+.data-table .message { margin: 0; }
+.data-table .small-link { display: inline-block; padding: 4px 10px; font-size: 13px; color: var(--text); text-decoration: none; }
+.spaced-link { display: inline-block; margin-top: 12px; }
+a.link-button { display: inline-block; }
+.stat-row { display: flex; flex-wrap: wrap; gap: 10px; }
+.stat { flex: 1 0 110px; background: var(--bg); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; }
+.stat b { font-size: 20px; }
+.stat span { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; }
+.account-dialog a.btn { display: block; text-align: center; text-decoration: none; margin-bottom: 8px; }
+
 /* Phones and small windows: the panel drops under the board, so put the game
    buttons first instead of below the whole "New game" box. */
 @media (max-width: 1000px) {

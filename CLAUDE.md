@@ -70,7 +70,12 @@
   `js/quick-match.js`: each searcher HOSTS a room while waiting; whoever gets "found" joins the other's room
   (GoLobby.startHost/startGuest from online-lobby.js). Guests pick a level (GoLevels, 400-2000) stored in
   localStorage "goboard-level"; meta.quick=true makes texts say "opponent" (GoPage.friendWord).
-- Accounts plan: step 1 accounts (done) → 2 rated online games (done; both players must report the same  result before ratings change) → 3 quick match with strangers → 4 leaderboard + game history.
+- Game history: `supabase/05-game-history.sql` (game_records, public read, one row per player per game,
+  unique (player, game_key); save_game_record validates moves [[x,y]|"pass"] and result "B+R|W+T|B+3.5").
+  HostSession.prepareMeta adds meta.gameKey and player ids. game-page saveGameRecord() -> `js/game-history.js`
+  (GoHistory.save/rebuild/resultWords). `leaderboard.html` + `js/leaderboard-page.js`: ?player=NAME, ?game=ID.
+  Usernames are shown with textContent only.
+- Accounts plan: step 1 accounts (done) → 2 rated online games (done; both players must report the same  result before ratings change) → 3 quick match (done) → 4 leaderboard + game history (done).
 - Planned next (user picked, in this order):
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).

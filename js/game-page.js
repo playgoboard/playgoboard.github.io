@@ -44,6 +44,7 @@
   let rematchFriend = false; // your friend asked for one
   let onlineMeta = {};       // from the creator: { ratedGameId, players: { [color]: { username, rating } }, note }
   let ratedReported = false; // this browser already sent the result of the rated game
+  let recordSaved = false;   // this game is already in your game history
 
   // Hints come from the strongest bot and are only valid for the position they were asked in.
   const HINT_LEVEL = 5;
@@ -307,6 +308,7 @@
     showClocks();
     startBotIfItsTurn();
     reportRatedResult();
+    saveGameRecord();
   }
 
   // ---- The computer's turn ----
@@ -421,6 +423,22 @@
       }
     }).catch((error) => {
       reportNote.textContent = `The rated result couldn't be saved: ${error.message}`;
+    });
+  }
+
+  // Finished online games go into the logged-in player's history (js/game-history.js).
+  function saveGameRecord() {
+    if (recordSaved || opponent !== "online" || game.phase !== "over" || !onlineMeta.gameKey || !window.GoHistory) return;
+    recordSaved = true;
+    window.GoHistory.save({
+      gameKey: onlineMeta.gameKey,
+      myColor: humanColor,
+      opponent: onlinePlayer(otherColor(humanColor)),
+      size: game.size,
+      moves: game.moves,
+      result: game.result,
+      ratedGameId: onlineMeta.ratedGameId,
+      quick: onlineMeta.quick,
     });
   }
 
@@ -712,6 +730,7 @@
       linkOpen = true;
       rematchMine = rematchFriend = false;
       const sameRatedGame = kind === "reconnect" && meta && meta.ratedGameId === onlineMeta.ratedGameId;
+      if (!(kind === "reconnect" && meta && meta.gameKey === onlineMeta.gameKey)) recordSaved = false;
       onlineMeta = meta || {};
       if (!sameRatedGame) {
         ratedReported = false;

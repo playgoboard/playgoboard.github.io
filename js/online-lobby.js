@@ -153,12 +153,16 @@
     // Names and ratings of both players, and a rated game in the database if one was asked for.
     async prepareMeta() {
       // casualReason says why a wanted rated game became casual; each side words it for itself.
-      const meta = { ratedGameId: null, players: {}, casualReason: null, errorText: "", quick: Boolean(this.options.quick) };
+      // gameKey: the same id on both sides, so each player's game history can save this game once.
+      const meta = {
+        ratedGameId: null, players: {}, casualReason: null, errorText: "", quick: Boolean(this.options.quick),
+        gameKey: randomCode() + randomCode() + randomCode(),
+      };
       const me = window.GoAccounts && window.GoAccounts.ready ? window.GoAccounts.current().profile : null;
       const guest = this.guestUserId && window.GoRated
         ? await window.GoRated.profile(this.guestUserId).catch(() => null) : null;
-      if (me) meta.players[this.hostColor] = { username: me.username, rating: me.rating };
-      if (guest) meta.players[this.guestColor] = { username: guest.username, rating: guest.rating };
+      if (me) meta.players[this.hostColor] = { id: me.id, username: me.username, rating: me.rating };
+      if (guest) meta.players[this.guestColor] = { id: guest.id, username: guest.username, rating: guest.rating };
       // Quick match guests without an account show the level they picked.
       if (!me && this.options.level) meta.players[this.hostColor] = { username: "Guest", level: this.options.level };
       if (!guest && this.guestLevel) meta.players[this.guestColor] = { username: "Guest", level: this.guestLevel };
