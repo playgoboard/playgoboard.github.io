@@ -18,9 +18,12 @@
 - `js/game-page.js`: draws the board (SVG), handles the buttons, the bot's turn and online moves.
   Exposes `window.GoPage` for the lobby.
 - `js/online-lobby.js`: online play via PeerJS (loaded from unpkg, peerjs@1.5.4, the user approved it).
-  Room code = 6 chars, peer id `goboard-v1-<code>`. Creator picks size/colors and sends {type:"start"}.
-  Messages: move, pass, resign, toggle-dead, finish, resume, busy. Invite link = `?join=CODE`.
-  No reconnect after a drop (start a new game). Undo/Hint disabled online.
+  Room code = 6 chars, peer id `goboard-v2-<code>` (bump the version when the message rules change).
+  HostSession keeps the code registered all game; GuestSession sends {hello, token} until it gets
+  {sync, size, yourColor, actions}. Ping every 3 s, 12 s of silence = dropped. Guest redials for up to
+  2 min; host re-sends the full action list (game-page `onlineActions`) and the guest rebuilds.
+  A hello with a different token gets {busy}. Game actions: move, pass, resign{loser}, toggle-dead,
+  finish, resume, all applied through applyOnlineAction. Undo/Hint disabled online.
 - Testing: Node and Python aren't installed. Use Java's `jwebserver.exe` (JDK 21 bin) on 127.0.0.1
   and the browser pane, but always ask me yes/no before starting it.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).

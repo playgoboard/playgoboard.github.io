@@ -36,6 +36,7 @@
   let botToken = 0;        // bumped to cancel a bot that is still thinking
   let link = null;         // the online connection, if any
   let linkOpen = false;
+  let onlineActions = [];  // everything that happened in this online game, in order (replayed after a reconnect)
 
   // Hints come from the strongest bot and are only valid for the position they were asked in.
   const HINT_LEVEL = 5;
@@ -142,7 +143,7 @@
     }
     if (botThinking) return `${BOT_LEVELS[botLevel - 1].name} is thinking`;
     if (hintThinking) return "Looking for a good move";
-    if (opponent === "online" && !linkOpen) return "Disconnected";
+    if (opponent === "online" && !linkOpen) return "Connection lost";
     if (opponent === "online") return isOpponentTurn() ? "Friend's move" : "Your move";
     if (opponent === "bot") return "Your move";
     return `${COLOR_NAME[game.turn]} to play`;
@@ -169,7 +170,8 @@
     undoButton.disabled = online || botThinking || !game.canUndo();
     hintButton.disabled = online || game.phase !== "play" || isOpponentTurn() || hintThinking;
     passButton.disabled = game.phase !== "play" || isOpponentTurn() || (online && !linkOpen);
-    resignButton.disabled = game.phase !== "play" || isBotTurn();
+    resignButton.disabled = game.phase !== "play" || isBotTurn() || (online && !linkOpen);
+    $("btn-finish").disabled = $("btn-resume").disabled = online && !linkOpen;
     undoButton.title = online ? "Undo is off in online games" : "";
 
     statusEl.classList.toggle("thinking", botThinking || hintThinking);
@@ -235,38 +237,42 @@
     linkOpen = false;
   }
 
-  // Your friend's actions arrive here. Both browsers run the same rules on the
-  // same moves, so the two boards stay identical.
-  function receiveFromFriend(message) {
-    const friendColor = otherColor(humanColor);
-    switch (message.type) {
-      case "move":
-        if (isOpponentTurn() && !game.play(message.x, message.y).ok) {
-          messageEl.textContent = "Your friend's move didn't match your board. Try starting a new game.";
-        } else {
-          messageEl.textContent = "";
-        }
-        break;
-      case "pass":
-        if (isOpponentTurn()) {
-          game.pass();
-          messageEl.textContent = game.phase === "play" ? "Your friend passed." : "";
-        }
-        break;
-      case "resign":
-        game.resign(friendColor);
-        break;
-      case "toggle-dead":
-        game.toggleDead(message.x, message.y);
-        break;
-      case "finish":
-        game.finishScoring();
-        break;
-      case "resume":
-        game.resumePlay();
-        messageEl.textContent = "Your friend wants to keep playing.";
-        break;
+  // Every change to an online game goes through here and is written down, so the
+  // creator can re-send the whole game after a reconnect. Both browsers run the
+  // same rules on the same actions, so the two boards stay identical.
+  function applyOnlineAction(action) {
+    let ok = true;
+    switch (action.type) {
+      case "move": ok = game.play(action.x, action.y).ok; break;
+      case "pass": game.pass(); break;
+      case "resume": game.resumePlay(); break;
+      case "toggle-dead": game.toggleDead(action.x, action.y); break;
+      case "finish": game.finishScoring(); break;
+      case "resign": game.resign(action.loser); break;
+      default: ok = false;
     }
+    if (ok) onlineActions.push(action);
+    return ok;
+  }
+
+  // Your own action in an online game: do it here, then tell your friend.
+  function doOnline(action) {
+    if (!linkOpen) return false;
+    const ok = applyOnlineAction(action);
+    if (ok) sendToFriend(action);
+    return ok;
+  }
+
+  // Your friend's actions arrive here.
+  function receiveFromFriend(message) {
+    const yourTurnOnly = message.type === "move" || message.type === "pass";
+    if (yourTurnOnly && !isOpponentTurn()) return;
+    if (message.type === "resign" && message.loser !== otherColor(humanColor)) return;
+    if (!applyOnlineAction(message)) return;
+
+    if (message.type === "pass" && game.phase === "play") messageEl.textContent = "Your friend passed.";
+    else if (message.type === "resume") messageEl.textContent = "Your friend wants to keep playing.";
+    else if (message.type === "move") messageEl.textContent = "";
     refresh();
   }
 
@@ -275,6 +281,7 @@
   function beginGame(size, newOpponent, myColor) {
     cancelBot();
     leaveOnlineGame();
+    onlineActions = [];
     game = new GoGame(size);
     gameNumber++;
     opponent = newOpponent;
@@ -321,14 +328,15 @@
     if (!spot) return;
     const x = Number(spot.dataset.x), y = Number(spot.dataset.y);
 
+    const online = opponent === "online";
     if (game.phase === "scoring") {
-      game.toggleDead(x, y);
-      sendToFriend({ type: "toggle-dead", x, y });
+      if (online) doOnline({ type: "toggle-dead", x, y });
+      else game.toggleDead(x, y);
     } else if (game.phase === "play" && !isOpponentTurn()) {
-      if (opponent === "online" && !linkOpen) return;
-      const result = game.play(x, y);
-      messageEl.textContent = result.ok ? "" : ILLEGAL_MOVE_TEXT[result.reason] || "";
-      if (result.ok) sendToFriend({ type: "move", x, y });
+      const check = game.checkMove(x, y);
+      messageEl.textContent = check.ok ? "" : ILLEGAL_MOVE_TEXT[check.reason] || "";
+      if (check.ok && online) doOnline({ type: "move", x, y });
+      else if (check.ok) game.play(x, y);
     }
     refresh();
   });
@@ -389,8 +397,8 @@
 
   passButton.addEventListener("click", () => {
     const who = playerName(game.turn);
-    game.pass();
-    sendToFriend({ type: "pass" });
+    if (opponent === "online") doOnline({ type: "pass" });
+    else game.pass();
     messageEl.textContent = game.phase === "play" ? `${who} passed.` : "";
     refresh();
   });
@@ -408,24 +416,21 @@
       ? `${COLOR_NAME[game.turn]}: are you sure you want to resign?`
       : "Are you sure you want to resign?";
     if (!confirm(question)) return;
-    if (opponent === "friend") {
-      game.resign();
-    } else {
-      game.resign(humanColor);
-      sendToFriend({ type: "resign" });
-    }
+    if (opponent === "online") doOnline({ type: "resign", loser: humanColor });
+    else if (opponent === "bot") game.resign(humanColor);
+    else game.resign();
     refresh();
   });
 
   $("btn-finish").addEventListener("click", () => {
-    game.finishScoring();
-    sendToFriend({ type: "finish" });
+    if (opponent === "online") doOnline({ type: "finish" });
+    else game.finishScoring();
     refresh();
   });
 
   $("btn-resume").addEventListener("click", () => {
-    game.resumePlay();
-    sendToFriend({ type: "resume" });
+    if (opponent === "online") doOnline({ type: "resume" });
+    else game.resumePlay();
     messageEl.textContent = "Back to playing.";
     refresh();
   });
@@ -434,19 +439,23 @@
   window.GoPage = {
     getSetup: () => ({ size: setup.size, color: pickedColor() }),
     setMode,
-    startOnlineGame(size, myColor, newLink) {
-      beginGame(size, "online", myColor);
-      link = newLink;
+    // Starts an online game, or rebuilds it from the creator's list after a reconnect.
+    startOnlineGame(size, myColor, actions, session) {
+      const reconnect = link === session;
+      if (!reconnect) beginGame(size, "online", myColor);
+      else { cancelBot(); onlineActions = []; game = new GoGame(size); gameNumber++; }
+      link = session;
       linkOpen = true;
-      messageEl.textContent = `Connected! You are ${COLOR_NAME[myColor]}. Black moves first.`;
+      for (const action of actions) applyOnlineAction(action);
+      messageEl.textContent = reconnect ? "Reconnected!" : `Connected! You are ${COLOR_NAME[myColor]}. Black moves first.`;
       refresh();
     },
+    onlineActions: () => onlineActions.slice(),
     receiveFromFriend,
-    friendDisconnected() {
-      linkOpen = false;
-      if (opponent === "online" && game.phase !== "over") {
-        messageEl.textContent = "Your friend left or lost their connection. Start a new game to play again.";
-      }
+    setConnection(open, note) {
+      if (opponent !== "online") return;
+      linkOpen = open;
+      messageEl.textContent = note;
       refresh();
     },
     leaveOnlineGame,
