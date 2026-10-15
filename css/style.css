@@ -171,6 +171,10 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 .bot-blurb { display: block; font-weight: 400; font-size: 12px; color: var(--text-dim); }
 
 .label.spaced { margin-top: 14px; }
+.rated-hint { margin: -4px 0 10px; font-size: 13px; color: var(--text-dim); }
+.rated-hint:empty { display: none; }
+.rated-note { margin: -6px 0 12px; color: var(--accent); font-weight: 600; }
+.rated-note:empty { display: none; }
 .join-row { display: flex; gap: 8px; }
 .join-row input {
   flex: 1; min-width: 0; padding: 10px; border-radius: 6px; border: 2px solid var(--panel-light);

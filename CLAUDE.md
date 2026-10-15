@@ -58,6 +58,11 @@
   the USER runs it in the Supabase SQL Editor (I can't). profiles table is read-only to clients;
   ratings must only change through security-definer functions. Claude must not create real
   accounts itself (sends email/password to an outside host); the user does sign-up tests.
+- Rated games: `supabase/02-rated-games.sql` (start_rated_game → join_rated_game → report_result,
+  apply_rating is internal, finalize_my_stale_games after 10 min). `js/rated-games.js` = GoRated.
+  Guest hello carries its user id; HostSession.prepareMeta looks up names/ratings and creates the
+  rated game; meta {ratedGameId, players, casualReason} rides along in sync/rematch.
+- Next (user asked): simple friends list with friend requests (accept/decline, see ratings).
 - Accounts plan: step 1 accounts (done) → 2 rated online games (both players must report the same
   result before ratings change) → 3 quick match with strangers → 4 leaderboard + game history.
 - Planned next (user picked, in this order):

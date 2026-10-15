@@ -19,7 +19,7 @@
   <meta property="og:image:alt" content="A Go board with black and white stones next to the GoBoard name">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#302e2b">
-  <link rel="stylesheet" href="css/style.css?v=15">
+  <link rel="stylesheet" href="css/style.css?v=17">
 </head>
 <body>
   <header class="top-bar">
@@ -99,6 +99,12 @@
         <button id="btn-new" class="btn btn-primary">Start new game</button>
 
         <div id="online-options" hidden>
+          <p class="label">Game type</p>
+          <div class="choice-row" id="rated-picker">
+            <button data-rated="no" class="selected">Casual</button>
+            <button data-rated="yes">Rated</button>
+          </div>
+          <p class="rated-hint" id="rated-hint"></p>
           <button id="btn-create" class="btn btn-primary">Create online game</button>
           <p class="label spaced">Or join a friend's game</p>
           <div class="join-row">
@@ -120,6 +126,7 @@
       <div class="panel-block controls-block">
         <p id="status" class="status"></p>
         <p id="message" class="message"></p>
+        <p id="rated-note" class="message rated-note"></p>
         <div id="play-buttons" class="button-row">
           <button id="btn-hint" class="btn btn-hint" title="Ask Dragon (Level 5) for a good move">Hint</button>
           <button id="btn-pass" class="btn" title="Skip your turn">Pass</button>
@@ -169,18 +176,19 @@
 
   <!-- PeerJS connects two browsers for online games (free public service). -->
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
-  <script src="js/go-rules.js?v=15"></script>
-  <script src="js/go-bot.js?v=15"></script>
-  <script src="js/sounds.js?v=15"></script>
+  <script src="js/go-rules.js?v=17"></script>
+  <script src="js/go-bot.js?v=17"></script>
+  <script src="js/sounds.js?v=17"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.115.0/dist/umd/supabase.js"></script>
-  <script src="js/supabase-config.js?v=15"></script>
-  <script src="js/game-clock.js?v=15"></script>
-  <script src="js/board-view.js?v=15"></script>
-  <script src="js/chat-filter.js?v=15"></script>
-  <script src="js/accounts.js?v=15"></script>
-  <script src="js/online-chat.js?v=15"></script>
-  <script src="js/move-list.js?v=15"></script>
-  <script src="js/game-page.js?v=15"></script>
-  <script src="js/online-lobby.js?v=15"></script>
+  <script src="js/supabase-config.js?v=17"></script>
+  <script src="js/game-clock.js?v=17"></script>
+  <script src="js/board-view.js?v=17"></script>
+  <script src="js/chat-filter.js?v=17"></script>
+  <script src="js/accounts.js?v=17"></script>
+  <script src="js/rated-games.js?v=17"></script>
+  <script src="js/online-chat.js?v=17"></script>
+  <script src="js/move-list.js?v=17"></script>
+  <script src="js/game-page.js?v=17"></script>
+  <script src="js/online-lobby.js?v=17"></script>
 </body>
 </html>

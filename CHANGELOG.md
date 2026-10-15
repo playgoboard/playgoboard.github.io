@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.13.0
+- Rated online games: choose Casual or Rated when creating an online game. Rated needs both players logged in. Player cards show usernames and ratings. Ratings (Elo, K = 32) change only when both browsers report the same winner; a lone report counts after 10 minutes. The database checks everything, so ratings can't be faked from the page.
+
 ## 0.12.0
 - Accounts (Supabase): sign up with username, email and password, log in, forgotten password, profile with rating and record, log out, delete account. Everyone starts at 1200. Profiles are read-only for the website; ratings can't be edited directly.
 - Privacy page explaining what is stored.

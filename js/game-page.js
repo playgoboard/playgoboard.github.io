@@ -25,7 +25,7 @@
   const hintButton = $("btn-hint");
 
   // Choices in the "New game" box (only used when a game starts).
-  const setup = { mode: "friend", size: 19, botLevel: 1, color: "black", clockMinutes: 0, bonusSeconds: 0 };
+  const setup = { mode: "friend", size: 19, botLevel: 1, color: "black", clockMinutes: 0, bonusSeconds: 0, rated: false };
 
   // The game being played right now.
   let game = new GoGame(setup.size);
@@ -42,6 +42,8 @@
   let viewCount = null;      // replay: show the board after this many moves (null = the live game)
   let rematchMine = false;   // you asked for a rematch
   let rematchFriend = false; // your friend asked for one
+  let onlineMeta = {};       // from the creator: { ratedGameId, players: { [color]: { username, rating } }, note }
+  let ratedReported = false; // this browser already sent the result of the rated game
 
   // Hints come from the strongest bot and are only valid for the position they were asked in.
   const HINT_LEVEL = 5;
@@ -55,10 +57,20 @@
   const isOpponentTurn = () => opponent !== "friend" && game.phase === "play" && game.turn !== humanColor;
   const isBotTurn = () => opponent === "bot" && isOpponentTurn();
 
+  // Logged-in online players have a username and rating (from the creator's lookup).
+  const onlinePlayer = (color) => (opponent === "online" && onlineMeta.players ? onlineMeta.players[color] : null);
+
   function playerName(color) {
     if (opponent === "friend") return COLOR_NAME[color];
     if (color === humanColor) return "You";
-    return opponent === "bot" ? botName() : "Friend";
+    if (opponent === "bot") return botName();
+    return onlinePlayer(color) ? onlinePlayer(color).username : "Friend";
+  }
+
+  // The name on the player card: online it shows usernames with ratings when known.
+  function cardName(color) {
+    const player = onlinePlayer(color);
+    return player ? `${player.username} (${player.rating})` : playerName(color);
   }
 
   // Resignation and running out of time end the game without counting.
@@ -114,8 +126,8 @@
 
   function updatePanel() {
     const online = opponent === "online";
-    $("name-black").textContent = playerName(BLACK);
-    $("name-white").textContent = playerName(WHITE);
+    $("name-black").textContent = cardName(BLACK);
+    $("name-white").textContent = cardName(WHITE);
     $("info-black").textContent = `Captured: ${game.captures[BLACK]}`;
     $("info-white").textContent = `Captured: ${game.captures[WHITE]} · Komi 7.5`;
 
@@ -289,6 +301,7 @@
     showMoveList();
     showClocks();
     startBotIfItsTurn();
+    reportRatedResult();
   }
 
   // ---- The computer's turn ----
@@ -358,6 +371,54 @@
     return ok;
   }
 
+  // ---- Rated games (the database checks everything; see supabase/02-rated-games.sql) ----
+
+  // Why a rated game became casual, worded for whoever is reading it.
+  function casualNote(meta, iAmCreator) {
+    const notLoggedIn = (creatorIsMissing) => (creatorIsMissing === iAmCreator
+      ? "You're not logged in, so this game is casual (not rated). "
+      : "Your friend isn't logged in, so this game is casual (not rated). ");
+    switch (meta.casualReason) {
+      case "host-logged-out": return notLoggedIn(true);
+      case "guest-logged-out": return notLoggedIn(false);
+      case "same-account": return "Both players use the same account, so this game is casual. ";
+      case "error": return `This game is casual (not rated): ${meta.errorText} `;
+      default: return "";
+    }
+  }
+
+  function joinRatedGame(gameId, myColor) {
+    window.GoRated.join(gameId, myColor).catch((error) => {
+      if (onlineMeta.ratedGameId !== gameId) return;
+      onlineMeta.ratedGameId = null;
+      messageEl.textContent = `This game couldn't be rated, so it's casual: ${error.message}`;
+    });
+  }
+
+  // When a rated game ends, report the winner once and show how the rating moved.
+  function reportRatedResult() {
+    const gameId = onlineMeta.ratedGameId;
+    if (!gameId || ratedReported || opponent !== "online" || game.phase !== "over") return;
+    ratedReported = true;
+    const myColorName = window.GoRated.colorName(humanColor);
+    const reportNote = $("rated-note");
+    reportNote.textContent = "Saving the rated result…";
+    window.GoRated.report(gameId, game.result.winner).then((row) => {
+      if (onlineMeta.ratedGameId !== gameId) return;
+      if (row.winner === "disputed") {
+        reportNote.textContent = "The two browsers reported different results, so this game didn't change ratings.";
+      } else if (row.finished_at) {
+        const before = row[`${myColorName}_rating_before`], change = row[`${myColorName}_change`];
+        reportNote.textContent = `Your rating: ${before} → ${before + change} (${change >= 0 ? "+" : ""}${change}).`;
+        window.GoAccounts.refreshProfile();
+      } else {
+        reportNote.textContent = "Result saved. Ratings update once your friend's browser confirms it (or after 10 minutes).";
+      }
+    }).catch((error) => {
+      reportNote.textContent = `The rated result couldn't be saved: ${error.message}`;
+    });
+  }
+
   // A rematch starts once both players asked. The creator's browser picks random
   // colors and tells the joiner (see HostSession.startRematch in online-lobby.js).
   function maybeStartRematch() {
@@ -395,6 +456,9 @@
     cancelBot();
     leaveOnlineGame();
     onlineActions = [];
+    onlineMeta = {};
+    ratedReported = false;
+    $("rated-note").textContent = "";
     clock = new GameClock(clockSettings.minutes, clockSettings.bonus);
     viewCount = null;
     game = new GoGame(size);
@@ -511,6 +575,37 @@
     pickOne(event.currentTarget, button);
   });
 
+  $("rated-picker").addEventListener("click", (event) => {
+    const button = event.target.closest("button");
+    if (!button) return;
+    setup.rated = button.dataset.rated === "yes";
+    pickOne(event.currentTarget, button);
+    updateRatedHint();
+  });
+
+  // Rated games need both players logged in; say so next to the choice.
+  function updateRatedHint() {
+    const accounts = window.GoAccounts;
+    const loggedIn = accounts && accounts.ready && accounts.current().profile;
+    $("rated-picker").hidden = !(accounts && accounts.ready);
+    $("rated-hint").textContent = !setup.rated ? ""
+      : loggedIn ? "Your friend must be logged in too, or the game will be casual."
+      : "Log in (top right) to play rated games.";
+  }
+
+  let staleChecked = false;
+  if (window.GoAccounts) {
+    window.GoAccounts.onChange(({ profile }) => {
+      updateRatedHint();
+      // Finish rated games where your friend never confirmed the result (after 10 minutes).
+      if (profile && !staleChecked && window.GoRated) {
+        staleChecked = true;
+        window.GoRated.finalizeStale();
+      }
+    });
+  }
+  updateRatedHint();
+
   $("btn-new").addEventListener("click", startLocalGame);
 
   hintButton.addEventListener("click", () => {
@@ -588,11 +683,12 @@
 
   // What online-lobby.js needs from this page.
   window.GoPage = {
-    getSetup: () => ({ size: setup.size, color: pickedColor(), clock: clockSetup() }),
+    getSetup: () => ({ size: setup.size, color: pickedColor(), clock: clockSetup(), rated: setup.rated }),
     setMode,
     // kind: "new" (first connection), "reconnect" (rebuild from the creator's list) or "rematch".
     // clockSettings come from the creator; times (after a reconnect) are both players' time left.
-    startOnlineGame(size, myColor, actions, session, kind, clockSettings, times) {
+    // meta: names, ratings and the rated game id (see HostSession.prepareMeta).
+    startOnlineGame(size, myColor, actions, session, kind, clockSettings, times, meta) {
       const settings = clockSettings || { minutes: 0, bonus: 0 };
       if (kind === "new") {
         beginGame(size, "online", myColor, settings);
@@ -609,11 +705,20 @@
       link = session;
       linkOpen = true;
       rematchMine = rematchFriend = false;
+      const sameRatedGame = kind === "reconnect" && meta && meta.ratedGameId === onlineMeta.ratedGameId;
+      onlineMeta = meta || {};
+      if (!sameRatedGame) {
+        ratedReported = false;
+        $("rated-note").textContent = "";
+      }
       for (const action of actions) applyOnlineAction(action);
       if (times) for (const color of [BLACK, WHITE]) clock.set(color, times[color]);
       const colorNote = `You are ${COLOR_NAME[myColor]}. Black moves first.`;
+      const typeNote = onlineMeta.ratedGameId ? "Rated game! " : casualNote(onlineMeta, session.isHost);
       messageEl.textContent = kind === "reconnect" ? "Reconnected!"
-        : kind === "rematch" ? `Rematch! ${colorNote}` : `Connected! ${colorNote}`;
+        : kind === "rematch" ? `Rematch! ${typeNote}${colorNote}` : `Connected! ${typeNote}${colorNote}`;
+      // The joiner confirms the rated game in the database (the creator already created it).
+      if (onlineMeta.ratedGameId && !session.isHost && kind !== "reconnect") joinRatedGame(onlineMeta.ratedGameId, myColor);
       refresh();
     },
     onlineActions: () => onlineActions.slice(),

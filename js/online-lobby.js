@@ -129,27 +129,58 @@
   // friend can always find it again after a drop. The creator's board is the
   // "official" one that gets re-sent after a reconnect.
   class HostSession extends Session {
-    constructor(size, hostColor, clockSettings, ui) {
+    constructor(size, hostColor, clockSettings, ratedWanted, ui) {
       super();
       this.size = size;
       this.clockSettings = clockSettings; // the creator's clock choice counts for both players
+      this.ratedWanted = ratedWanted;
       this.hostColor = hostColor;
       this.guestColor = hostColor === window.Go.BLACK ? window.Go.WHITE : window.Go.BLACK;
       this.guestToken = null;
+      this.guestUserId = null;
+      this.meta = null;       // names, ratings and the rated game id, sent to the joiner
       this.started = false;
+      this.preparing = false;
       this.code = null;
       this.isHost = true;
       this.ui = ui;
       this.register(0);
     }
 
+    // Names and ratings of both players, and a rated game in the database if one was asked for.
+    async prepareMeta() {
+      // casualReason says why a wanted rated game became casual; each side words it for itself.
+      const meta = { ratedGameId: null, players: {}, casualReason: null, errorText: "" };
+      const me = window.GoAccounts && window.GoAccounts.ready ? window.GoAccounts.current().profile : null;
+      const guest = this.guestUserId && window.GoRated
+        ? await window.GoRated.profile(this.guestUserId).catch(() => null) : null;
+      if (me) meta.players[this.hostColor] = { username: me.username, rating: me.rating };
+      if (guest) meta.players[this.guestColor] = { username: guest.username, rating: guest.rating };
+      if (this.ratedWanted) {
+        if (!me) meta.casualReason = "host-logged-out";
+        else if (!guest) meta.casualReason = "guest-logged-out";
+        else if (guest.id === me.id) meta.casualReason = "same-account";
+        else {
+          try { meta.ratedGameId = await window.GoRated.start(guest.id, this.hostColor, this.size); }
+          catch (error) { meta.casualReason = "error"; meta.errorText = error.message; }
+        }
+      }
+      return meta;
+    }
+
     // Both players asked for a rematch: same board size, colors picked at random.
-    startRematch() {
+    async startRematch() {
+      if (this.rematching) return;
+      this.rematching = true;
       const { BLACK, WHITE } = window.Go;
       this.hostColor = Math.random() < 0.5 ? BLACK : WHITE;
       this.guestColor = this.hostColor === BLACK ? WHITE : BLACK;
-      window.GoPage.startOnlineGame(this.size, this.hostColor, [], this, "rematch", this.clockSettings);
-      this.send({ type: "rematch", size: this.size, yourColor: this.guestColor, clock: this.clockSettings });
+      if (window.GoAccounts && window.GoAccounts.ready) await window.GoAccounts.refreshProfile(); // fresh rating
+      this.meta = await this.prepareMeta();
+      this.rematching = false;
+      if (this.closed) return;
+      window.GoPage.startOnlineGame(this.size, this.hostColor, [], this, "rematch", this.clockSettings, null, this.meta);
+      this.send({ type: "rematch", size: this.size, yourColor: this.guestColor, clock: this.clockSettings, meta: this.meta });
     }
 
     register(attempt) {
@@ -190,20 +221,33 @@
         this.guestToken = msg.token;
         if (conn !== this.conn) this.useConnection(conn);
         this.lastHeard = Date.now();
-        if (!this.started) {
+        if (this.started) return this.answerHello();
+        // First hello: look up names (and start a rated game) before the game begins.
+        // The joiner keeps saying hello, so it will get its answer once this is ready.
+        if (this.preparing) return;
+        this.preparing = true;
+        this.guestUserId = typeof msg.user === "string" ? msg.user : null;
+        this.prepareMeta().then((meta) => {
+          this.preparing = false;
+          if (this.closed) return;
+          this.meta = meta;
           this.started = true;
-          this.ui.onStart(this.size, this.hostColor, this);
-        }
-        this.send({
-          type: "sync", size: this.size, yourColor: this.guestColor, actions: window.GoPage.onlineActions(),
-          clock: this.clockSettings, times: window.GoPage.clockTimes(),
+          this.ui.onStart(this.size, this.hostColor, meta);
+          this.answerHello();
         });
-        if (!this.connected) {
-          const cameBack = this.everConnected;
-          this.connected = this.everConnected = true;
-          if (cameBack) window.GoPage.setConnection(true, "Your friend is back!");
-        }
       });
+    }
+
+    answerHello() {
+      this.send({
+        type: "sync", size: this.size, yourColor: this.guestColor, actions: window.GoPage.onlineActions(),
+        clock: this.clockSettings, times: window.GoPage.clockTimes(), meta: this.meta,
+      });
+      if (!this.connected) {
+        const cameBack = this.everConnected;
+        this.connected = this.everConnected = true;
+        if (cameBack) window.GoPage.setConnection(true, "Your friend is back!");
+      }
     }
 
     onMessage(msg) {
@@ -248,7 +292,9 @@
     }
 
     onOpen() {
-      this.send({ type: "hello", token: this.token });
+      // If logged in, say who we are so the game can show names and be rated.
+      const profile = window.GoAccounts && window.GoAccounts.ready ? window.GoAccounts.current().profile : null;
+      this.send({ type: "hello", token: this.token, user: profile ? profile.id : null });
     }
 
     onTick() {
@@ -274,7 +320,7 @@
         this.connected = this.everConnected = true;
         this.ui.onSync(msg, kind);
       } else if (msg.type === "rematch") {
-        window.GoPage.startOnlineGame(msg.size, msg.yourColor, [], this, "rematch", msg.clock);
+        window.GoPage.startOnlineGame(msg.size, msg.yourColor, [], this, "rematch", msg.clock, null, msg.meta);
       } else if (msg.type === "busy") {
         this.ui.onFail("busy");
       } else {
@@ -331,15 +377,15 @@
     if (peerJsMissing()) return;
     window.GoPage.leaveOnlineGame();
     stopCurrent();
-    const { size, color, clock } = window.GoPage.getSetup();
+    const { size, color, clock, rated } = window.GoPage.getSetup();
     showStatus("Creating your game…");
-    const session = new HostSession(size, color, clock, {
+    const session = new HostSession(size, color, clock, rated, {
       onCode: (code) => { if (session === current) { showInvite(code); showStatus(""); } },
-      onStart: (gameSize, myColor) => {
+      onStart: (gameSize, myColor, meta) => {
         if (session !== current) return;
         hideInvite();
         showStatus("");
-        window.GoPage.startOnlineGame(gameSize, myColor, [], session, "new", clock);
+        window.GoPage.startOnlineGame(gameSize, myColor, [], session, "new", clock, null, meta);
       },
       onFail: (type) => failed(session, type),
     });
@@ -360,7 +406,7 @@
       onSync: (msg, kind) => {
         if (session !== current) return;
         showStatus("");
-        window.GoPage.startOnlineGame(msg.size, msg.yourColor, msg.actions, session, kind, msg.clock, kind === "reconnect" ? msg.times : null);
+        window.GoPage.startOnlineGame(msg.size, msg.yourColor, msg.actions, session, kind, msg.clock, kind === "reconnect" ? msg.times : null, msg.meta);
       },
       onFail: (type) => failed(session, type),
     });
