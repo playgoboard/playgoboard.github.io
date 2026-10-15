@@ -17,7 +17,8 @@
   Has its own fast board copy (FastBoard) for speed. Bot names and descriptions are in BOT_LEVELS.
 - `js/game-page.js`: draws the board (SVG), handles the buttons, the bot's turn and online moves.
   Exposes `window.GoPage` for the lobby.
-- `js/online-lobby.js`: online play via PeerJS (loaded from unpkg, peerjs@1.5.4, the user approved it).
+- `js/online-lobby.js`: online play via PeerJS (peerjs@1.5.4, stored in js/vendor; PEER_OPTIONS adds
+  China-reachable STUN servers next to Google's).
   Room code = 6 chars, peer id `goboard-v2-<code>` (bump the version when the message rules change).
   HostSession keeps the code registered all game; GuestSession sends {hello, token} until it gets
   {sync, size, yourColor, actions}. Ping every 3 s, 12 s of silence = dropped. Guest redials for up to
@@ -53,7 +54,7 @@
   localStorage "goboard-puzzles-solved". index.html?mode=bot|online|friend opens that mode.
 - Accounts: Supabase project `iosvimeihfhpxsztqkkv` (free tier; pauses after ~1 week idle, the user
   restores it in the dashboard). URL + publishable key in `js/supabase-config.js` (public by design;
-  NEVER the secret/service_role key). supabase-js 2.115.0 from jsDelivr. `js/accounts.js` adds the
+  NEVER the secret/service_role key). supabase-js 2.115.0 stored in js/vendor (no CDN, for China). `js/accounts.js` adds the
   top-bar button + dialog and exposes window.GoAccounts. Database SQL lives in `supabase/NN-*.sql`;
   the USER runs it in the Supabase SQL Editor (I can't). profiles table is read-only to clients;
   ratings must only change through security-definer functions. Claude must not create real

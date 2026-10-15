@@ -17,6 +17,20 @@
   const FIRST_JOIN_LIMIT_MS = 25000; // give up on a first join after this long
   const RECONNECT_LIMIT_MS = 120000; // give up reconnecting after 2 minutes
 
+  // Servers that help two browsers find a direct path to each other. Google's is PeerJS's default but
+  // is blocked in mainland China, so servers from Chinese companies (Xiaomi, Tencent) are added too.
+  // The last entry is PeerJS's free relay, used when no direct path works.
+  const PEER_OPTIONS = {
+    config: {
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: ["stun:stun.miwifi.com:3478", "stun:stun.qq.com:3478"] },
+        { urls: ["turn:eu-0.turn.peerjs.com:3478", "turn:us-0.turn.peerjs.com:3478"], username: "peerjs", credential: "peerjsp" },
+      ],
+      sdpSemantics: "unified-plan",
+    },
+  };
+
   const { t } = window.GoI18n;
   const ERROR_TEXT = {
     "peer-unavailable": t("No game found with that code. Check the code and ask your friend if their game is still waiting."),
@@ -196,7 +210,7 @@
 
     register(attempt) {
       const code = randomCode();
-      const peer = (this.peer = new Peer(PEER_ID_PREFIX + code));
+      const peer = (this.peer = new Peer(PEER_ID_PREFIX + code, PEER_OPTIONS));
       peer.on("open", () => {
         if (this.code) return; // just logged back in after a blip
         this.code = code;
@@ -286,7 +300,7 @@
     }
 
     makePeer() {
-      const peer = (this.peer = new Peer());
+      const peer = (this.peer = new Peer(PEER_OPTIONS));
       peer.on("open", () => this.dial());
       peer.on("disconnected", () => this.keepPeerOnline());
       peer.on("error", (err) => {

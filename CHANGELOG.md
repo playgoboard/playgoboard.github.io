@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.20.0
+- Better chances in mainland China: the PeerJS and Supabase libraries are now stored in the site (js/vendor) instead of loading from unpkg and jsDelivr, and online games also use connection servers from Chinese companies (Xiaomi, Tencent) next to Google's.
+
 ## 0.19.0
 - Language menu in the top bar: English, 简体中文 (Simplified Chinese) and 繁體中文 (Traditional Chinese). The whole site is translated, including bots, puzzles, accounts, friends, quick match, the leaderboard and the privacy page. The choice is remembered; Chinese browsers start in Chinese.
 
