@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.11.0
+- Puzzles page with 20 beginner puzzles (captures, chasing, correct-side atari, double atari, ladders, nets). A small solver checks your moves, so any truly correct answer counts, and plays White's defence. Progress is remembered in your browser.
+- The board drawing code now lives in its own file (board-view.js), shared by the game and puzzle pages.
+
 ## 0.10.0
 - Move list and replay: every move is listed (Black/White pairs, passes shown). Step through the game with « ‹ › », the ← → keys, or by clicking a move. The board is read-only while looking back.
 

@@ -45,6 +45,12 @@
 - Move list/replay: GoGame.moves + GoGame.boardAfter(count) (uses history snapshots). `js/move-list.js`
   renders the list; game-page `viewCount` (null = live) drives drawBoard; board clicks are blocked
   while viewing; ← → keys step (ignored while typing).
+- `js/board-view.js`: renderBoard(view) draws the SVG board for both pages.
+- Puzzles: `puzzles.html` + `js/puzzles-page.js`; data in `js/puzzles-data.js` (9x9 diagrams, targets,
+  moves). `js/puzzle-solver.js` reads capture fights (liberties, net moves, counter-captures) using
+  GoBot.FastBoard: moveWins() judges the player's move, whiteReply() picks the toughest defence.
+  When adding puzzles, check with the solver that exactly one first move wins. Solved list is in
+  localStorage "goboard-puzzles-solved". index.html?mode=bot|online|friend opens that mode.
 - Planned next (user picked, in this order):
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).

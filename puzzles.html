@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GoBoard — Go Puzzles</title>
+  <meta name="description" content="Free Go puzzles for beginners: captures, ladders, nets and double ataris. Play them in your browser.">
+  <link rel="canonical" href="https://playgoboard.netlify.app/puzzles.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GoBoard">
+  <meta property="og:title" content="GoBoard — Go Puzzles">
+  <meta property="og:description" content="Free Go puzzles for beginners: captures, ladders, nets and double ataris.">
+  <meta property="og:url" content="https://playgoboard.netlify.app/puzzles.html">
+  <meta property="og:image" content="https://playgoboard.netlify.app/preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#302e2b">
+  <link rel="stylesheet" href="css/style.css?v=14">
+</head>
+<body>
+  <header class="top-bar">
+    <div class="logo"><span class="logo-stone"></span>GoBoard</div>
+    <nav id="nav">
+      <a class="nav-item" href="index.html?mode=friend">Play a friend</a>
+      <a class="nav-item" href="index.html?mode=bot">Bots</a>
+      <a class="nav-item" href="index.html?mode=online">Online</a>
+      <a class="nav-item active" href="puzzles.html">Puzzles</a>
+    </nav>
+    <button id="btn-sound" class="sound-toggle" type="button"></button>
+  </header>
+
+  <main class="game-layout">
+    <section class="board-column">
+      <div class="player-card puzzle-title-card">
+        <span class="stone-icon black"></span>
+        <span class="player-name" id="puzzle-title"></span>
+        <span class="player-info" id="puzzle-count"></span>
+      </div>
+      <div id="board" class="board"></div>
+    </section>
+
+    <aside class="side-panel">
+      <div class="panel-block controls-block">
+        <p id="puzzle-prompt" class="puzzle-prompt"></p>
+        <p id="status" class="status"></p>
+        <p id="message" class="message"></p>
+        <div class="button-row">
+          <button id="btn-prev-puzzle" class="btn" title="Previous puzzle">‹ Back</button>
+          <button id="btn-reset" class="btn">Try again</button>
+          <button id="btn-next-puzzle" class="btn btn-primary">Next ›</button>
+        </div>
+      </div>
+
+      <div class="panel-block">
+        <h2>All puzzles</h2>
+        <div class="puzzle-grid" id="puzzle-grid"></div>
+        <p class="message puzzle-progress" id="puzzle-progress"></p>
+      </div>
+
+      <div class="panel-block small">
+        <h2>How puzzles work</h2>
+        <p>You play Black. Click a point to play. If your move works, White answers and you keep going
+          until you capture. A wrong move is taken back so you can try again. The red squares mark the
+          stones to capture.</p>
+      </div>
+    </aside>
+  </main>
+
+  <script src="js/go-rules.js?v=14"></script>
+  <script src="js/go-bot.js?v=14"></script>
+  <script src="js/sounds.js?v=14"></script>
+  <script src="js/board-view.js?v=14"></script>
+  <script src="js/puzzle-solver.js?v=14"></script>
+  <script src="js/puzzles-data.js?v=14"></script>
+  <script src="js/puzzles-page.js?v=14"></script>
+</body>
+</html>

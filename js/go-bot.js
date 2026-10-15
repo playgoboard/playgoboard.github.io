@@ -438,5 +438,5 @@
     });
   }
 
-  window.GoBot = { BOT_LEVELS, chooseBotMove };
+  window.GoBot = { BOT_LEVELS, chooseBotMove, FastBoard };
 })();

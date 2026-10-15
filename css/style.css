@@ -41,6 +41,8 @@ nav { display: flex; gap: 18px; }
   background: none; border: none; padding: 0; font-family: inherit; cursor: pointer;
 }
 .nav-item.active { color: var(--text); }
+a.nav-item { text-decoration: none; }
+a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 .nav-item.soon { opacity: 0.5; cursor: default; }
 .sound-toggle {
   margin-left: auto; padding: 6px 12px; border: none; border-radius: 6px;
@@ -177,6 +179,16 @@ nav { display: flex; gap: 18px; }
 .replay-row .btn { font-size: 20px; padding: 6px; }
 .view-note { margin: 8px 0 0; }
 .view-note:empty { display: none; }
+
+.puzzle-prompt { margin: 0 0 12px; font-size: 16px; line-height: 1.45; }
+.puzzle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 6px; }
+.puzzle-chip {
+  height: 40px; border: none; border-radius: 6px; cursor: pointer; font-family: inherit;
+  background: var(--panel-light); color: var(--text); font-weight: 700; font-size: 15px;
+}
+.puzzle-chip.solved { background: var(--accent-dark); color: #fff; }
+.puzzle-chip.current { outline: 2px solid var(--accent); }
+.puzzle-progress { margin: 10px 0 0; }
 
 /* Phones and small windows: the panel drops under the board, so put the game
    buttons first instead of below the whole "New game" box. */
