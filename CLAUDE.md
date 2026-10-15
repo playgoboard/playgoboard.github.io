@@ -105,6 +105,8 @@
    `backup-before-email-change` branch. Ask me yes/no before every push.
    Also on Netlify at https://playgoboard.netlify.app/ (visitor protection turned off), which deploys from a copy repo `reinj-bot/goboard-8506c` (made by Netlify's
    deploy link). `git push` goes to BOTH repos (two push URLs on origin), so both sites update.
+   Netlify free plan has a monthly deploy credit limit (it stopped updating on 2026-10-15). The user wants
+   fewer uploads: batch several features per push. GitHub Pages has no limit.
 4. Accounts, ratings, game history, puzzles
 
 ## Features so far
