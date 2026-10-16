@@ -104,7 +104,8 @@
 ## Roadmap
 1. Local 2-player board — done
 2. Play vs computer — done (5 levels; weak on 19×19)
-3. Online play with friends — done (PeerJS room codes). Live at https://reinj-bot.github.io/goboard/
+3. Online play with friends — done (PeerJS room codes). Live at https://playgoboard.github.io/ (repo playgoboard/playgoboard.github.io in the
+   free "playgoboard" GitHub organization, owned by reinj-bot; moved there 2026-10-16)
    (GitHub Pages from `main`). Commits use the GitHub private email. Never push the local
    `backup-before-email-change` branch. Ask me yes/no before every push.
    Also on Netlify at https://playgoboard.netlify.app/ (visitor protection turned off), which deploys from a copy repo `reinj-bot/goboard-8506c` (made by Netlify's
