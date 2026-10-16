@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 34 34">
+  <!-- Browser-tab icon: the GoBoard logo with bigger stones so it reads when tiny. -->
+  <circle cx="17" cy="17" r="17" fill="#dcb35c"/>
+  <circle cx="12" cy="12" r="8" fill="#111"/>
+  <circle cx="22" cy="22" r="8" fill="#f4f2ec"/>
+</svg>

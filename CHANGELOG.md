@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.22.0
+- New logo: a round wooden board with a black and a white stone (img/logo.svg) in the top bar of every page, and a matching browser-tab icon (favicon.svg). Clicking the logo goes to the main page.
+
 ## 0.21.0
 - Stronger Tiger, Dragon and Hint on every board size: smarter practice games (escape atari, avoid self-atari), RAVE so the search learns faster, and the thinking runs on all spare processor cores in background workers. Dragon (and Hint) now think about 10 seconds per move. In tests on one core each, new Dragon beat old Dragon 17-7 on 9x9, 14-0 on 13x13 and 7-0 on 19x19.
 
