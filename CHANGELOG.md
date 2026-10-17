@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.26.0
+- Daily games (new Daily page and menu item): post an open challenge (board size, 1/3/7 days per move, Rated or Casual, your color) or join one. Moves are saved and checked by the database with the full rules, so you can play several games at your own pace. Not moving in time loses the game. When both pass, the board is counted as it is; the site warns before a pass if enemy stones still look dead. The menu shows how many games wait for your move. Finished daily games appear in the game history with replays.
+
 ## 0.25.0
 - Bot pictures: Pebble, Sprout, Fox, Tiger and Dragon each have a round picture (img/bots/) in the bot list and next to their name on the board while you play.
 

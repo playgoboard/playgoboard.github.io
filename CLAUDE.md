@@ -83,6 +83,12 @@
 - Position editor: `js/position-editor.js` (GoEditor.isOpen) owns the board while open (capture-phase click
   listener; game-page drawBoard skips). GoGame.setPosition(board, turn) + breathlessStones(). GoPage.startFromPosition.
   Same computer and bots only (the user chose: no online).
+- Daily games: `supabase/06-daily-games.sql` (daily_games, public read; rules in plpgsql: daily_group,
+  daily_play [captures, suicide, simple ko vs prev_board], daily_score [Tromp-Taylor area, komi 7.5];
+  daily_move(game, count, x, y; x=-1 pass), daily_finish [Elo K=32 + game_records rows with daily/rating_change],
+  daily_check_timeouts [anyone may call]). `daily.html` + `js/daily-page.js` (list + ?game=ID, pick then Submit,
+  dead-stone warning via 60 playouts) + `js/daily-badge.js` (menu counter on every page). Only open challenges
+  (the user chose that). GoAccounts.onChange now calls late listeners right away.
 - Languages: `js/i18n.js` (GoI18n.t, sentences, beforeChange) + `js/i18n-zh.js` (GO_TEXT_ZH: "English": [simplified, traditional]).
   The ENGLISH TEXT IS THE KEY: wrap new player-visible text in t("...") (placeholders {name}) and add a line to
   i18n-zh.js. Static HTML text nodes, placeholders, titles and aria-labels are translated on DOMContentLoaded;
