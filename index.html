@@ -20,7 +20,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#302e2b">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/style.css?v=29">
+  <link rel="stylesheet" href="css/style.css?v=30">
 </head>
 <body>
   <header class="top-bar">
@@ -39,6 +39,7 @@
     <section class="board-column">
       <div class="player-card" id="card-white">
         <span class="stone-icon white"></span>
+        <img class="card-avatar" id="avatar-white" alt="" hidden>
         <span class="player-name" id="name-white">White</span>
         <span class="player-info" id="info-white"></span>
         <span class="clock" id="clock-white" hidden></span>
@@ -46,6 +47,7 @@
       <div id="board" class="board"></div>
       <div class="player-card" id="card-black">
         <span class="stone-icon black"></span>
+        <img class="card-avatar" id="avatar-black" alt="" hidden>
         <span class="player-name" id="name-black">Black</span>
         <span class="player-info" id="info-black"></span>
         <span class="clock" id="clock-black" hidden></span>
@@ -214,28 +216,28 @@
     </aside>
   </main>
 
-  <script src="js/i18n-zh.js?v=29"></script>
-  <script src="js/i18n.js?v=29"></script>
+  <script src="js/i18n-zh.js?v=30"></script>
+  <script src="js/i18n.js?v=30"></script>
   <!-- PeerJS connects two browsers for online games (free public service). Libraries are kept in js/vendor so
        nothing loads from other download sites (some are blocked in mainland China). -->
   <script src="js/vendor/peerjs-1.5.4.min.js"></script>
-  <script src="js/go-rules.js?v=29"></script>
-  <script src="js/go-bot.js?v=29"></script>
-  <script src="js/sounds.js?v=29"></script>
+  <script src="js/go-rules.js?v=30"></script>
+  <script src="js/go-bot.js?v=30"></script>
+  <script src="js/sounds.js?v=30"></script>
   <script src="js/vendor/supabase-js-2.115.0.js"></script>
-  <script src="js/supabase-config.js?v=29"></script>
-  <script src="js/game-clock.js?v=29"></script>
-  <script src="js/board-view.js?v=29"></script>
-  <script src="js/chat-filter.js?v=29"></script>
-  <script src="js/accounts.js?v=29"></script>
-  <script src="js/friends.js?v=29"></script>
-  <script src="js/rated-games.js?v=29"></script>
-  <script src="js/online-chat.js?v=29"></script>
-  <script src="js/move-list.js?v=29"></script>
-  <script src="js/game-history.js?v=29"></script>
-  <script src="js/game-page.js?v=29"></script>
-  <script src="js/position-editor.js?v=29"></script>
-  <script src="js/online-lobby.js?v=29"></script>
-  <script src="js/quick-match.js?v=29"></script>
+  <script src="js/supabase-config.js?v=30"></script>
+  <script src="js/game-clock.js?v=30"></script>
+  <script src="js/board-view.js?v=30"></script>
+  <script src="js/chat-filter.js?v=30"></script>
+  <script src="js/accounts.js?v=30"></script>
+  <script src="js/friends.js?v=30"></script>
+  <script src="js/rated-games.js?v=30"></script>
+  <script src="js/online-chat.js?v=30"></script>
+  <script src="js/move-list.js?v=30"></script>
+  <script src="js/game-history.js?v=30"></script>
+  <script src="js/game-page.js?v=30"></script>
+  <script src="js/position-editor.js?v=30"></script>
+  <script src="js/online-lobby.js?v=30"></script>
+  <script src="js/quick-match.js?v=30"></script>
 </body>
 </html>

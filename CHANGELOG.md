@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.25.0
+- Bot pictures: Pebble, Sprout, Fox, Tiger and Dragon each have a round picture (img/bots/) in the bot list and next to their name on the board while you play.
+
 ## 0.24.0
 - New link-preview picture (what WhatsApp, Discord etc. show when the link is shared): the big round GoBoard logo with the name. Previews now point to playgoboard.github.io.
 

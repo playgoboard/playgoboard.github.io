@@ -55,6 +55,8 @@
   let hintToken = 0;
   const positionKey = () => `${gameNumber}|${game.board.join("")}|${game.turn}|${game.phase}`;
 
+  // Each bot has a round picture in img/bots/, named after its English name.
+  const botPicture = (bot) => `img/bots/${bot.name.toLowerCase()}.svg`;
   const botShortName = () => t(BOT_LEVELS[botLevel - 1].name);
   const botName = () => t("{name} (Level {level})", { name: botShortName(), level: botLevel });
   const isOpponentTurn = () => opponent !== "friend" && game.phase === "play" && game.turn !== humanColor;
@@ -157,6 +159,10 @@
     for (const color of [BLACK, WHITE]) {
       const card = $(color === BLACK ? "card-black" : "card-white");
       card.classList.toggle("to-move", game.phase === "play" && game.turn === color);
+      const avatar = $(color === BLACK ? "avatar-black" : "avatar-white");
+      const isBot = opponent === "bot" && color !== humanColor;
+      avatar.hidden = !isBot;
+      if (isBot) avatar.src = botPicture(BOT_LEVELS[botLevel - 1]);
       card.classList.toggle("bottom-seat", color === bottomColor);
       card.classList.toggle("top-seat", color !== bottomColor);
     }
@@ -556,8 +562,8 @@
 
   $("bot-list").innerHTML = BOT_LEVELS.map((b) => `
     <button data-level="${b.level}" class="${b.level === setup.botLevel ? "selected" : ""}">
-      <span class="bot-level">${b.level}</span>
-      <span><span class="bot-name">${t(b.name)}</span><span class="bot-blurb">${t(b.blurb)}</span></span>
+      <img class="bot-avatar" src="${botPicture(b)}" alt="">
+      <span><span class="bot-name">${t(b.name)} <span class="bot-level-tag">${t("Level {n}", { n: b.level })}</span></span><span class="bot-blurb">${t(b.blurb)}</span></span>
     </button>`).join("");
 
   boardEl.addEventListener("click", (event) => {
