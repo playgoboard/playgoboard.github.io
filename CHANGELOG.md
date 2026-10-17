@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.24.0
+- New link-preview picture (what WhatsApp, Discord etc. show when the link is shared): the big round GoBoard logo with the name. Previews now point to playgoboard.github.io.
+
 ## 0.23.0
 - "Remember me" checkbox when logging in (on by default): ticked keeps you logged in after closing the browser, unticked logs you out when the browser closes (for shared computers).
 - A Log out button in the top bar next to your name while you are logged in.

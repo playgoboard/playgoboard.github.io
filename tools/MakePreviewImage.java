@@ -23,7 +23,7 @@ public class MakePreviewImage {
         g.setColor(BACKGROUND);
         g.fillRect(0, 0, WIDTH, HEIGHT);
 
-        drawBoard(g, 60, 65, 500);
+        drawLogo(g, 80, 85, 460);
         drawText(g, 630);
 
         g.dispose();
@@ -31,26 +31,19 @@ public class MakePreviewImage {
         System.out.println("Wrote preview.png");
     }
 
-    // A 9x9 corner of a game in progress.
-    static void drawBoard(Graphics2D g, int left, int top, int size) {
-        g.setColor(WOOD);
-        g.fill(new RoundRectangle2D.Double(left, top, size, size, 18, 18));
-        int lines = 9;
-        double margin = size / 10.0, cell = (size - 2 * margin) / (lines - 1);
+    // The GoBoard logo (same shapes as img/logo.svg, which is 34 units wide): a round
+    // wooden board with two lines each way, a black stone and a white stone.
+    static void drawLogo(Graphics2D g, int left, int top, int size) {
+        double u = size / 34.0;
+        fillCircle(g, left + 17 * u, top + 17 * u, 17 * u, WOOD);
         g.setColor(LINE);
-        g.setStroke(new BasicStroke(2.2f));
-        for (int k = 0; k < lines; k++) {
-            double pos = margin + k * cell;
-            g.draw(new Line2D.Double(left + margin, top + pos, left + size - margin, top + pos));
-            g.draw(new Line2D.Double(left + pos, top + margin, left + pos, top + size - margin));
+        g.setStroke(new BasicStroke((float) (1.4 * u)));
+        double[][] lines = {{4, 11, 30, 11}, {2, 23, 32, 23}, {11, 4, 11, 30}, {23, 2, 23, 32}};
+        for (double[] l : lines) {
+            g.draw(new Line2D.Double(left + l[0] * u, top + l[1] * u, left + l[2] * u, top + l[3] * u));
         }
-        for (int[] star : new int[][] {{2, 2}, {6, 2}, {4, 4}, {2, 6}, {6, 6}}) {
-            fillCircle(g, left + margin + star[0] * cell, top + margin + star[1] * cell, 6, LINE);
-        }
-        int[][] black = {{2, 2}, {3, 3}, {2, 4}, {4, 5}, {5, 3}, {6, 6}, {3, 6}};
-        int[][] white = {{3, 2}, {4, 3}, {4, 4}, {5, 5}, {6, 3}, {5, 6}};
-        for (int[] s : black) drawStone(g, left + margin + s[0] * cell, top + margin + s[1] * cell, cell * 0.47, true);
-        for (int[] s : white) drawStone(g, left + margin + s[0] * cell, top + margin + s[1] * cell, cell * 0.47, false);
+        drawStone(g, left + 11 * u, top + 11 * u, 6.5 * u, true);
+        drawStone(g, left + 23 * u, top + 23 * u, 6.5 * u, false);
     }
 
     static void drawStone(Graphics2D g, double cx, double cy, double r, boolean black) {
@@ -81,7 +74,7 @@ public class MakePreviewImage {
         g.drawString("your browser", left, 410);
 
         g.setColor(TEXT_DIM);
-        g.setFont(new Font("SansSerif", Font.PLAIN, 32));
-        g.drawString("Friends  ·  5 bots  ·  Online", left, 480);
+        g.setFont(new Font("SansSerif", Font.PLAIN, 28));
+        g.drawString("Friends  ·  5 bots  ·  Online  ·  Puzzles", left, 480);
     }
 }
