@@ -13,6 +13,76 @@ window.GO_TEXT_ZH = {
   "Online": ["在线", "線上"],
   "Puzzles": ["练习题", "練習題"],
   "Leaderboard": ["排行榜", "排行榜"],
+  "Daily": ["每日对局", "每日對局"],
+
+  // ---- Daily games ----
+  "GoBoard — Daily Games": ["GoBoard — 每日对局", "GoBoard — 每日對局"],
+  "Daily games": ["每日对局", "每日對局"],
+  "Time's up": ["时间到了", "時間到了"],
+  "{d} d {h} h": ["{d} 天 {h} 小时", "{d} 天 {h} 小時"],
+  "{h} h {m} min": ["{h} 小时 {m} 分钟", "{h} 小時 {m} 分鐘"],
+  "{m} min": ["{m} 分钟", "{m} 分鐘"],
+  "1 day per move": ["每步 1 天", "每步 1 天"],
+  "{n} days per move": ["每步 {n} 天", "每步 {n} 天"],
+  "New daily challenge": ["发起每日对局", "發起每日對局"],
+  "Time per move": ["每步时间", "每步時間"],
+  "1 day": ["1 天", "1 天"],
+  "3 days": ["3 天", "3 天"],
+  "7 days": ["7 天", "7 天"],
+  "Create challenge": ["发起挑战", "發起挑戰"],
+  "Challenge created. It shows in your games until someone joins.":
+    ["挑战已发起。有人加入之前，它会显示在你的对局里。", "挑戰已發起。有人加入之前，它會顯示在你的對局裡。"],
+  "Your challenge is listed for everyone. The game starts when someone joins.":
+    ["所有人都能看到你的挑战。有人加入后对局就开始。", "所有人都看得到你的挑戰。有人加入後對局就開始。"],
+  "Play at your own pace: make a move whenever you like, within the time per move. You can have several games at once.":
+    ["按你自己的节奏下棋：在每步时限内，想什么时候下都可以。你可以同时下好几盘。", "按你自己的節奏下棋：在每步時限內，想什麼時候下都可以。你可以同時下好幾盤。"],
+  "Log in to play daily games. They are saved to your account.":
+    ["登录后才能下每日对局。对局会保存到你的账号。", "登入後才能下每日對局。對局會儲存到你的帳號。"],
+  "Couldn't load daily games. Check your internet connection and try again.":
+    ["无法载入每日对局。请检查网络连接后再试。", "無法載入每日對局。請檢查網路連線後再試。"],
+  "Daily games couldn't load. Check your internet connection and reload the page.":
+    ["每日对局载入失败。请检查网络连接，然后重新载入页面。", "每日對局載入失敗。請檢查網路連線，然後重新載入頁面。"],
+  "Your games": ["你的对局", "你的對局"],
+  "No daily games yet. Create a challenge or join one below.":
+    ["还没有每日对局。发起一个挑战，或者加入下面的挑战。", "還沒有每日對局。發起一個挑戰，或者加入下面的挑戰。"],
+  "Status": ["状态", "狀態"],
+  "Time left": ["剩余时间", "剩餘時間"],
+  "Waiting for an opponent": ["等待对手", "等待對手"],
+  "Their move": ["轮到对方", "輪到對方"],
+  "Open": ["打开", "打開"],
+  "Open challenges": ["公开挑战", "公開挑戰"],
+  "No open challenges right now. Create one above!": ["现在没有公开挑战。在上面发起一个吧！", "現在沒有公開挑戰。在上面發起一個吧！"],
+  "You play": ["你执", "你執"],
+  "Finished daily games": ["已结束的每日对局", "已結束的每日對局"],
+  "None yet.": ["还没有。", "還沒有。"],
+  "Casual game.": ["休闲对局。", "休閒對局。"],
+  "Submit move": ["提交这步棋", "提交這步棋"],
+  "Press Submit move to play there, or pick another point.":
+    ["按“提交这步棋”下在那里，或者选另一个点。", "按「提交這步棋」下在那裡，或者選另一個點。"],
+  "Time left for this move: {time}": ["这一步还剩：{time}", "這一步還剩：{time}"],
+  "You'll see their move here when they play. You can close this page.":
+    ["对方下了之后，你会在这里看到。你可以先关掉这个页面。", "對方下了之後，你會在這裡看到。你可以先關掉這個頁面。"],
+  "The red-marked stones look dead, but the count takes the board as it is, so they would count for your opponent. Capture them first? Press Cancel to keep playing, or OK to pass anyway.":
+    ["红色标记的棋子看起来是死棋，但数子时棋盘会按原样计算，所以它们会算给对手。要先把它们提掉吗？按“取消”继续下，或按“确定”仍然停一手。",
+      "紅色標記的棋子看起來是死棋，但數子時棋盤會按原樣計算，所以它們會算給對手。要先把它們提掉嗎？按「取消」繼續下，或按「確定」仍然停一手。"],
+  "Your opponent passed. If you pass too, the game ends and the board is counted. Pass?":
+    ["对手停了一手。如果你也停一手，对局就结束并开始数子。要停一手吗？", "對手停了一手。如果你也停一手，對局就結束並開始數子。要停一手嗎？"],
+  "Pass this turn?": ["这一步要停一手吗？", "這一步要停一手嗎？"],
+  "‹ All daily games": ["‹ 所有每日对局", "‹ 所有每日對局"],
+  "How daily games work": ["每日对局怎么玩", "每日對局怎麼玩"],
+  "daily-how": [
+    "在时间用完之前，想什么时候下都可以，超时就会输掉这盘棋。点击一个点，然后按<b>提交这步棋</b>。双方连续停一手后，棋盘会<b>按原样计算</b>，所以停一手之前，请先提掉没救的（死）棋子。",
+    "在時間用完之前，想什麼時候下都可以，超時就會輸掉這盤棋。點擊一個點，然後按<b>提交這步棋</b>。雙方連續停一手後，棋盤會<b>按原樣計算</b>，所以停一手之前，請先提掉沒救的（死）棋子。",
+  ],
+  "That point is not on the board": ["那个点不在棋盘上", "那個點不在棋盤上"],
+  "You already have 5 open challenges. Wait for someone to join, or cancel one":
+    ["你已经有 5 个公开挑战了。等有人加入，或者取消一个", "你已經有 5 個公開挑戰了。等有人加入，或者取消一個"],
+  "You already have 50 daily games going. Finish some first": ["你已经有 50 盘每日对局在进行了，请先下完一些", "你已經有 50 盤每日對局在進行了，請先下完一些"],
+  "This challenge isn't open any more": ["这个挑战已经不开放了", "這個挑戰已經不開放了"],
+  "You can't join your own challenge": ["不能加入自己的挑战", "不能加入自己的挑戰"],
+  "This game is over": ["这盘棋已经结束了", "這盤棋已經結束了"],
+  "It's not your turn": ["还没轮到你", "還沒輪到你"],
+  "The game changed. Reloading": ["对局有变化，正在重新载入", "對局有變化，正在重新載入"],
   "Play": ["下棋", "下棋"],
   "Changing the language reloads the page and ends your online game. Continue?":
     ["切换语言会重新载入页面，并结束你的在线对局。要继续吗？", "切換語言會重新載入頁面，並結束你的線上對局。要繼續嗎？"],
@@ -446,7 +516,7 @@ window.GO_TEXT_ZH = {
     <ul>
       <li><b>你的电子邮箱和密码。</b>只用来让你登录，以及发送账号邮件（确认邮箱或重设密码）。密码是加密（哈希）保存的，任何人都看不到，网站主人也看不到。</li>
       <li><b>你的用户名、等级分，以及对局数、胜局和负局。</b>这些是公开的，其他棋手可以看到。</li>
-      <li><b>你下完的在线对局</b>（登录时）：对手、棋步和结果，让你和其他人可以在排行榜页面查看对局记录和回放。这些是公开的。</li>
+      <li><b>你的每日对局和下完的在线对局</b>（登录时）：对手、棋步和结果，让你和其他人可以在排行榜页面查看对局记录和回放。这些是公开的。</li>
       <li><b>你的好友列表和好友请求。</b>只有你和对方能看到。</li>
       <li><b>在你使用快速匹配时，</b>你的对局设置和等级分（或你选的水平）会保存几秒钟，用来配对。对局开始或你停止寻找时就会删除。</li>
     </ul>
@@ -466,7 +536,7 @@ window.GO_TEXT_ZH = {
     <ul>
       <li><b>你的電子郵件和密碼。</b>只用來讓你登入，以及寄送帳號郵件（確認郵件或重設密碼）。密碼是加密（雜湊）儲存的，任何人都看不到，網站主人也看不到。</li>
       <li><b>你的用戶名、等級分，以及對局數、勝局和負局。</b>這些是公開的，其他棋手可以看到。</li>
-      <li><b>你下完的線上對局</b>（登入時）：對手、棋步和結果，讓你和其他人可以在排行榜頁面查看對局紀錄和回放。這些是公開的。</li>
+      <li><b>你的每日對局和下完的線上對局</b>（登入時）：對手、棋步和結果，讓你和其他人可以在排行榜頁面查看對局紀錄和回放。這些是公開的。</li>
       <li><b>你的好友名單和好友請求。</b>只有你和對方看得到。</li>
       <li><b>在你使用快速配對時，</b>你的對局設定和等級分（或你選的水平）會保存幾秒鐘，用來配對。對局開始或你停止尋找時就會刪除。</li>
     </ul>

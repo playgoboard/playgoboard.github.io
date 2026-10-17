@@ -114,6 +114,8 @@
       how: r.result.split("+")[1],
       rated: r.rated_game_id ? ratedById.get(r.rated_game_id) || { pending: true } : null,
       quick: r.quick,
+      daily: r.daily,
+      ratingChange: r.rating_change,
       replayId: r.id,
     }));
     const saved = new Set(records.map((r) => r.rated_game_id).filter(Boolean));
@@ -147,6 +149,11 @@
   }
 
   function typeText(game, color) {
+    const signed = (n) => `${n >= 0 ? "+" : ""}${n}`;
+    if (game.daily) {
+      return typeof game.ratingChange === "number"
+        ? `${t("Daily")} · ${t("Rated")} ${signed(game.ratingChange)}` : `${t("Daily")} · ${t("Casual")}`;
+    }
     if (!game.rated) return game.quick ? t("Casual · Quick") : t("Casual");
     const change = game.rated[`${color}_change`];
     if (typeof change !== "number") return t("Rated");
@@ -163,7 +170,7 @@
 
     const [records, rated] = await Promise.all([
       client.from("game_records")
-        .select("id, my_color, opponent, opponent_name, board_size, winner, result, rated_game_id, quick, created_at")
+        .select("id, my_color, opponent, opponent_name, board_size, winner, result, rated_game_id, quick, daily, rating_change, created_at")
         .eq("player", player.id).order("created_at", { ascending: false }).limit(HISTORY_GAMES),
       client.from("rated_games")
         .select(`id, black, white, board_size, winner, created_at, finished_at, black_change, white_change,
@@ -226,6 +233,9 @@
     $("replay-result").textContent = gameHistory.resultWords(record.result);
     const kind = rated ? `${t("Rated")}${typeof rated[`${record.my_color}_change`] === "number"
       ? ` (${ownerName} ${rated[`${record.my_color}_change`] >= 0 ? "+" : ""}${rated[`${record.my_color}_change`]})` : ""}`
+      : record.daily ? (typeof record.rating_change === "number"
+        ? `${t("Daily")} · ${t("Rated")} (${ownerName} ${record.rating_change >= 0 ? "+" : ""}${record.rating_change})`
+        : `${t("Daily")} · ${t("Casual")}`)
       : record.quick ? t("Casual quick match") : t("Casual");
     $("replay-details").textContent = `${record.board_size}×${record.board_size} · ${kind} · ${dateText(record.created_at)}`;
 

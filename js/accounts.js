@@ -288,7 +288,10 @@
     profile = data || null;
   }
 
+  let known = false; // true once we know who is logged in (or that nobody is)
+
   function announce() {
+    known = true;
     drawButton();
     if (dialog.open && !dialog.querySelector('[data-view="profile"]').hidden) drawProfile();
     for (const fn of listeners) fn({ session, profile });
@@ -308,7 +311,11 @@
     ready,
     client,
     current: () => ({ session, profile }),
-    onChange(fn) { listeners.push(fn); },
+    // A file that starts listening after the login check already finished hears it right away.
+    onChange(fn) {
+      listeners.push(fn);
+      if (known) fn({ session, profile });
+    },
     async refreshProfile() { await loadProfile(); announce(); },
     // For other files: fill a view of the window when it opens, switch views, show a count on the button.
     onView(view, fn) { viewHooks[view] = fn; },
