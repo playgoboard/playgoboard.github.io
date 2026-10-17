@@ -59,7 +59,13 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
   background: var(--accent); color: #fff; font-weight: 700; font-family: inherit; white-space: nowrap;
   max-width: 45vw; overflow: hidden; text-overflow: ellipsis;
 }
-.account-button:not([hidden]) + .sound-toggle { margin-left: 0; }
+.account-button:not([hidden]) ~ .sound-toggle { margin-left: 0; }
+.logout-button {
+  padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; white-space: nowrap;
+  background: var(--panel-light); color: var(--text); font-weight: 600; font-family: inherit;
+}
+.account-dialog .remember-row { display: flex; align-items: center; gap: 8px; color: var(--text); font-size: 14px; cursor: pointer; }
+.account-dialog .remember-row input { display: inline-block; width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
 
 .account-dialog {
   width: min(380px, calc(100vw - 32px)); padding: 18px 20px; border: none; border-radius: 10px;

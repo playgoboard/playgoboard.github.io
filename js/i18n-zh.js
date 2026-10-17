@@ -264,6 +264,7 @@ window.GO_TEXT_ZH = {
   "Friends": ["好友", "好友"],
   "My games": ["我的对局", "我的對局"],
   "Log out": ["退出登录", "登出"],
+  "Remember me": ["记住我", "記住我"],
   "Delete my account": ["删除我的账号", "刪除我的帳號"],
   "Delete your account?": ["要删除你的账号吗？", "要刪除你的帳號嗎？"],
   "This removes your account, username and rating for good. It can't be undone. Type your username to confirm.":
@@ -454,7 +455,7 @@ window.GO_TEXT_ZH = {
       <li>聊天消息直接在两位棋手的浏览器之间传送，我们不会保存。</li>
     </ul>
     <h2>信息保存在哪里</h2>
-    <p>账号信息保存在 GoBoard 使用的数据库服务 <a href="https://supabase.com">Supabase</a>。在线对局借助免费的 <a href="https://peerjs.com">PeerJS</a> 服务连接。你的浏览器也会在你自己的设备上记住一些设置（声音开关、已完成的题目、快速匹配的水平、语言）。</p>
+    <p>账号信息保存在 GoBoard 使用的数据库服务 <a href="https://supabase.com">Supabase</a>。在线对局借助免费的 <a href="https://peerjs.com">PeerJS</a> 服务连接。你的浏览器也会在你自己的设备上记住一些设置（声音开关、已完成的题目、快速匹配的水平、语言），并让你保持登录。如果登录时取消勾选<b>记住我</b>，关闭浏览器后就会退出登录。</p>
     <h2>删除你的账号</h2>
     <p>登录后，打开你的资料（右上角），选择<b>删除我的账号</b>。这会永久删除你的账号、用户名、等级分、对局记录和好友列表。</p>
     <p><a class="btn btn-primary back-link" href="index.html">返回 GoBoard</a></p>`,
@@ -474,7 +475,7 @@ window.GO_TEXT_ZH = {
       <li>聊天訊息直接在兩位棋手的瀏覽器之間傳送，我們不會儲存。</li>
     </ul>
     <h2>資訊儲存在哪裡</h2>
-    <p>帳號資訊儲存在 GoBoard 使用的資料庫服務 <a href="https://supabase.com">Supabase</a>。線上對局藉助免費的 <a href="https://peerjs.com">PeerJS</a> 服務連線。你的瀏覽器也會在你自己的裝置上記住一些設定（聲音開關、已完成的題目、快速配對的水平、語言）。</p>
+    <p>帳號資訊儲存在 GoBoard 使用的資料庫服務 <a href="https://supabase.com">Supabase</a>。線上對局藉助免費的 <a href="https://peerjs.com">PeerJS</a> 服務連線。你的瀏覽器也會在你自己的裝置上記住一些設定（聲音開關、已完成的題目、快速配對的水平、語言），並讓你保持登入。如果登入時取消勾選<b>記住我</b>，關閉瀏覽器後就會登出。</p>
     <h2>刪除你的帳號</h2>
     <p>登入後，打開你的資料（右上角），選擇<b>刪除我的帳號</b>。這會永久刪除你的帳號、用戶名、等級分、對局紀錄和好友名單。</p>
     <p><a class="btn btn-primary back-link" href="index.html">返回 GoBoard</a></p>`,

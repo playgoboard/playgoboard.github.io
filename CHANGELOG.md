@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.23.0
+- "Remember me" checkbox when logging in (on by default): ticked keeps you logged in after closing the browser, unticked logs you out when the browser closes (for shared computers).
+- A Log out button in the top bar next to your name while you are logged in.
+
 ## 0.22.0
 - New logo: a round wooden board with a black and a white stone (img/logo.svg) in the top bar of every page, and a matching browser-tab icon (favicon.svg). Clicking the logo goes to the main page.
 

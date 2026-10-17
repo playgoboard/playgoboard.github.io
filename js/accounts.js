@@ -4,7 +4,28 @@
 (function () {
   const config = window.GOBOARD_SUPABASE || {};
   const ready = Boolean(config.url && config.anonKey && window.supabase);
-  const client = ready ? window.supabase.createClient(config.url, config.anonKey) : null;
+
+  // "Remember me": checked keeps the login in localStorage, so it survives closing the
+  // browser; unchecked keeps it in sessionStorage, which the browser forgets on close
+  // (for shared computers). Both are the browser's own storage, like a cookie.
+  const REMEMBER_KEY = "goboard-remember";
+  const safely = (work, fallback) => { try { return work(); } catch { return fallback; } };
+  const rememberMe = () => safely(() => localStorage.getItem(REMEMBER_KEY) !== "no", true);
+  const loginStorage = {
+    getItem: (key) => safely(() => localStorage.getItem(key) ?? sessionStorage.getItem(key), null),
+    setItem: (key, value) => safely(() => {
+      const [keep, drop] = rememberMe() ? [localStorage, sessionStorage] : [sessionStorage, localStorage];
+      keep.setItem(key, value);
+      drop.removeItem(key);
+    }),
+    removeItem: (key) => safely(() => {
+      localStorage.removeItem(key);
+      sessionStorage.removeItem(key);
+    }),
+  };
+  const client = ready
+    ? window.supabase.createClient(config.url, config.anonKey, { auth: { storage: loginStorage, persistSession: true, autoRefreshToken: true } })
+    : null;
   const { t } = window.GoI18n;
   const USERNAME_RULE = /^[A-Za-z0-9_]{3,16}$/;
   const MIN_PASSWORD = 8;
@@ -22,6 +43,12 @@
   accountButton.type = "button";
   const soundButton = document.getElementById("btn-sound");
   soundButton.parentNode.insertBefore(accountButton, soundButton);
+  // Shown next to your name once you're logged in.
+  const logoutButton = document.createElement("button");
+  logoutButton.className = "logout-button";
+  logoutButton.type = "button";
+  logoutButton.hidden = true;
+  soundButton.parentNode.insertBefore(logoutButton, soundButton);
 
   const dialog = document.createElement("dialog");
   dialog.className = "account-dialog";
@@ -31,6 +58,7 @@
       <h2>Log in</h2>
       <label>Email <input type="email" name="email" autocomplete="email" required></label>
       <label>Password <input type="password" name="password" autocomplete="current-password" required></label>
+      <label class="remember-row"><input type="checkbox" name="remember"> <span>Remember me</span></label>
       <button class="btn btn-primary" data-action="login">Log in</button>
       <p class="account-links">
         <button class="link-button" data-go="signup">Create an account</button> ·
@@ -80,6 +108,7 @@
 
   const message = dialog.querySelector(".account-message");
   const field = (view, name) => dialog.querySelector(`[data-view="${view}"] [name="${name}"]`);
+  field("login", "remember").checked = rememberMe();
 
   function showView(view, note = "") {
     for (const el of dialog.querySelectorAll(".account-view")) el.hidden = el.dataset.view !== view;
@@ -103,10 +132,12 @@
 
   function drawButton() {
     if (!ready) {
-      accountButton.hidden = true;
+      accountButton.hidden = logoutButton.hidden = true;
       return;
     }
     accountButton.hidden = false;
+    logoutButton.hidden = !session;
+    logoutButton.textContent = t("Log out");
     const label = profile ? `${profile.username} · ${profile.rating}` : session ? t("My account") : t("Log in");
     accountButton.textContent = badge && session ? `${label} 🔔${badge}` : label;
     accountButton.title = !session ? t("Log in or create an account")
@@ -158,6 +189,7 @@
     async login(button) {
       const email = field("login", "email").value.trim(), password = field("login", "password").value;
       if (!email || !password) return showError(t("Please fill in your email and password."));
+      safely(() => localStorage.setItem(REMEMBER_KEY, field("login", "remember").checked ? "yes" : "no"));
       busy(button, true);
       const { error } = await client.auth.signInWithPassword({ email, password });
       busy(button, false);
@@ -243,6 +275,7 @@
   });
 
   accountButton.addEventListener("click", () => showView(session ? "profile" : "login"));
+  logoutButton.addEventListener("click", () => client.auth.signOut());
 
   // ---- Keeping track of who is logged in ----
 
