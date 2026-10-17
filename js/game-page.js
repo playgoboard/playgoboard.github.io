@@ -532,6 +532,16 @@
 
   const youAre = (color) => (color === BLACK ? t("You are Black.") : t("You are White."));
 
+  // Phones show the menus below the board, so jump up to the board when a game starts.
+  function showBoardOnPhone() {
+    if (!window.matchMedia("(max-width: 1000px)").matches) return;
+    document.querySelector(".board-column").scrollIntoView({ block: "start" });
+  }
+
+  // Nothing to lose yet: no move of yours (a bot may have opened), or the game is over.
+  const gameUntouched = () => game.phase === "over"
+    || (opponent === "friend" ? game.moves.length === 0 : !game.moves.some((m) => m.color === humanColor));
+
   // Play from a position made in the position editor (js/position-editor.js).
   function startFromPosition(board, turn) {
     beginGame(setup.size, setup.mode === "bot" ? "bot" : "friend", pickedColor(), clockSetup());
@@ -541,6 +551,7 @@
     parts.push(turn === BLACK ? t("Black moves first.") : t("White moves first."));
     messageEl.textContent = sentences(...parts);
     refresh();
+    showBoardOnPhone();
   }
 
   function pickOne(container, button) {
@@ -620,6 +631,10 @@
     if (!button) return;
     setup.size = Number(button.dataset.size);
     pickOne(event.currentTarget, button);
+    // The board changes right away, unless that would throw away a game in progress.
+    if (opponent === "online" || (window.GoEditor && window.GoEditor.isOpen())) return;
+    if (gameUntouched()) startLocalGame();
+    else messageEl.textContent = t("The {n}×{n} board starts with your next game.", { n: setup.size });
   });
 
   $("clock-picker").addEventListener("click", (event) => {
@@ -668,7 +683,10 @@
   }
   updateRatedHint();
 
-  $("btn-new").addEventListener("click", startLocalGame);
+  $("btn-new").addEventListener("click", () => {
+    startLocalGame();
+    showBoardOnPhone();
+  });
 
   hintButton.addEventListener("click", () => {
     if (hintThinking || game.phase !== "play" || isOpponentTurn() || opponent === "online") return;
@@ -789,6 +807,7 @@
       // The joiner confirms the rated game in the database (the creator already created it).
       if (onlineMeta.ratedGameId && !session.isHost && kind !== "reconnect") joinRatedGame(onlineMeta.ratedGameId, myColor);
       refresh();
+      if (kind !== "reconnect") showBoardOnPhone();
     },
     onlineActions: () => onlineActions.slice(),
     clockTimes: () => clock.snapshot(),

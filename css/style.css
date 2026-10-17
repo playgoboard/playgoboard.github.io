@@ -204,6 +204,7 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 .label.spaced { margin-top: 14px; }
 .rated-hint { margin: -4px 0 10px; font-size: 13px; color: var(--text-dim); }
 .rated-hint:empty { display: none; }
+.btn + .rated-hint { margin-top: 10px; }
 .rated-note { margin: -6px 0 12px; color: var(--accent); font-weight: 600; }
 .rated-note:empty { display: none; }
 .join-row { display: flex; gap: 8px; }
@@ -320,9 +321,27 @@ a.link-button { display: inline-block; }
   .top-bar { gap: 14px; padding: 10px 12px; flex-wrap: wrap; row-gap: 8px; }
   /* The menu gets its own line on small screens so the account and sound buttons fit. */
   .top-bar nav { order: 3; width: 100%; gap: 16px; }
+  /* One row you can swipe sideways, instead of words breaking or sticking out of the page. */
+  .top-bar nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .top-bar nav::-webkit-scrollbar { display: none; }
+  .nav-item { white-space: nowrap; flex: none; }
   .game-layout { gap: 12px; padding-top: 10px; }
   .side-panel { width: min(720px, 100%); }
   .editor-block, .controls-block, .chat-block, .moves-block { order: -1; }
+}
+
+/* Phones: everything above the menu fits on one row. */
+@media (max-width: 560px) {
+  .top-bar { gap: 6px; padding: 8px 12px; }
+  .logo { font-size: 0; gap: 0; } /* just the round logo, no name */
+  .logo-mark { width: 32px; height: 32px; }
+  .account-button { max-width: 40vw; padding: 6px 8px; font-size: 13px; }
+  .logout-button, .sound-toggle { padding: 6px 8px; font-size: 13px; }
+  .lang-select { padding: 6px 2px; font-size: 13px; }
+  .list-page { padding: 12px 12px 30px; }
+  .panel-block { padding: 12px; }
+  .data-table { font-size: 14px; }
+  .data-table td, .data-table th { padding: 6px; }
 }
 
 .thinking::after { content: ""; animation: dots 1.2s steps(4) infinite; }

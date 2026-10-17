@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.28.0
+- Phones: the top bar fits on one row (logo icon, short language names EN/简/繁, smaller buttons) and the menu is one row you can swipe, so pages no longer slide sideways. Small fixes to text spacing under buttons.
+- Phones: starting a game jumps up to the board.
+- Picking a board size changes the board right away (unless a game is in progress; then it is used for the next game).
+
 ## 0.27.0
 - Invite someone you know to a daily game: "Who can join" when creating a challenge: Anyone, Invite link (a private link to send) or A friend (from your friends list; they Accept or Decline). The Friends window has a "Daily game" button next to each friend. Friend challenges count in the Daily menu counter.
 

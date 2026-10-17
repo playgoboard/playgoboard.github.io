@@ -73,13 +73,19 @@
     const select = document.createElement("select");
     select.className = "lang-select";
     select.setAttribute("aria-label", t("Language"));
+    // Phones show short names so the top bar fits on one row.
+    const SHORT = { en: "EN", "zh-Hans": "简", "zh-Hant": "繁" };
+    const narrow = window.matchMedia("(max-width: 560px)");
     for (const [code, name] of Object.entries(LANGUAGES)) {
       const option = document.createElement("option");
       option.value = code;
-      option.textContent = name;
+      option.textContent = narrow.matches ? SHORT[code] : name;
       option.selected = code === lang;
       select.append(option);
     }
+    narrow.addEventListener("change", () => {
+      for (const option of select.options) option.textContent = narrow.matches ? SHORT[option.value] : LANGUAGES[option.value];
+    });
     select.addEventListener("change", () => {
       if (reloadChecks.some((check) => !check())) {
         select.value = lang;
