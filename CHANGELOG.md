@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.27.0
+- Invite someone you know to a daily game: "Who can join" when creating a challenge: Anyone, Invite link (a private link to send) or A friend (from your friends list; they Accept or Decline). The Friends window has a "Daily game" button next to each friend. Friend challenges count in the Daily menu counter.
+
 ## 0.26.0
 - Daily games (new Daily page and menu item): post an open challenge (board size, 1/3/7 days per move, Rated or Casual, your color) or join one. Moves are saved and checked by the database with the full rules, so you can play several games at your own pace. Not moving in time loses the game. When both pass, the board is counted as it is; the site warns before a pass if enemy stones still look dead. The menu shows how many games wait for your move. Finished daily games appear in the game history with replays.
 

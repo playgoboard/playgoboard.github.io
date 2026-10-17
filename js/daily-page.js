@@ -14,14 +14,19 @@
   const $ = (id) => document.getElementById(id);
   const accounts = window.GoAccounts;
   const listView = $("list-view");
-  const gameId = new URLSearchParams(window.location.search).get("game");
+  const params = new URLSearchParams(window.location.search);
+  const gameId = params.get("game");
+  const joinId = params.get("join");          // opened from an invite link
+  const challengeId = params.get("challenge"); // "Daily game" button in the Friends window
 
   const me = () => (accounts && accounts.ready ? accounts.current().profile : null);
   const colorName = (color) => (color === BLACK ? "black" : "white");
   const errorText = (error) => t(((error && error.message) || String(error)).replace(/^.*?:\s*/, ""));
   const PLAYER_COLUMNS = `black_player:profiles!daily_games_black_fkey(username, rating),
     white_player:profiles!daily_games_white_fkey(username, rating),
-    creator:profiles!daily_games_created_by_fkey(username, rating)`;
+    creator:profiles!daily_games_created_by_fkey(username, rating),
+    invited_player:profiles!daily_games_invited_fkey(username, rating)`;
+  const inviteLink = (id) => `${window.location.origin}${window.location.pathname}?join=${id}`;
 
   function element(tag, className, text) {
     const el = document.createElement(tag);
@@ -67,7 +72,28 @@
 
   // ---- The list page ----
 
-  const newGame = { size: 9, days: 3, rated: false, color: "random" };
+  // who: "anyone" (listed for everyone), "link" (private invite link) or "friend".
+  const newGame = { size: 9, days: 3, rated: false, color: "random", who: challengeId ? "friend" : "anyone", friend: challengeId };
+
+  async function copyLink(id, note) {
+    const link = inviteLink(id);
+    try {
+      await navigator.clipboard.writeText(link);
+      note.textContent = t("Invite link copied. Send it to the person you want to play.");
+    } catch {
+      note.textContent = t("Copy this link: {link}", { link });
+    }
+  }
+
+  // Your accepted friends, for "A friend".
+  async function loadFriends() {
+    const id = me().id;
+    const { data } = await accounts.client.from("friendships").select(`requester, addressee,
+      requester_profile:profiles!friendships_requester_fkey(id, username),
+      addressee_profile:profiles!friendships_addressee_fkey(id, username)`).eq("status", "accepted");
+    return (data || []).map((r) => (r.requester === id ? r.addressee_profile : r.requester_profile)).filter(Boolean)
+      .sort((a, b) => a.username.localeCompare(b.username));
+  }
 
   function choiceRow(options, current, onPick) {
     const row = element("div", "choice-row");
@@ -82,9 +108,27 @@
     return row;
   }
 
-  function createBox(note) {
+  function createBox(note, friends) {
     const box = element("div", "panel-block");
     box.append(element("h2", "", t("New daily challenge")));
+
+    // Who can join: anyone, people with the link, or one friend.
+    const friendPicker = element("select", "friend-select");
+    if (!friends.length) friendPicker.append(element("option", "", t("No friends yet — add some in the Friends window")));
+    for (const f of friends) {
+      const option = element("option", "", f.username);
+      option.value = f.id;
+      option.selected = f.id === newGame.friend;
+      friendPicker.append(option);
+    }
+    if (!newGame.friend && friends.length) newGame.friend = friends[0].id;
+    friendPicker.addEventListener("change", () => { newGame.friend = friendPicker.value; });
+    friendPicker.hidden = newGame.who !== "friend";
+    box.append(element("p", "label", t("Who can join")),
+      choiceRow([["anyone", t("Anyone")], ["link", t("Invite link")], ["friend", t("A friend")]], newGame.who, (v) => {
+        newGame.who = v;
+        friendPicker.hidden = v !== "friend";
+      }), friendPicker);
     box.append(element("p", "label", t("Board size")),
       choiceRow([[9, "9×9"], [13, "13×13"], [19, "19×19"]], newGame.size, (v) => { newGame.size = v; }));
     box.append(element("p", "label", t("Time per move")),
@@ -94,18 +138,26 @@
     box.append(element("p", "label", t("Your color")),
       choiceRow([["black", t("Black")], ["random", t("Random")], ["white", t("White")]], newGame.color, (v) => { newGame.color = v; }));
     box.append(button(t("Create challenge"), "btn-primary", async (event) => {
+      if (newGame.who === "friend" && !friends.length) {
+        note.textContent = t("You have no friends on the site yet. Use an invite link instead, or add friends first.");
+        return;
+      }
       event.target.disabled = true;
-      const { error } = await accounts.client.rpc("create_daily_challenge",
-        { p_size: newGame.size, p_days: newGame.days, p_rated: newGame.rated, p_color: newGame.color });
+      const settings = { p_size: newGame.size, p_days: newGame.days, p_rated: newGame.rated, p_color: newGame.color };
+      const { data, error } = newGame.who === "anyone"
+        ? await accounts.client.rpc("create_daily_challenge", settings)
+        : await accounts.client.rpc("create_daily_invite", { ...settings, p_friend: newGame.who === "friend" ? newGame.friend : null });
       if (error) {
         event.target.disabled = false;
         note.textContent = errorText(error);
         return;
       }
-      note.textContent = t("Challenge created. It shows in your games until someone joins.");
-      showList();
+      await showList();
+      if (newGame.who === "link") copyLink(data, note);
+      else if (newGame.who === "friend") note.textContent = t("Challenge sent. Your friend sees it on their Daily page.");
+      else note.textContent = t("Challenge created. It shows in your games until someone joins.");
     }));
-    box.append(element("p", "rated-hint", t("Your challenge is listed for everyone. The game starts when someone joins.")));
+    box.append(element("p", "rated-hint", t("Anyone: listed for everyone. Invite link: only people you send the link to. A friend: only that friend.")));
     return box;
   }
 
@@ -140,8 +192,22 @@
     return a;
   };
 
+  // One message line for the list page, kept when the list is redrawn.
+  const note = element("p", "message friend-note");
+
+  async function joinGame(id, buttonEl) {
+    if (buttonEl) buttonEl.disabled = true;
+    const { error } = await accounts.client.rpc("join_daily_game", { p_game: id });
+    if (error) {
+      note.textContent = errorText(error);
+      if (buttonEl) buttonEl.disabled = false;
+      return false;
+    }
+    window.location.href = `daily.html?game=${id}`;
+    return true;
+  }
+
   async function showList() {
-    const note = element("p", "message friend-note");
     const intro = element("div", "panel-block");
     intro.append(element("h1", "", t("Daily games")),
       element("p", "message", t("Play at your own pace: make a move whenever you like, within the time per move. You can have several games at once.")));
@@ -158,16 +224,19 @@
     await accounts.client.rpc("daily_check_timeouts");
     const id = me().id;
     const columns = `id, created_by, creator_color, black, white, board_size, days, rated, status, turn,
-      last_move_at, created_at, finished_at, winner, result, ${PLAYER_COLUMNS}`;
-    const [mine, open, finished] = await Promise.all([
+      last_move_at, created_at, finished_at, winner, result, private, invited, ${PLAYER_COLUMNS}`;
+    const [mine, open, finished, invites, friends] = await Promise.all([
       accounts.client.from("daily_games").select(columns).in("status", ["open", "playing"])
         .or(`black.eq.${id},white.eq.${id},created_by.eq.${id}`).order("created_at", { ascending: false }),
-      accounts.client.from("daily_games").select(columns).eq("status", "open").neq("created_by", id)
+      accounts.client.from("daily_games").select(columns).eq("status", "open").eq("private", false).neq("created_by", id)
         .order("created_at", { ascending: false }).limit(50),
       accounts.client.from("daily_games").select(columns).eq("status", "finished")
         .or(`black.eq.${id},white.eq.${id}`).order("finished_at", { ascending: false }).limit(10),
+      accounts.client.from("daily_games").select(columns).eq("status", "open").eq("invited", id)
+        .order("created_at", { ascending: false }),
+      loadFriends(),
     ]);
-    if (mine.error || open.error || finished.error) {
+    if (mine.error || open.error || finished.error || invites.error) {
       intro.append(element("p", "message", t("Couldn't load daily games. Check your internet connection and try again.")));
       listView.replaceChildren(intro);
       listView.hidden = false;
@@ -185,12 +254,16 @@
     else {
       yours.append(table([t("Opponent"), t("Board"), t("Color"), t("Status"), t("Time left"), ""], games.map((g) => {
         if (g.status === "open") {
-          const cancel = button(t("Cancel"), "small-link", async () => {
+          const actions = element("span", "row-actions");
+          if (g.private && !g.invited) actions.append(button(t("Copy link"), "small-link", () => copyLink(g.id, note)));
+          actions.append(button(t("Cancel"), "small-link", async () => {
             await accounts.client.rpc("cancel_daily_challenge", { p_game: g.id });
             showList();
-          });
-          return row([t("Waiting for an opponent"), `${g.board_size}×${g.board_size}`, t(g.creator_color === "random" ? "Random" : g.creator_color === "black" ? "Black" : "White"),
-            g.rated ? t("Rated") : t("Casual"), daysText(g.days), cancel]);
+          }));
+          const waiting = g.invited ? t("Waiting for {name}", { name: g.invited_player ? g.invited_player.username : "?" })
+            : g.private ? t("Invite link (waiting)") : t("Waiting for an opponent");
+          return row([waiting, `${g.board_size}×${g.board_size}`, t(g.creator_color === "random" ? "Random" : g.creator_color === "black" ? "Black" : "White"),
+            g.rated ? t("Rated") : t("Casual"), daysText(g.days), actions]);
         }
         const mineColor = myColorIn(g);
         const opponent = mineColor === "black" ? g.white_player : g.black_player;
@@ -207,17 +280,29 @@
       others.append(table([t("Player"), t("Board"), t("Time per move"), t("Type"), t("You play"), ""], open.data.map((g) => {
         const you = g.creator_color === "random" ? t("Random") : g.creator_color === "black" ? t("White") : t("Black");
         const join = button(t("Join"), "btn-primary small-link", async (event) => {
-          event.target.disabled = true;
-          const { error } = await accounts.client.rpc("join_daily_game", { p_game: g.id });
-          if (error) {
-            note.textContent = errorText(error);
-            showList();
-            return;
-          }
-          window.location.href = `daily.html?game=${g.id}`;
+          if (!(await joinGame(g.id, event.target))) showList();
         });
         return row([playerText(g.creator), `${g.board_size}×${g.board_size}`, daysText(g.days),
           g.rated ? t("Rated") : t("Casual"), you, join]);
+      })));
+    }
+
+    // Friends who challenged you.
+    const forYou = element("div", "panel-block");
+    forYou.append(element("h2", "", t("Challenges for you")));
+    forYou.hidden = !invites.data.length;
+    if (invites.data.length) {
+      forYou.append(table([t("Player"), t("Board"), t("Time per move"), t("Type"), t("You play"), ""], invites.data.map((g) => {
+        const you = g.creator_color === "random" ? t("Random") : g.creator_color === "black" ? t("White") : t("Black");
+        const actions = element("span", "row-actions");
+        actions.append(button(t("Accept"), "btn-primary small-link", (event) => joinGame(g.id, event.target)),
+          button(t("Decline"), "small-link", async () => {
+            await accounts.client.rpc("decline_daily_challenge", { p_game: g.id });
+            note.textContent = t("Challenge declined.");
+            showList();
+          }));
+        return row([playerText(g.creator), `${g.board_size}×${g.board_size}`, daysText(g.days),
+          g.rated ? t("Rated") : t("Casual"), you, actions], "my-turn");
       })));
     }
 
@@ -234,9 +319,50 @@
       })));
     }
 
-    listView.replaceChildren(intro, createBox(note), yours, others, done);
+    listView.replaceChildren(intro, forYou, createBox(note, friends), yours, others, done);
     listView.hidden = false;
     if (window.GoDailyBadge) window.GoDailyBadge.update();
+  }
+
+  // ---- Opened from an invite link (daily.html?join=ID) ----
+
+  async function showInvite() {
+    const box = element("div", "panel-block");
+    box.append(element("h1", "", t("Daily game invitation")));
+    const show = (...children) => {
+      box.append(...children);
+      listView.replaceChildren(box);
+      listView.hidden = false;
+    };
+    const { data, error } = await accounts.client.rpc("daily_invite_info", { p_game: joinId });
+    if (error || !data) return show(element("p", "message", t("That invitation wasn't found.")));
+    if (data.status === "playing" || data.status === "finished") {
+      window.location.replace(`daily.html?game=${joinId}`);
+      return;
+    }
+    const allGames = element("a", "link-button spaced-link", t("‹ All daily games"));
+    allGames.href = "daily.html";
+    if (data.status !== "open") return show(element("p", "message", t("This challenge isn't open any more")), allGames);
+    if (data.for_someone_else) return show(element("p", "message", t("This challenge is for someone else")), allGames);
+
+    const you = data.creator_color === "random" ? t("Random") : data.creator_color === "black" ? t("White") : t("Black");
+    box.append(element("p", "invite-line", t("{name} ({rating}) invites you to a daily game.", { name: data.creator, rating: data.creator_rating })));
+    const details = element("div", "stat-row");
+    for (const [label, value] of [[t("Board"), `${data.board_size}×${data.board_size}`], [t("Time per move"), daysText(data.days)],
+      [t("Type"), data.rated ? t("Rated") : t("Casual")], [t("You play"), you]]) {
+      const stat = element("div", "stat");
+      stat.append(element("b", "", value), element("span", "", label));
+      details.append(stat);
+    }
+    box.append(details, note);
+    if (!me()) {
+      return show(element("p", "message", t("Log in (or create an account) to accept.")),
+        button(t("Log in"), "btn-primary", () => accounts.showView("login")));
+    }
+    if (data.creator === me().username) {
+      return show(element("p", "message", t("This is your own invite link. Send it to the person you want to play.")), allGames);
+    }
+    show(button(t("Accept and play"), "btn-primary", (event) => joinGame(joinId, event.target)), allGames);
   }
 
   // ---- One game ----
@@ -460,10 +586,12 @@
     // logging in or out later redraws the list.
     if (gameId) {
       if (!started) showGame();
+    } else if (joinId) {
+      showInvite();
     } else {
       showList();
     }
     started = true;
   });
-  if (!gameId) setInterval(() => { if (!document.hidden && me()) showList(); }, LIST_POLL_MS);
+  if (!gameId && !joinId) setInterval(() => { if (!document.hidden && me()) showList(); }, LIST_POLL_MS);
 })();

@@ -118,6 +118,7 @@
     container.append(section(t("Your friends"), friends.map((r) => {
       const p = other(r);
       return personRow(p, t("Rating {n} · {w} W / {l} L", { n: p.rating, w: p.wins, l: p.losses }),
+        button(t("Daily game"), "btn-primary", () => { window.location.href = `daily.html?challenge=${encodeURIComponent(p.id)}`; }),
         button(t("Remove"), "", () => {
           if (confirm(t("Remove {name} from your friends?", { name: p.username }))) act(() => client.rpc("remove_friend", { friend: p.id }), t("{name} was removed.", { name: p.username }));
         }));

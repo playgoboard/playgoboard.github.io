@@ -1,4 +1,5 @@
-// The "Daily" menu item shows how many daily games are waiting for your move.
+// The "Daily" menu item shows how many daily games are waiting for your move,
+// plus challenges from friends waiting for an answer.
 (function () {
   const accounts = window.GoAccounts;
   if (!accounts || !accounts.ready) return;
@@ -17,8 +18,9 @@
       return;
     }
     const { data, error } = await accounts.client.from("daily_games").select("id")
-      .eq("status", "playing")
-      .or(`and(black.eq.${me.id},turn.eq.black),and(white.eq.${me.id},turn.eq.white)`);
+      .in("status", ["playing", "open"])
+      .or(`and(status.eq.playing,black.eq.${me.id},turn.eq.black),and(status.eq.playing,white.eq.${me.id},turn.eq.white),`
+        + `and(status.eq.open,invited.eq.${me.id})`);
     if (error) return; // e.g. the daily games database step isn't set up yet
     badge.textContent = String(data.length);
     badge.hidden = data.length === 0;

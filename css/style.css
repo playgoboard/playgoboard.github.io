@@ -278,6 +278,13 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 .data-table button.small-link { flex: none; padding: 4px 10px; font-size: 13px; }
 .list-page .choice-row { max-width: 420px; }
 .list-page .rated-hint { margin-top: 12px; }
+.row-actions { display: inline-flex; gap: 6px; }
+.friend-select {
+  display: block; width: 100%; max-width: 420px; margin: -4px 0 10px; padding: 8px; border-radius: 6px;
+  border: 2px solid var(--panel-light); background: var(--bg); color: var(--text); font-family: inherit; font-size: 15px;
+}
+.invite-line { font-size: 18px; margin: 4px 0 14px; }
+.list-page .stat-row { margin-bottom: 14px; }
 .list-page .panel-block > .btn-primary { max-width: 420px; }
 
 /* Position editor */
