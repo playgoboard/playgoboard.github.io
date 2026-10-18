@@ -354,6 +354,7 @@
       if (token !== botToken) return;
       botThinking = false;
       const placed = !choice.pass && choice.moves.some(({ x, y }) => game.play(x, y).ok);
+      if (messageEl.textContent === t("Dragon is waking up: loading its brain (about 15 MB, only the first time)…")) messageEl.textContent = "";
       if (!placed) {
         game.pass();
         messageEl.textContent = game.phase === "play" ? t("{name} passed.", { name: botShortName() }) : "";

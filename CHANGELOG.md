@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.30.0
+- Dragon (and the Hint button) now think with a real neural network: KataGo's public-domain g170 b10c128 network, converted for the browser (tools/katago_to_onnx.py) and run with ONNX Runtime Web in background helpers, with an AlphaZero-style search. Checked to match the official KataGo program exactly. Beat the previous Dragon 2-0 by huge margins on 9x9. Downloads about 15 MB the first time Dragon thinks; falls back to the old Dragon if a browser can't run it.
+
 ## 0.29.0
 - Look window (🎨 in the top bar): Dark, Light or Match my device; board Classic wood, Light maple, Dark walnut or Green; stones Classic, Flat or Slate & shell. Changes show instantly with a small preview and are remembered in your browser on every page.
 

@@ -89,6 +89,13 @@
   daily_check_timeouts [anyone may call]). `daily.html` + `js/daily-page.js` (list + ?game=ID, pick then Submit,
   dead-stone warning via 60 playouts) + `js/daily-badge.js` (menu counter on every page). Only open challenges
   (the user chose that). GoAccounts.onChange now calls late listeners right away.
+- Neural Dragon (level 5 + Hint, BOT_LEVELS neural:true): `models/dragon-b10c128.onnx` (KataGo g170e-b10c128, CC0,
+  fp16 weights) made by `tools/katago_to_onnx.py` (numpy+onnx, model version 8 only); `tools/nn_check.py` compares
+  with the official KataGo (kata-raw-nn). Inputs: `js/nn-features.js` (GoNN: KataGo input v7 incl. ladders, our
+  rules). `js/dragon-search.js` (one PUCT tree on the page, Evaluator spreads batches of 4 over up to 8
+  `js/dragon-worker.js` helpers running ONNX Runtime Web 1.23.2 from js/vendor, wasm, 1 thread each; the .mjs is
+  loaded as a blob because some servers mislabel .mjs). ~25 positions/s per core on 9x9, ~8 on 19x19.
+  go-bot nnSearch falls back to the old MCTS if anything fails. Python 3.12 is installed (winget) for tools.
 - Look: `js/theme.js` (loaded in <head>, localStorage "goboard-look") sets data-theme/data-board/data-stones on
   <html>; css/style.css has the variables per choice (stones: --stone-*-1/2, --stone-white-edge, --shell-line,
   used by board-view.js via style="stop-color: var(...)"). Light mode: keep new colors as variables, not hard-coded.
