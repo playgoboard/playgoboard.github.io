@@ -11,7 +11,7 @@
     { level: 2, name: "Sprout", blurb: "Grabs stones when it can.", noise: 7 },
     { level: 3, name: "Fox", blurb: "Protects its stones, sets traps.", noise: 1.5 },
     { level: 4, name: "Tiger", blurb: "Reads ahead for about a second.", thinkMs: 1200 },
-    { level: 5, name: "Dragon", blurb: "Thinks hard, about 10 seconds a move.", thinkMs: 10000 },
+    { level: 5, name: "Dragon", blurb: "A neural network that learned Go from millions of games.", thinkMs: 10000, neural: true },
   ];
 
   // Search tuning. Prior visits let the rules of thumb steer the search early on.
@@ -596,6 +596,59 @@
     });
   }
 
+  // ---- The neural-network Dragon (js/dragon-worker.js + models/) ----
+  // Dragon and Hint use a KataGo network when the browser can run it; otherwise they fall
+  // back to the search above. The network (~6 MB) and its runtime (~12 MB) download the
+  // first time Dragon thinks, then the browser keeps them.
+
+  let evaluator = null;      // the helpers that run the network (kept between moves)
+  let nnBroken = false;
+  let nnReady = false;      // the network answered at least once on this page
+
+  function getEvaluator() {
+    if (nnBroken || typeof Worker !== "function" || !SCRIPT_URL || location.protocol === "file:" || !window.GoDragonSearch) return null;
+    if (evaluator && !evaluator.broken) return evaluator;
+    try {
+      const url = new URL("dragon-worker.js", SCRIPT_URL);
+      url.search = new URL(SCRIPT_URL).search;
+      evaluator = new window.GoDragonSearch.Evaluator(url, new URL("../models/dragon-b10c128.onnx", SCRIPT_URL).href);
+    } catch {
+      nnBroken = true;
+      evaluator = null;
+    }
+    return evaluator;
+  }
+
+  // What the network needs to know about the game: the board, whose turn, the ko point,
+  // the moves so far and the boards before the last two moves (for its ladder inputs).
+  function positionFromGame(game) {
+    const size = game.size, n = game.moves.length;
+    return {
+      size,
+      board: Int8Array.from(game.board),
+      toPlay: game.turn,
+      ko: koPointOf(game),
+      moves: game.moves.slice(-6).map((m) => ({ color: m.color, at: m.pass ? -1 : m.y * size + m.x })),
+      boards: [n >= 1 ? game.boardAfter(n - 1) : game.board, n >= 2 ? game.boardAfter(n - 2) : game.board].map((b) => Int8Array.from(b)),
+    };
+  }
+
+  // Resolves to { ranked, winRate, lead } (ranked: points best first, -1 = pass), or null
+  // if the network can't run here (then the caller uses the old search).
+  async function nnSearch(game, thinkMs, isCancelled) {
+    const current = getEvaluator();
+    if (!current) return null;
+    try {
+      const result = await window.GoDragonSearch.search(current, positionFromGame(game), thinkMs, isCancelled);
+      nnReady = true;
+      if (isCancelled()) return { ranked: [], winRate: 0, cancelled: true };
+      return { ranked: result.moves.map((m) => m.move), winRate: result.moves.length ? result.moves[0].win : 0, lead: result.rootLead };
+    } catch {
+      nnBroken = true;
+      return null;
+    }
+  }
+
   function monteCarlo(board, color, last, thinkMs, isCancelled) {
     const current = getPool();
     if (!current) return searchOnPage(board, color, last, thinkMs, isCancelled);
@@ -619,21 +672,43 @@
       ? { moves: ranked.map((i) => ({ x: i % game.size, y: Math.floor(i / game.size) })) }
       : { pass: true };
 
-    // If you pass and the bot is already ahead, it passes too and the game ends.
-    if (opponentPassed && leadsOnCount(game, color)) return delay(300).then(() => ({ pass: true }));
+    // Dragon (and Hint) think with the neural network when it can run here; its search
+    // decides about passing itself. If the network can't run, use the old search below.
+    if (level.neural) {
+      return nnSearch(game, level.thinkMs, isCancelled).then((result) => {
+        if (!result) return chooseWithoutNetwork();
+        if (result.cancelled) return { moves: [] };
+        const { ranked } = result;
+        if (!ranked.length || ranked[0] === -1) return { pass: true };
+        return toResult(ranked.filter((i) => i >= 0));
+      });
+    }
+    return chooseWithoutNetwork();
 
-    if (!level.thinkMs) {
+    function chooseWithoutNetwork() {
+      // If you pass and the bot is already ahead, it passes too and the game ends.
+      if (opponentPassed && leadsOnCount(game, color)) return delay(300).then(() => ({ pass: true }));
+      return level.thinkMs ? searchMove() : thumbMove();
+    }
+
+    function thumbMove() {
       return delay(350).then(() => {
         if (opponentPassed && game.moveNumber > board.n / 2) return { pass: true };
         return toResult(rankByRulesOfThumb(board, color, lastMove, level.noise));
       });
     }
-    return monteCarlo(board, color, lastMove, level.thinkMs, isCancelled).then(({ ranked, winRate }) => {
-      // Behind and you passed with no real chance left: accept the result.
-      if (opponentPassed && winRate < 0.15) return { pass: true };
-      return toResult(ranked);
-    });
+
+    function searchMove() {
+      return monteCarlo(board, color, lastMove, level.thinkMs, isCancelled).then(({ ranked, winRate }) => {
+        // Behind and you passed with no real chance left: accept the result.
+        if (opponentPassed && winRate < 0.15) return { pass: true };
+        return toResult(ranked);
+      });
+    }
   }
 
-  window.GoBot = { BOT_LEVELS, chooseBotMove, FastBoard, searchInWorker };
+  // True until Dragon's network has answered once on this page (it may still be downloading).
+  const brainLoading = () => !nnReady && !nnBroken;
+
+  window.GoBot = { BOT_LEVELS, chooseBotMove, FastBoard, searchInWorker, brainLoading };
 })();

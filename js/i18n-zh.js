@@ -176,6 +176,8 @@ window.GO_TEXT_ZH = {
   "Grabs stones when it can.": ["能吃子就吃子。", "能吃子就吃子。"],
   "Protects its stones, sets traps.": ["会保护自己的棋子，还会设陷阱。", "會保護自己的棋子，還會設陷阱。"],
   "Reads ahead for about a second.": ["每步往后计算大约一秒钟。", "每步往後計算大約一秒鐘。"],
+  "A neural network that learned Go from millions of games.": ["一个从数百万盘棋中学会围棋的神经网络。", "一個從數百萬盤棋中學會圍棋的神經網路。"],
+  "Dragon is waking up: loading its brain (about 15 MB, only the first time)…": ["神龙正在醒来：正在载入它的大脑（大约 15 MB，只有第一次需要）…", "神龍正在醒來：正在載入它的大腦（大約 15 MB，只有第一次需要）…"],
   "Thinks hard, about 10 seconds a move.": ["认真思考，每步大约 10 秒。", "認真思考，每步大約 10 秒。"],
   "The {n}×{n} board starts with your next game.": ["{n}×{n} 的棋盘会在下一局开始时使用。", "{n}×{n} 的棋盤會在下一局開始時使用。"],
   "Level {n}": ["{n} 级", "{n} 級"],

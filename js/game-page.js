@@ -336,11 +336,19 @@
 
   // ---- The computer's turn ----
 
+  // The first time Dragon thinks on a visit, its network downloads (cached after that).
+  function noteBrainDownload(level) {
+    if (BOT_LEVELS[level - 1].neural && window.GoBot.brainLoading()) {
+      messageEl.textContent = t("Dragon is waking up: loading its brain (about 15 MB, only the first time)…");
+    }
+  }
+
   function startBotIfItsTurn() {
     if (!isBotTurn() || botThinking) return;
     botThinking = true;
     const token = ++botToken;
     updatePanel();
+    noteBrainDownload(botLevel);
 
     chooseBotMove(game, botLevel, () => token !== botToken).then((choice) => {
       if (token !== botToken) return;
@@ -696,6 +704,7 @@
     const token = ++hintToken;
     const stillWanted = () => token === hintToken;
     updatePanel();
+    noteBrainDownload(HINT_LEVEL);
 
     chooseBotMove(game, HINT_LEVEL, () => !stillWanted()).then((choice) => {
       if (!stillWanted()) return;
