@@ -15,6 +15,23 @@ window.GO_TEXT_ZH = {
   "Leaderboard": ["排行榜", "排行榜"],
   "Daily": ["每日对局", "每日對局"],
 
+  // ---- Look window ----
+  "Look": ["外观", "外觀"],
+  "Look: colors, board and stones": ["外观：颜色、棋盘和棋子", "外觀：顏色、棋盤和棋子"],
+  "Site": ["网站", "網站"],
+  "Stones": ["棋子", "棋子"],
+  "Dark": ["深色", "深色"],
+  "Light": ["浅色", "淺色"],
+  "Match my device": ["跟随设备", "跟隨裝置"],
+  "Classic wood": ["经典木纹", "經典木紋"],
+  "Light maple": ["浅色枫木", "淺色楓木"],
+  "Dark walnut": ["深色胡桃木", "深色胡桃木"],
+  "Green": ["绿色", "綠色"],
+  "Classic": ["经典", "經典"],
+  "Flat": ["扁平", "扁平"],
+  "Slate & shell": ["石板与贝壳", "石板與貝殼"],
+  "Done": ["完成", "完成"],
+
   // ---- Daily games ----
   "GoBoard — Daily Games": ["GoBoard — 每日对局", "GoBoard — 每日對局"],
   "Daily games": ["每日对局", "每日對局"],

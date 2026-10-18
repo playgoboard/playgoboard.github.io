@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.29.0
+- Look window (🎨 in the top bar): Dark, Light or Match my device; board Classic wood, Light maple, Dark walnut or Green; stones Classic, Flat or Slate & shell. Changes show instantly with a small preview and are remembered in your browser on every page.
+
 ## 0.28.0
 - Phones: the top bar fits on one row (logo icon, short language names EN/简/繁, smaller buttons) and the menu is one row you can swipe, so pages no longer slide sideways. Small fixes to text spacing under buttons.
 - Phones: starting a game jumps up to the board.

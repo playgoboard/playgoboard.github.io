@@ -4,9 +4,14 @@
   const COLUMN_LETTERS = "ABCDEFGHJKLMNOPQRST"; // Go boards skip the letter I
   const STAR_POINTS = { 9: [2, 4, 6], 13: [3, 6, 9], 19: [3, 9, 15] };
 
+  // Stone colors come from CSS variables (css/style.css), so the Look window can restyle
+  // every board at once. White stones also get an edge (flat style) and shell lines.
   function stoneSvg(x, y, color, extraAttrs = "") {
-    const fill = color === BLACK ? "url(#stone-black)" : "url(#stone-white)";
-    return `<circle cx="${x + 1}" cy="${y + 1}" r="0.47" fill="${fill}" ${extraAttrs}/>`;
+    const cx = x + 1, cy = y + 1;
+    if (color === BLACK) return `<circle cx="${cx}" cy="${cy}" r="0.47" fill="url(#stone-black)" ${extraAttrs}/>`;
+    const lines = [-0.18, 0, 0.18].map((dy) =>
+      `<path d="M${cx - 0.36} ${cy + dy - 0.06} Q${cx} ${cy + dy + 0.1} ${cx + 0.36} ${cy + dy - 0.06}" fill="none" style="stroke: var(--shell-line)" stroke-width="0.025"/>`).join("");
+    return `<g ${extraAttrs}><circle cx="${cx}" cy="${cy}" r="0.47" fill="url(#stone-white)" style="stroke: var(--stone-white-edge)" stroke-width="0.04"/>${lines}</g>`;
   }
 
   // view: { size, board, dead?, territory?, lastMove?, hint?, ghostColor? (null = no hover stones), marks? }
@@ -17,10 +22,10 @@
     parts.push(`<svg viewBox="0 0 ${s + 1} ${s + 1}" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <radialGradient id="stone-black" cx="0.35" cy="0.35" r="0.7">
-          <stop offset="0" stop-color="#5a5a5a"/><stop offset="1" stop-color="#050505"/>
+          <stop offset="0" style="stop-color: var(--stone-black-1)"/><stop offset="1" style="stop-color: var(--stone-black-2)"/>
         </radialGradient>
         <radialGradient id="stone-white" cx="0.35" cy="0.35" r="0.75">
-          <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#c8c8c8"/>
+          <stop offset="0" style="stop-color: var(--stone-white-1)"/><stop offset="1" style="stop-color: var(--stone-white-2)"/>
         </radialGradient>
       </defs>
       <rect width="${s + 1}" height="${s + 1}" fill="var(--wood)"/>`);
@@ -29,7 +34,7 @@
       parts.push(`<line x1="1" y1="${k}" x2="${end}" y2="${k}" stroke="var(--line)" stroke-width="0.04"/>`);
       parts.push(`<line x1="${k}" y1="1" x2="${k}" y2="${end}" stroke="var(--line)" stroke-width="0.04"/>`);
     }
-    for (const sx of STAR_POINTS[s]) for (const sy of STAR_POINTS[s]) {
+    for (const sx of STAR_POINTS[s] || []) for (const sy of STAR_POINTS[s] || []) {
       parts.push(`<circle cx="${sx + 1}" cy="${sy + 1}" r="0.1" fill="var(--line)"/>`);
     }
 

@@ -1,3 +1,5 @@
+/* Colors. The Look window (js/theme.js) switches them with data-theme, data-board and
+   data-stones on <html>, so changing the look needs no reload. */
 :root {
   --bg: #302e2b;
   --panel: #262421;
@@ -7,8 +9,44 @@
   --accent: #81b64c;
   --accent-dark: #5d8a32;
   --danger: #c0504d;
+  --error-text: #ff8a80;
   --wood: #dcb35c;
   --line: #3b2a14;
+  color-scheme: dark;
+  /* Stones (used by board-view.js): two gradient colors each, and the shell lines. */
+  --stone-black-1: #5a5a5a;
+  --stone-black-2: #050505;
+  --stone-white-1: #ffffff;
+  --stone-white-2: #c8c8c8;
+  --stone-white-edge: transparent;
+  --shell-line: transparent;
+}
+
+/* Light site colors: chosen, or "match my device" on a device set to light. */
+:root[data-theme="light"] {
+  --bg: #f3f0e9; --panel: #ffffff; --panel-light: #e6e2d9; --text: #2b2a28; --text-dim: #6b6862;
+  --error-text: #b3261e; color-scheme: light;
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme="auto"] {
+    --bg: #f3f0e9; --panel: #ffffff; --panel-light: #e6e2d9; --text: #2b2a28; --text-dim: #6b6862;
+    --error-text: #b3261e; color-scheme: light;
+  }
+}
+
+/* Boards */
+:root[data-board="maple"] { --wood: #f0d9a3; --line: #4a3a22; }
+:root[data-board="walnut"] { --wood: #a9743f; --line: #24160a; }
+:root[data-board="green"] { --wood: #8fbf8a; --line: #1f3a1d; }
+
+/* Stones */
+:root[data-stones="flat"] {
+  --stone-black-1: #1c1c1c; --stone-black-2: #1c1c1c;
+  --stone-white-1: #f4f2ec; --stone-white-2: #f4f2ec; --stone-white-edge: #555;
+}
+:root[data-stones="shell"] {
+  --stone-black-1: #45484c; --stone-black-2: #15171a;
+  --stone-white-1: #fffdf5; --stone-white-2: #e4dcc8; --shell-line: rgba(160, 140, 100, 0.5);
 }
 
 * { box-sizing: border-box; }
@@ -92,7 +130,7 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 .link-button.danger { color: var(--danger); }
 .account-message { min-height: 1.2em; margin: 12px 0 0; }
 .account-message:empty { display: none; }
-.account-message.error { color: #ff8a80; }
+.account-message.error { color: var(--error-text); }
 .account-footer { margin: 12px 0 0; text-align: center; font-size: 12px; }
 .account-footer a { color: var(--text-dim); }
 .profile-stats { margin-bottom: 14px; }
@@ -101,7 +139,7 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 .friend-add input { margin-top: 0; letter-spacing: normal; text-transform: none; font-weight: 400; }
 .friend-note { min-height: 0; margin: 4px 0 8px; }
 .friend-note:empty { display: none; }
-.friend-note.error { color: #ff8a80; }
+.friend-note.error { color: var(--error-text); }
 .friend-section h3 { margin: 14px 0 6px; font-size: 14px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; }
 .friend-row {
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -269,6 +307,12 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 .text-page a { color: var(--accent); }
 .text-page .back-link { display: inline-block; width: auto; margin-top: 16px; color: #fff; text-decoration: none; }
 
+/* Look window */
+.look-button + .sound-toggle { margin-left: 0; }
+.look-dialog .choice-row button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: 1 0 auto; padding: 8px 10px; }
+.look-swatch { width: 14px; height: 14px; border-radius: 50%; border: 1px solid rgba(0, 0, 0, 0.35); flex: none; }
+.look-preview { width: 150px; margin: 6px auto 14px; }
+
 /* Daily games */
 .nav-badge {
   display: inline-block; min-width: 18px; margin-left: 5px; padding: 1px 5px; border-radius: 9px;
@@ -291,7 +335,7 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 /* Position editor */
 .setup-button { width: 100%; margin-top: 14px; }
 .editor-row { margin-top: 14px; }
-#editor-message.error { color: #ff8a80; }
+#editor-message.error { color: var(--error-text); }
 
 /* Leaderboard page */
 .list-page { max-width: 860px; margin: 0 auto; padding: 20px 16px 40px; display: flex; flex-direction: column; gap: 14px; }
@@ -304,7 +348,7 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 .data-table a { color: var(--text); font-weight: 600; }
 .data-table tr.me td { background: rgba(129, 182, 76, 0.15); }
 .data-table tr.won td:nth-child(5) { color: var(--accent); font-weight: 600; }
-.data-table tr.lost td:nth-child(5) { color: #ff8a80; }
+.data-table tr.lost td:nth-child(5) { color: var(--error-text); }
 .data-table .message { margin: 0; }
 .data-table .small-link { display: inline-block; padding: 4px 10px; font-size: 13px; color: var(--text); text-decoration: none; }
 .spaced-link { display: inline-block; margin-top: 12px; }
@@ -335,7 +379,7 @@ a.link-button { display: inline-block; }
   .top-bar { gap: 6px; padding: 8px 12px; }
   .logo { font-size: 0; gap: 0; } /* just the round logo, no name */
   .logo-mark { width: 32px; height: 32px; }
-  .account-button { max-width: 40vw; padding: 6px 8px; font-size: 13px; }
+  .account-button { max-width: 30vw; padding: 6px 8px; font-size: 13px; }
   .logout-button, .sound-toggle { padding: 6px 8px; font-size: 13px; }
   .lang-select { padding: 6px 2px; font-size: 13px; }
   .list-page { padding: 12px 12px 30px; }
