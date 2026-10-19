@@ -54,7 +54,9 @@
   moves). `js/puzzle-solver.js` reads capture fights (liberties, net moves, counter-captures) using
   GoBot.FastBoard: moveWins() judges the player's move, whiteReply() picks the toughest defence.
   When adding puzzles, check with the solver that exactly one first move wins. Solved list is in
-  localStorage "goboard-puzzles-solved". index.html?mode=bot|online|friend opens that mode.
+  localStorage "goboard-puzzles-solved". Levels via `level` (beginner/intermediate/advanced); self-play puzzles
+  use `kind` for title+hint (GoPuzzleText) and come from tools/puzzle-maker.html (run makePuzzles(n) on the
+  test server). GoDailyPuzzle() picks today's puzzle (UTC day); js/daily-puzzle-box.js shows it on index.html. index.html?mode=bot|online|friend opens that mode.
 - Accounts: Supabase project `iosvimeihfhpxsztqkkv` (free tier; pauses after ~1 week idle, the user
   restores it in the dashboard). URL + publishable key in `js/supabase-config.js` (public by design;
   NEVER the secret/service_role key). supabase-js 2.115.0 stored in js/vendor (no CDN, for China). `js/accounts.js` adds the

@@ -54,12 +54,25 @@
     });
   }
 
+  const LEVELS = [["beginner", "Beginner"], ["intermediate", "Intermediate"], ["advanced", "Advanced"]];
+  const daily = window.GoDailyPuzzle();
+
+  // The puzzles in level sections; today's puzzle has a star.
   function drawList() {
-    $("puzzle-grid").innerHTML = PUZZLES.map((p, i) => {
+    const chip = (p, i) => {
       const classes = ["puzzle-chip"];
       if (i === index) classes.push("current");
       if (solved.has(i)) classes.push("solved");
-      return `<button class="${classes.join(" ")}" data-index="${i}" title="${t(p.title)}">${solved.has(i) ? "✓" : i + 1}</button>`;
+      if (i === daily) classes.push("daily");
+      const title = window.GoPuzzleText(p).title + (i === daily ? ` · ${t("Today's puzzle")}` : "");
+      return `<button class="${classes.join(" ")}" data-index="${i}" title="${title}">${solved.has(i) ? "✓" : i + 1}</button>`;
+    };
+    $("puzzle-grid").innerHTML = LEVELS.map(([level, name]) => {
+      const chips = PUZZLES.map((p, i) => (p.level === level ? chip(p, i) : "")).join("");
+      if (!chips) return "";
+      const done = PUZZLES.filter((p, i) => p.level === level && solved.has(i)).length;
+      const total = PUZZLES.filter((p) => p.level === level).length;
+      return `<p class="label puzzle-level">${t(name)} <span>${done}/${total}</span></p><div class="puzzle-chips">${chips}</div>`;
     }).join("");
     $("puzzle-progress").textContent = t("Solved {n} of {total}.", { n: solved.size, total: PUZZLES.length });
   }
@@ -80,9 +93,10 @@
     marks = [];
     busy = false;
     done = false;
-    $("puzzle-title").textContent = `${index + 1}. ${t(puzzle.title)}`;
+    const text = window.GoPuzzleText(puzzle);
+    $("puzzle-title").textContent = `${index + 1}. ${text.title}${index === daily ? " ⭐" : ""}`;
     $("puzzle-count").textContent = solved.has(index) ? t("Solved ✓") : "";
-    $("puzzle-prompt").textContent = t(puzzle.prompt);
+    $("puzzle-prompt").textContent = text.prompt;
     setStatus(t("Black to play"), movesText());
     draw();
     drawList();
@@ -178,6 +192,7 @@
   });
 
   $("btn-reset").addEventListener("click", () => loadPuzzle(index));
+  $("btn-daily").addEventListener("click", () => loadPuzzle(daily));
   $("btn-next-puzzle").addEventListener("click", () => loadPuzzle(index + 1));
   $("btn-prev-puzzle").addEventListener("click", () => loadPuzzle(index - 1));
   $("puzzle-grid").addEventListener("click", (event) => {

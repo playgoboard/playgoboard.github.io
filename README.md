@@ -16,6 +16,8 @@ A website for playing the board game Go, in the style of chess.com.
   code or the invite link. They type the code under "Join" (or just click the link).
   Online play needs internet and uses the free PeerJS service to connect you. It may not work on
   some school or work networks. Undo and Hint are turned off in online games.
+- Puzzles: 60 capture puzzles in three levels (Beginner, Intermediate, Advanced), plus a
+  Today's puzzle on the main page that changes every day.
 
 ## How to play it
 Play online at **https://playgoboard.netlify.app/** (or https://playgoboard.github.io/),

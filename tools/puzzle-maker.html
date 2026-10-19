@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Puzzle maker (tool)</title>
+</head>
+<body>
+  <!-- Tool, not part of the site: finds capture puzzles in Dragon's self-play games.
+       Open it through the local test server and run window.makePuzzles(games) in the console. -->
+  <pre id="log"></pre>
+  <script src="../js/i18n-zh.js"></script>
+  <script src="../js/i18n.js"></script>
+  <script src="../js/go-rules.js"></script>
+  <script src="../js/go-bot.js"></script>
+  <script src="../js/nn-features.js"></script>
+  <script src="../js/dragon-search.js"></script>
+  <script src="../js/puzzle-solver.js"></script>
+  <script>
+  (function () {
+    const { BLACK, WHITE, EMPTY } = window.Go;
+    const { FastBoard } = window.GoBot;
+    const { moveWins, groupInfo } = window.GoPuzzleSolver;
+    const L = "ABCDEFGHJ";
+    const SIZE = 9;
+    const coord = (i) => `${L[i % SIZE]}${SIZE - Math.floor(i / SIZE)}`;
+
+    // One self-play game: the network's move chances, sampled a bit sharper than temperature 1
+    // so games look like real play but still differ.
+    const TEMPERATURE = 0.6;
+    async function selfPlay(evaluator, maxMoves) {
+      let pos = { size: SIZE, board: new Int8Array(SIZE * SIZE), toPlay: 1, ko: -1, moves: [], boards: [] };
+      const positions = [];
+      for (let k = 0; k < maxMoves; k++) {
+        const [ev] = await evaluator.evaluate([pos]);
+        positions.push(pos);
+        const weights = ev.priors.map((p) => Math.pow(p, 1 / TEMPERATURE));
+        const total = weights.reduce((a, b) => a + b, 0);
+        let r = Math.random() * total, pick = ev.moves[ev.moves.length - 1];
+        for (let j = 0; j < ev.moves.length; j++) { r -= weights[j]; if (r <= 0) { pick = ev.moves[j]; break; } }
+        if (pick < 0) break; // a pass ends the game for our purposes
+        const next = window.GoNN.play(pos, pick);
+        if (!next) break;
+        pos = next;
+      }
+      return positions;
+    }
+
+    // The side to move becomes Black (puzzles are always "Black to play").
+    function asBlackToPlay(pos) {
+      const cells = Array.from(pos.board, (c) => (pos.toPlay === BLACK ? c : c === EMPTY ? EMPTY : 3 - c));
+      const board = new FastBoard(SIZE, cells);
+      board.ko = pos.ko;
+      return board;
+    }
+
+    // Exactly one first move captures the group within n moves (and none does it faster)?
+    function uniqueSolution(board, target, maxN) {
+      for (let n = 1; n <= maxN; n++) {
+        const wins = [];
+        for (let p = 0; p < SIZE * SIZE; p++) {
+          if (board.cells[p] !== EMPTY) continue;
+          if (moveWins(board, [target], p, n)) { wins.push(p); if (wins.length > 1) break; }
+        }
+        if (wins.length === 1) return { n, answer: wins[0] };
+        if (wins.length > 1) return null; // several ways: not a good puzzle
+      }
+      return null;
+    }
+
+    function describe(board, target, answer, n) {
+      const after = new FastBoard(SIZE);
+      after.copyFrom(board);
+      after.play(answer, BLACK);
+      const own = groupInfo(after, answer);
+      const tg = groupInfo(after, target);
+      let ataris = 0;
+      const seen = new Set();
+      for (const nb of after.nbrs[answer]) {
+        if (after.cells[nb] !== WHITE || seen.has(nb)) continue;
+        const g = groupInfo(after, nb);
+        g.stones.forEach((s) => seen.add(s));
+        if (g.libs.length === 1) ataris++;
+      }
+      let category;
+      if (own.libs.length === 1) category = "sacrifice";
+      else if (ataris >= 2) category = "double-atari";
+      else if (tg.libs.length === 1) category = n >= 4 ? "chase" : "atari";
+      else category = "quiet";
+      const level = n >= 4 || category === "sacrifice" || category === "quiet" ? "advanced" : "intermediate";
+      return { category, level };
+    }
+
+    window.makePuzzles = async function (games = 40, log = (s) => { document.getElementById("log").textContent += s + "\n"; }) {
+      const evaluator = window.GoBot.dragonEvaluator();
+      const found = [];
+      for (let g = 0; g < games; g++) {
+        const positions = await selfPlay(evaluator, 70);
+        // Look at positions with 14-50 stones, latest first, and keep one puzzle per game.
+        for (let k = positions.length - 1; k >= 0; k--) {
+          const pos = positions[k];
+          const stones = pos.board.reduce((s, c) => s + (c ? 1 : 0), 0);
+          if (stones < 10 || stones > 36) continue;
+          const board = asBlackToPlay(pos);
+          let best = null;
+          const done = new Set();
+          for (let i = 0; i < SIZE * SIZE && !best; i++) {
+            if (board.cells[i] !== WHITE || done.has(i)) continue;
+            const info = groupInfo(board, i);
+            info.stones.forEach((s) => done.add(s));
+            if (info.libs.length < 2 || info.libs.length > 3 || info.stones.length < 2) continue;
+            const sol = uniqueSolution(board, i, 5);
+            if (!sol || sol.n < 2) continue;
+            // The answer must be near the fight (touching or one point from the group).
+            const ax = sol.answer % SIZE, ay = Math.floor(sol.answer / SIZE);
+            const near = info.stones.some((st) => Math.max(Math.abs(st % SIZE - ax), Math.abs(Math.floor(st / SIZE) - ay)) <= 2);
+            if (!near) continue;
+            // Dragon must agree it's a strong move: one of its top 4 choices, with a fair chance.
+            const [ev] = await evaluator.evaluate([pos]);
+            const order = ev.moves.map((m, j) => [ev.priors[j], m]).sort((a, b) => b[0] - a[0]).slice(0, 4);
+            if (!order.some(([pr, m]) => m === sol.answer && pr >= 0.05)) continue;
+            best = { target: i, ...sol, ...describe(board, i, sol.answer, sol.n), stones: info.stones.length };
+          }
+          if (!best) continue;
+          const rows = [];
+          for (let y = 0; y < SIZE; y++) {
+            let row = "";
+            for (let x = 0; x < SIZE; x++) { const c = board.cells[y * SIZE + x]; row += c === BLACK ? "X" : c === WHITE ? "O" : "."; }
+            rows.push(row);
+          }
+          found.push({ rows, targets: [coord(best.target)], moves: best.n, answer: coord(best.answer), category: best.category, level: best.level, groupSize: best.stones });
+          log(`game ${g + 1}: ${best.level} ${best.category} n=${best.n} answer ${coord(best.answer)} target ${coord(best.target)}`);
+          break;
+        }
+      }
+      return found;
+    };
+  })();
+  </script>
+</body>
+</html>

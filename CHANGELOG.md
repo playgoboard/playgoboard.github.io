@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.32.0
+- 40 new puzzles (20 Intermediate, 20 Advanced) found in Dragon's own games, each with exactly one correct first move. Puzzles are now grouped Beginner / Intermediate / Advanced.
+- Today's puzzle: one Intermediate or Advanced puzzle per day, the same for everyone. Shown on the main page and starred on the Puzzles page.
+
 ## 0.31.0
 - Dragon's Review: after any finished game (and on every Leaderboard replay, daily games included), the neural-network Dragon checks every position and labels each move ✓ Good, ~ Slip, ? Mistake or ?? Big mistake by how much it lowered that player's win chance. Win-chance graph (click to jump), a summary per player, and Dragon's preferred move as a green circle.
 
