@@ -20,6 +20,10 @@
   --stone-white-2: #c8c8c8;
   --stone-white-edge: transparent;
   --shell-line: transparent;
+  --stone-shine: transparent;
+  --board-texture: transparent;
+  --board-max: 720px;  /* how big the game board may get (Look window: Board size on screen) */
+  --board-gap: 170px;  /* room left above and below the board on a short screen */
 }
 
 /* Light site colors: chosen, or "match my device" on a device set to light. */
@@ -38,6 +42,11 @@
 :root[data-board="maple"] { --wood: #f0d9a3; --line: #4a3a22; }
 :root[data-board="walnut"] { --wood: #a9743f; --line: #24160a; }
 :root[data-board="green"] { --wood: #8fbf8a; --line: #1f3a1d; }
+:root[data-board="bamboo"] { --wood: #d8c27c; --line: #3d2f10; --board-texture: url(#tex-bamboo); }
+:root[data-board="marble"] { --wood: #dedbd5; --line: #3a3a44; --board-texture: url(#tex-marble); --board-stone-edge: rgba(0, 0, 0, 0.4); }
+:root[data-board="ocean"] { --wood: #6fa8c9; --line: #0d2b40; }
+:root[data-board="night"] { --wood: #3c3f45; --line: #c9ccd1; }
+:root[data-board="paper"] { --wood: #fbfaf6; --line: #333333; --board-stone-edge: rgba(0, 0, 0, 0.5); }
 
 /* Stones */
 :root[data-stones="flat"] {
@@ -48,6 +57,49 @@
   --stone-black-1: #45484c; --stone-black-2: #15171a;
   --stone-white-1: #fffdf5; --stone-white-2: #e4dcc8; --shell-line: rgba(160, 140, 100, 0.5);
 }
+:root[data-stones="glass"] {
+  --stone-black-1: #5d6b80; --stone-black-2: #0b1220;
+  --stone-white-1: #ffffff; --stone-white-2: #bcd6e8; --stone-shine: rgba(255, 255, 255, 0.6);
+}
+:root[data-stones="jade"] {
+  --stone-black-1: #4f9a72; --stone-black-2: #0e2b1d;
+  --stone-white-1: #fffaf3; --stone-white-2: #e9d6d3; --stone-shine: rgba(255, 255, 255, 0.35);
+}
+:root[data-stones="yunzi"] {
+  --stone-black-1: #343a34; --stone-black-2: #141814;
+  --stone-white-1: #f5f1e1; --stone-white-2: #dcd4b8;
+}
+
+/* Accent color (buttons, highlights) */
+:root[data-accent="blue"] { --accent: #4c8fd6; --accent-dark: #2f6aa8; }
+:root[data-accent="purple"] { --accent: #9b6bd6; --accent-dark: #6f45a8; }
+:root[data-accent="red"] { --accent: #d65a5a; --accent-dark: #a43838; }
+:root[data-accent="orange"] { --accent: #e08a3c; --accent-dark: #b0621c; }
+
+/* Page background */
+:root[data-background="gradient"] body {
+  background: radial-gradient(ellipse at top, var(--panel-light), var(--bg) 70%) fixed;
+}
+:root[data-background="wood"] body {
+  background: repeating-linear-gradient(100deg, transparent 0 22px, rgba(150, 100, 40, 0.07) 22px 25px, transparent 25px 61px,
+    rgba(150, 100, 40, 0.05) 61px 63px), var(--bg) fixed;
+}
+:root[data-background="pattern"] body {
+  background:
+    radial-gradient(circle, color-mix(in srgb, var(--text) 9%, transparent) 2px, transparent 2.5px) 0 0 / 40px 40px,
+    linear-gradient(color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(90deg, color-mix(in srgb, var(--text) 5%, transparent) 1px, transparent 1px) 0 0 / 40px 40px,
+    var(--bg);
+  background-attachment: fixed;
+}
+
+/* Text size: the panels, bars and pages grow or shrink, but never the board itself. */
+:root[data-text="small"] :is(.top-bar, .side-panel, .player-card, .list-page, .text-page, dialog) { zoom: 0.9; }
+:root[data-text="large"] :is(.top-bar, .side-panel, .player-card, .list-page, .text-page, dialog) { zoom: 1.15; }
+
+/* Board size on screen */
+:root[data-board-size="compact"] { --board-max: 520px; --board-gap: 260px; }
+:root[data-board-size="big"] { --board-max: 1000px; --board-gap: 120px; }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -164,7 +216,7 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 }
 
 .board-column {
-  width: min(720px, 100%, calc(100vh - 170px));
+  width: min(var(--board-max), 100%, calc(100vh - var(--board-gap)));
   min-width: 280px;
   display: flex;
   flex-direction: column;

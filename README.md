@@ -18,6 +18,8 @@ A website for playing the board game Go, in the style of chess.com.
   some school or work networks. Undo and Hint are turned off in online games.
 - Puzzles: 60 capture puzzles in three levels (Beginner, Intermediate, Advanced), plus a
   Today's puzzle on the main page that changes every day.
+- Look window (🎨 at the top): dark or light site, accent color, page background, text size,
+  board size, 9 boards, 6 stone styles and 3 stone sounds. Remembered in your browser.
 
 ## How to play it
 Play online at **https://playgoboard.netlify.app/** (or https://playgoboard.github.io/),

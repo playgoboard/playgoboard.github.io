@@ -8,10 +8,12 @@
   // every board at once. White stones also get an edge (flat style) and shell lines.
   function stoneSvg(x, y, color, extraAttrs = "") {
     const cx = x + 1, cy = y + 1;
-    if (color === BLACK) return `<circle cx="${cx}" cy="${cy}" r="0.47" fill="url(#stone-black)" ${extraAttrs}/>`;
+    // A small shine on top (only seen with glassy styles; --stone-shine is see-through otherwise).
+    const shine = `<ellipse cx="${cx - 0.15}" cy="${cy - 0.18}" rx="0.17" ry="0.1" transform="rotate(-35 ${cx - 0.15} ${cy - 0.18})" style="fill: var(--stone-shine)"/>`;
+    if (color === BLACK) return `<g ${extraAttrs}><circle cx="${cx}" cy="${cy}" r="0.47" fill="url(#stone-black)"/>${shine}</g>`;
     const lines = [-0.18, 0, 0.18].map((dy) =>
       `<path d="M${cx - 0.36} ${cy + dy - 0.06} Q${cx} ${cy + dy + 0.1} ${cx + 0.36} ${cy + dy - 0.06}" fill="none" style="stroke: var(--shell-line)" stroke-width="0.025"/>`).join("");
-    return `<g ${extraAttrs}><circle cx="${cx}" cy="${cy}" r="0.47" fill="url(#stone-white)" style="stroke: var(--stone-white-edge)" stroke-width="0.04"/>${lines}</g>`;
+    return `<g ${extraAttrs}><circle cx="${cx}" cy="${cy}" r="0.47" fill="url(#stone-white)" style="stroke: var(--board-stone-edge, var(--stone-white-edge))" stroke-width="0.04"/>${lines}${shine}</g>`;
   }
 
   // view: { size, board, dead?, territory?, lastMove?, hint?, ghostColor? (null = no hover stones), marks? }
@@ -27,8 +29,18 @@
         <radialGradient id="stone-white" cx="0.35" cy="0.35" r="0.75">
           <stop offset="0" style="stop-color: var(--stone-white-1)"/><stop offset="1" style="stop-color: var(--stone-white-2)"/>
         </radialGradient>
+        <pattern id="tex-bamboo" width="1.5" height="9" patternUnits="userSpaceOnUse">
+          <rect width="0.05" height="9" fill="rgba(90,60,10,0.28)"/><rect x="0.55" width="0.35" height="9" fill="rgba(255,255,255,0.13)"/>
+          <rect y="3.2" width="1.5" height="0.07" fill="rgba(90,60,10,0.25)"/>
+        </pattern>
+        <pattern id="tex-marble" width="7" height="7" patternUnits="userSpaceOnUse">
+          <path d="M-1 1.5 C1 0.8 2 2.8 4 2 S6.5 0.5 8 1.4" fill="none" stroke="rgba(110,110,125,0.35)" stroke-width="0.06"/>
+          <path d="M-1 4.6 C1.5 5.6 3 3.6 5 4.4 S7 6.2 8 5.6" fill="none" stroke="rgba(110,110,125,0.25)" stroke-width="0.04"/>
+          <path d="M2 -1 C2.6 1 1.6 3 2.8 5 S3.2 7 2.6 8" fill="none" stroke="rgba(110,110,125,0.15)" stroke-width="0.03"/>
+        </pattern>
       </defs>
-      <rect width="${s + 1}" height="${s + 1}" fill="var(--wood)"/>`);
+      <rect width="${s + 1}" height="${s + 1}" fill="var(--wood)"/>
+      <rect width="${s + 1}" height="${s + 1}" style="fill: var(--board-texture)"/>`);
 
     for (let k = 1; k <= s; k++) {
       parts.push(`<line x1="1" y1="${k}" x2="${end}" y2="${k}" stroke="var(--line)" stroke-width="0.04"/>`);

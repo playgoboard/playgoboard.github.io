@@ -106,6 +106,9 @@
 - Look: `js/theme.js` (loaded in <head>, localStorage "goboard-look") sets data-theme/data-board/data-stones on
   <html>; css/style.css has the variables per choice (stones: --stone-*-1/2, --stone-white-edge, --shell-line,
   used by board-view.js via style="stop-color: var(...)"). Light mode: keep new colors as variables, not hard-coded.
+  Also data-accent/background/text/board-size; --board-texture (url(#tex-bamboo|marble), patterns in board-view defs),
+  --stone-shine, --board-stone-edge, --board-max/--board-gap. Stone sound style: GoLook.soundStyle() read by sounds.js;
+  "Off" = GoSounds mute, which fires a "goboard-sound" event so the 🔊 buttons update.
 - Languages: `js/i18n.js` (GoI18n.t, sentences, beforeChange) + `js/i18n-zh.js` (GO_TEXT_ZH: "English": [simplified, traditional]).
   The ENGLISH TEXT IS THE KEY: wrap new player-visible text in t("...") (placeholders {name}) and add a line to
   i18n-zh.js. Static HTML text nodes, placeholders, titles and aria-labels are translated on DOMContentLoaded;

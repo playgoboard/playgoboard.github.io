@@ -68,6 +68,7 @@
       draw();
     });
     draw();
+    window.addEventListener("goboard-sound", draw);
   }
 
   // ---- The list page ----

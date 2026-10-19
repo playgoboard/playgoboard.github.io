@@ -233,6 +233,7 @@
     if (!window.GoSounds.isMuted()) window.GoSounds.stone(); // a sample so you hear it's on
   });
   updateSoundButton();
+  window.addEventListener("goboard-sound", updateSoundButton);
 
   // ---- Game clock ----
 

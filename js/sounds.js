@@ -38,25 +38,33 @@
   }
 
   // The low "thock" of the board underneath.
-  function thump(when) {
+  function thump(when, { from, to, volume }) {
     const ctx = context();
     if (!ctx) return;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     const start = ctx.currentTime + when;
-    osc.frequency.setValueAtTime(190, start);
-    osc.frequency.exponentialRampToValueAtTime(70, start + 0.08);
-    gain.gain.setValueAtTime(0.35, start);
+    osc.frequency.setValueAtTime(from, start);
+    osc.frequency.exponentialRampToValueAtTime(to, start + 0.08);
+    gain.gain.setValueAtTime(volume, start);
     gain.gain.exponentialRampToValueAtTime(0.001, start + 0.1);
     osc.connect(gain).connect(ctx.destination);
     osc.start(start);
     osc.stop(start + 0.12);
   }
 
+  // The stone sounds picked in the Look window (theme.js): a click on top and a thump below.
+  const STYLES = {
+    wood: { click: { pitch: 2600, volume: 1.4, length: 0.05 }, thump: { from: 190, to: 70, volume: 0.35 } },
+    soft: { click: { pitch: 1300, volume: 0.6, length: 0.07 }, thump: { from: 150, to: 60, volume: 0.3 } },
+    slate: { click: { pitch: 4200, volume: 1.6, length: 0.035 }, thump: { from: 320, to: 140, volume: 0.18 } },
+  };
+  const style = () => STYLES[window.GoLook ? window.GoLook.soundStyle() : "wood"] || STYLES.wood;
+
   function stone() {
     if (muted) return;
-    click(0, { pitch: 2600, volume: 1.4, length: 0.05 });
-    thump(0);
+    click(0, style().click);
+    thump(0, style().thump);
   }
 
   // Captured stones being picked up: a few quick light clicks, more for bigger captures.
@@ -71,6 +79,7 @@
   function setMuted(value) {
     muted = value;
     try { localStorage.setItem(MUTE_KEY, value ? "1" : "0"); } catch { /* not saved, still works */ }
+    window.dispatchEvent(new Event("goboard-sound")); // so every sound button shows it
   }
 
   window.GoSounds = { stone, capture, isMuted: () => muted, setMuted };

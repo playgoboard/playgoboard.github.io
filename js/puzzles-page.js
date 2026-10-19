@@ -213,6 +213,7 @@
     updateSoundButton();
   });
   updateSoundButton();
+  window.addEventListener("goboard-sound", updateSoundButton);
 
   // Start where the address says (#5 = puzzle 5), otherwise at the first unsolved one.
   const fromAddress = Number(location.hash.slice(1)) - 1;

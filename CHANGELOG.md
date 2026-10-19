@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.33.0
+- More choices in the Look window (🎨): 5 new boards (Bamboo, Marble, Blue ocean, Night, Paper), 3 new stone styles (Glass, Jade & pearl, Yunzi), stone sound (Wood, Soft, Slate, Off), accent color (Green, Blue, Purple, Red, Orange), page background (Plain, Soft gradient, Wood, Go pattern), text size (Small, Normal, Large) and board size on screen (Compact, Normal, Big).
+
 ## 0.32.0
 - 40 new puzzles (20 Intermediate, 20 Advanced) found in Dragon's own games, each with exactly one correct first move. Puzzles are now grouped Beginner / Intermediate / Advanced.
 - Today's puzzle: one Intermediate or Advanced puzzle per day, the same for everyone. Shown on the main page and starred on the Puzzles page.
