@@ -123,8 +123,10 @@
     return (pos.toPlay === 1) === blackWins ? 1 : 0; // for the player to move
   }
 
-  // Resolves to { moves: [{ move, visits, win }] best first, rootWin, rootLead }.
-  async function search(evaluator, rootPos, thinkMs, isCancelled) {
+  // Resolves to { moves: [{ move, visits, win }] best first, rootWin, rootLead, rootQ, visits }.
+  // rootWin: the network's first look; rootQ: the win chance after searching (player to move).
+  // maxVisits (optional) stops the search after that many looks, for reviews.
+  async function search(evaluator, rootPos, thinkMs, isCancelled, maxVisits = Infinity) {
     const GoNN = window.GoNN;
     const deadline = performance.now() + thinkMs;
     const root = makeNode(null, 1);
@@ -133,7 +135,7 @@
     root.visits = 1;
     root.valueSum = 1 - rootEval.win;
 
-    const stillThinking = () => performance.now() < deadline && !isCancelled();
+    const stillThinking = () => performance.now() < deadline && !isCancelled() && root.visits < maxVisits;
 
     async function descendBatch() {
       const leaves = [];
@@ -181,14 +183,15 @@
     }
 
     // One loop per helper keeps every helper busy.
-    await Promise.all(Array.from({ length: evaluator.size }, async () => {
+    const loops = Math.max(1, Math.min(evaluator.size, Math.ceil(maxVisits / BATCH)));
+    await Promise.all(Array.from({ length: loops }, async () => {
       while (stillThinking()) await descendBatch();
     }));
 
     const moves = root.children.filter((c) => c.visits > 0)
       .map((c) => ({ move: c.move, visits: c.visits, win: c.valueSum / c.visits }))
       .sort((a, b) => b.visits - a.visits);
-    return { moves, rootWin: rootEval.win, rootLead: rootEval.lead, visits: root.visits };
+    return { moves, rootWin: rootEval.win, rootLead: rootEval.lead, rootQ: 1 - root.valueSum / root.visits, visits: root.visits };
   }
 
   window.GoDragonSearch = { Evaluator, search };

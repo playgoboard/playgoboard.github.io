@@ -253,6 +253,7 @@
         size: game.size,
         board: game.boardAfter(shown),
         lastMove: move && !move.pass ? game.index(move.x, move.y) : null,
+        hint: review ? window.GoReview.suggestion(review.data, shown) : null,
         ghostColor: null,
       });
       for (const seat of ["top", "bottom"]) {
@@ -260,7 +261,8 @@
         $(`info-${seat}`).textContent = t("Captured: {n}", { n: captures[color] }) + (color === WHITE ? ` · ${t("Komi 7.5")}` : "");
         $(`card-${seat}`).classList.toggle("to-move", turnColor === color);
       }
-      window.GoMoveList.render($("move-list"), game.moves, game.size, shown);
+      window.GoMoveList.render($("move-list"), game.moves, game.size, shown, review ? window.GoReview.moveLabels(review.data) : undefined);
+      if (review) review.panel.show(shown);
       $("btn-first").disabled = $("btn-prev").disabled = shown === 0;
       $("btn-next").disabled = $("btn-last").disabled = shown >= total;
     }
@@ -269,6 +271,38 @@
       shown = Math.max(0, Math.min(total, count));
       draw();
     };
+
+    // Dragon's Review of this game (js/dragon-review.js).
+    let review = null;
+    const reviewButton = $("btn-review");
+    reviewButton.hidden = !window.GoReview || total < 2;
+    reviewButton.addEventListener("click", async () => {
+      reviewButton.hidden = true;
+      const box = $("review-block");
+      box.hidden = false;
+      box.textContent = "";
+      const heading = document.createElement("h2");
+      heading.textContent = t("Dragon's Review");
+      const progress = document.createElement("p");
+      progress.className = "message thinking";
+      progress.textContent = window.GoBot.brainLoading()
+        ? t("Dragon is waking up: loading its brain (about 15 MB, only the first time)…")
+        : t("Dragon is reviewing the game… {n}%", { n: 0 });
+      box.append(heading, progress);
+      try {
+        const data = await window.GoReview.analyze({
+          size: game.size,
+          startBoard: new Array(game.size * game.size).fill(0),
+          moves: game.moves,
+          onProgress: (done) => { progress.textContent = t("Dragon is reviewing the game… {n}%", { n: Math.round(done * 100) }); },
+          isCancelled: () => false,
+        });
+        review = { data, panel: window.GoReview.renderPanel(box, data, go) };
+        draw();
+      } catch {
+        box.textContent = t("Dragon's Review couldn't run in this browser.");
+      }
+    });
     $("btn-first").addEventListener("click", () => go(0));
     $("btn-prev").addEventListener("click", () => go(shown - 1));
     $("btn-next").addEventListener("click", () => go(shown + 1));

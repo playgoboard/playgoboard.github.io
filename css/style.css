@@ -307,6 +307,35 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 .text-page a { color: var(--accent); }
 .text-page .back-link { display: inline-block; width: auto; margin-top: 16px; color: #fff; text-decoration: none; }
 
+/* Dragon's Review */
+:root { --rv-good: #81b64c; --rv-slip: #d6b13f; --rv-mistake: #e08a3c; --rv-big: #d9534f; }
+.btn-review { background: #6b4fa0; color: #fff; }
+.review-row { margin-top: 10px; }
+.review-block h2 { margin-bottom: 8px; }
+.review-summary { border-collapse: collapse; margin-bottom: 4px; font-size: 14px; }
+.review-summary th, .review-summary td { padding: 3px 10px; text-align: center; }
+.review-summary td:first-child { text-align: left; padding-left: 0; color: var(--text-dim); }
+.review-legend { margin: 0 0 8px; font-size: 12px; color: var(--text-dim); }
+.rv-good { color: var(--rv-good); }
+.rv-slip { color: var(--rv-slip); }
+.rv-mistake { color: var(--rv-mistake); }
+.rv-big { color: var(--rv-big); font-weight: 700; }
+.review-graph { position: relative; height: 96px; border-radius: 6px; overflow: hidden; background: var(--bg); cursor: pointer; }
+.review-graph svg { display: block; width: 100%; height: 100%; }
+.rv-black-half { fill: rgba(0, 0, 0, 0.18); }
+.rv-mid { stroke: var(--text-dim); stroke-width: 0.5; stroke-dasharray: 3 3; }
+.rv-area { fill: rgba(20, 20, 20, 0.45); }
+.rv-line { fill: none; stroke: var(--text); stroke-width: 1.5; }
+.rv-dot.rv-mistake { fill: var(--rv-mistake); }
+.rv-dot.rv-big { fill: var(--rv-big); }
+.rv-cursor { stroke: var(--accent); stroke-width: 2; }
+.review-graph-labels span { position: absolute; left: 6px; font-size: 11px; color: var(--text-dim); pointer-events: none; }
+.review-graph-labels span:first-child { top: 3px; }
+.review-graph-labels span:last-child { bottom: 3px; }
+.review-info { margin: 10px 0 0; font-size: 14px; line-height: 1.45; }
+.move-mark { margin-left: 4px; font-weight: 700; font-size: 12px; }
+.move.current .move-mark { color: #fff; }
+
 /* Look window */
 .look-button + .sound-toggle { margin-left: 0; }
 .look-dialog .choice-row button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; flex: 1 0 auto; padding: 8px 10px; }
@@ -371,7 +400,7 @@ a.link-button { display: inline-block; }
   .nav-item { white-space: nowrap; flex: none; }
   .game-layout { gap: 12px; padding-top: 10px; }
   .side-panel { width: min(720px, 100%); }
-  .editor-block, .controls-block, .chat-block, .moves-block { order: -1; }
+  .editor-block, .controls-block, .review-block, .chat-block, .moves-block { order: -1; }
 }
 
 /* Phones: everything above the menu fits on one row. */

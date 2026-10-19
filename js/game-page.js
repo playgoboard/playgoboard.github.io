@@ -127,7 +127,7 @@
       dead: viewing ? null : game.dead,
       territory: scoring ? game.score().territory : null,
       lastMove,
-      hint: hint && !hint.pass && !viewing ? hint : null,
+      hint: hint && !hint.pass && !viewing ? hint : review ? window.GoReview.suggestion(review.data, shownCount()) : null,
       ghostColor: ghostsOn ? game.turn : null,
     });
   }
@@ -170,6 +170,7 @@
     window.GoChat.show(online);
     const rematchButton = $("btn-rematch");
     $("rematch-row").hidden = !(online && game.phase === "over");
+    $("review-row").hidden = !(game.phase === "over" && game.moves.length >= 2 && !review && !reviewing && window.GoReview);
     rematchButton.disabled = !linkOpen || rematchMine;
     rematchButton.textContent = rematchMine ? t("Waiting for {yourFriend}…", { yourFriend: yourFriend() })
       : rematchFriend ? t("Accept rematch") : t("Rematch");
@@ -286,7 +287,8 @@
   function showMoveList() {
     if (viewCount !== null && viewCount >= game.moves.length) viewCount = null; // caught up with the game
     const shown = viewCount === null ? game.moves.length : viewCount;
-    window.GoMoveList.render($("move-list"), game.moves, game.size, shown);
+    window.GoMoveList.render($("move-list"), game.moves, game.size, shown, review ? window.GoReview.moveLabels(review.data) : undefined);
+    if (review) review.panel.show(shown);
     const viewing = viewCount !== null;
     $("btn-first").disabled = $("btn-prev").disabled = shown === 0;
     $("btn-next").disabled = $("btn-last").disabled = !viewing;
@@ -507,9 +509,66 @@
     refresh();
   }
 
+  // ---- Dragon's Review (js/dragon-review.js) ----
+
+  let review = null;     // { data, panel } once the finished game was reviewed
+  let reviewing = false;
+  let reviewToken = 0;   // bumped to cancel a review in progress
+
+  function resetReview() {
+    reviewToken++;
+    review = null;
+    reviewing = false;
+    $("review-block").hidden = true;
+    $("review-block").textContent = "";
+  }
+
+  async function startReview() {
+    if (reviewing || review || game.phase !== "over") return;
+    const token = ++reviewToken;
+    reviewing = true;
+    const box = $("review-block");
+    box.hidden = false;
+    box.textContent = "";
+    const heading = document.createElement("h2");
+    heading.textContent = t("Dragon's Review");
+    const progress = document.createElement("p");
+    progress.className = "message thinking";
+    progress.textContent = window.GoBot.brainLoading()
+      ? t("Dragon is waking up: loading its brain (about 15 MB, only the first time)…")
+      : t("Dragon is reviewing the game… {n}%", { n: 0 });
+    const cancel = document.createElement("button");
+    cancel.className = "btn";
+    cancel.textContent = t("Cancel");
+    cancel.addEventListener("click", () => { resetReview(); refresh(); });
+    box.append(heading, progress, cancel);
+    refresh();
+    try {
+      const data = await window.GoReview.analyze({
+        size: game.size,
+        startBoard: game.boardAfter(0),
+        moves: game.moves,
+        onProgress: (done) => { progress.textContent = t("Dragon is reviewing the game… {n}%", { n: Math.round(done * 100) }); },
+        isCancelled: () => token !== reviewToken,
+      });
+      if (token !== reviewToken || !data) return;
+      reviewing = false;
+      review = { data, panel: window.GoReview.renderPanel(box, data, (count) => viewMove(count)) };
+      refresh();
+    } catch (error) {
+      if (token !== reviewToken) return;
+      reviewing = false;
+      box.textContent = t("Dragon's Review couldn't run in this browser.");
+      refresh();
+    }
+  }
+
+  $("btn-review").addEventListener("click", startReview);
+
   // ---- Starting games ----
 
   function beginGame(size, newOpponent, myColor, clockSettings) {
+    resetReview();
     cancelBot();
     leaveOnlineGame();
     onlineActions = [];
@@ -794,6 +853,7 @@
         onlineActions = [];
         clock = new GameClock(settings.minutes, settings.bonus);
         if (kind === "rematch") viewCount = null;
+        if (kind === "rematch") resetReview();
         game = new GoGame(size);
         gameNumber++;
         humanColor = myColor;

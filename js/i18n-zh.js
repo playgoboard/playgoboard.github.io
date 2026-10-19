@@ -15,6 +15,25 @@ window.GO_TEXT_ZH = {
   "Leaderboard": ["排行榜", "排行榜"],
   "Daily": ["每日对局", "每日對局"],
 
+  // ---- Dragon's Review ----
+  "Dragon's Review": ["神龙复盘", "神龍覆盤"],
+  "Good": ["好棋", "好棋"],
+  "Slip": ["小失误", "小失誤"],
+  "Mistake": ["失误", "失誤"],
+  "Big mistake": ["大失误", "大失誤"],
+  "Black ahead": ["黑棋领先", "黑棋領先"],
+  "White ahead": ["白棋领先", "白棋領先"],
+  "Click a move or the graph to see Dragon's notes. Dots on the graph mark mistakes.":
+    ["点击一步棋或图表来看神龙的点评。图表上的圆点标出失误。", "點擊一步棋或圖表來看神龍的點評。圖表上的圓點標出失誤。"],
+  "Move {n} ({color}, {point}): {label} {mark}": ["第 {n} 步（{color}，{point}）：{label} {mark}", "第 {n} 步（{color}，{point}）：{label} {mark}"],
+  "{color}'s win chance: {before} → {after}.": ["{color}的胜率：{before} → {after}。", "{color}的勝率：{before} → {after}。"],
+  "Dragon agrees with this move.": ["神龙也会这样下。", "神龍也會這樣下。"],
+  "Dragon's favorite was {point} (green circle), but this move is fine too.": ["神龙最喜欢的是 {point}（绿色圆圈），不过这步也不错。", "神龍最喜歡的是 {point}（綠色圓圈），不過這步也不錯。"],
+  "Dragon would have passed.":["神龙会选择停一手。", "神龍會選擇停一手。"],
+  "Dragon prefers {point} (green circle).": ["神龙更喜欢 {point}（绿色圆圈）。", "神龍更喜歡 {point}（綠色圓圈）。"],
+  "Dragon is reviewing the game… {n}%": ["神龙正在复盘… {n}%", "神龍正在覆盤… {n}%"],
+  "Dragon's Review couldn't run in this browser.": ["神龙复盘无法在这个浏览器里运行。", "神龍覆盤無法在這個瀏覽器裡執行。"],
+
   // ---- Look window ----
   "Look": ["外观", "外觀"],
   "Look: colors, board and stones": ["外观：颜色、棋盘和棋子", "外觀：顏色、棋盤和棋子"],

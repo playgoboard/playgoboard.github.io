@@ -96,6 +96,11 @@
   `js/dragon-worker.js` helpers running ONNX Runtime Web 1.23.2 from js/vendor, wasm, 1 thread each; the .mjs is
   loaded as a blob because some servers mislabel .mjs). ~25 positions/s per core on 9x9, ~8 on 19x19.
   go-bot nnSearch falls back to the old MCTS if anything fails. Python 3.12 is installed (winget) for tools.
+- Dragon's Review: `js/dragon-review.js` (GoReview.analyze: per position a short PUCT search, VISITS 40/20/12
+  for 9/13/19, labels by the mover's win-chance drop: <3% good, <10% slip, <20% mistake, else big; no labels
+  once the game is decided >97%/<3%; renderPanel graph + summary; suggestion; moveLabels for move-list.js).
+  Game page: #review-row / #review-block (resetReview on new game/rematch). leaderboard.html loads go-bot,
+  nn-features, dragon-search, dragon-review for replays. GoDragonSearch.search(..., maxVisits) returns rootQ.
 - Look: `js/theme.js` (loaded in <head>, localStorage "goboard-look") sets data-theme/data-board/data-stones on
   <html>; css/style.css has the variables per choice (stones: --stone-*-1/2, --stone-white-edge, --shell-line,
   used by board-view.js via style="stop-color: var(...)"). Light mode: keep new colors as variables, not hard-coded.

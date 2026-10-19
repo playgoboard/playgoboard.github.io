@@ -9,7 +9,8 @@
   }
 
   // `shown` = how many moves the board is showing right now (moves.length when live).
-  function render(container, moves, size, shown) {
+  // `labels` (optional, from Dragon's Review): [{ id, mark }] per move, shown after the move.
+  function render(container, moves, size, shown, labels) {
     if (!moves.length) {
       container.innerHTML = `<p class="move-empty">${t("No moves yet.")}</p>`;
       return;
@@ -19,7 +20,9 @@
       const cell = (k) => {
         if (k >= moves.length) return "<span></span>";
         const current = k + 1 === shown ? " current" : "";
-        return `<button class="move${current}" data-count="${k + 1}">${moveName(moves[k], size)}</button>`;
+        const label = labels && labels[k];
+        const mark = label && label.id !== "good" ? `<span class="move-mark rv-${label.id}">${label.mark}</span>` : "";
+        return `<button class="move${current}" data-count="${k + 1}">${moveName(moves[k], size)}${mark}</button>`;
       };
       rows.push(`<div class="move-row"><span class="move-number">${i / 2 + 1}.</span>${cell(i)}${cell(i + 1)}</div>`);
     }

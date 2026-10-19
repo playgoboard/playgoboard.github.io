@@ -710,5 +710,5 @@
   // True until Dragon's network has answered once on this page (it may still be downloading).
   const brainLoading = () => !nnReady && !nnBroken;
 
-  window.GoBot = { BOT_LEVELS, chooseBotMove, FastBoard, searchInWorker, brainLoading };
+  window.GoBot = { BOT_LEVELS, chooseBotMove, FastBoard, searchInWorker, brainLoading, dragonEvaluator: getEvaluator };
 })();

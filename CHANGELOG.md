@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.31.0
+- Dragon's Review: after any finished game (and on every Leaderboard replay, daily games included), the neural-network Dragon checks every position and labels each move ✓ Good, ~ Slip, ? Mistake or ?? Big mistake by how much it lowered that player's win chance. Win-chance graph (click to jump), a summary per player, and Dragon's preferred move as a green circle.
+
 ## 0.30.0
 - Dragon (and the Hint button) now think with a real neural network: KataGo's public-domain g170 b10c128 network, converted for the browser (tools/katago_to_onnx.py) and run with ONNX Runtime Web in background helpers, with an AlphaZero-style search. Checked to match the official KataGo program exactly. Beat the previous Dragon 2-0 by huge margins on 9x9. Downloads about 15 MB the first time Dragon thinks; falls back to the old Dragon if a browser can't run it.
 
