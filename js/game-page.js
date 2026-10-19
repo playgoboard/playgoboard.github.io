@@ -150,8 +150,17 @@
 
   function updatePanel() {
     const online = opponent === "online";
-    $("name-black").textContent = cardName(BLACK);
-    $("name-white").textContent = cardName(WHITE);
+    for (const [color, id] of [[BLACK, "name-black"], [WHITE, "name-white"]]) {
+      // Players with an account: the name opens their profile (in a new tab, so the game keeps going).
+      const player = onlinePlayer(color);
+      if (player && player.id) {
+        const a = window.GoAvatars.profileLink(player.username, cardName(color));
+        a.target = "_blank";
+        $(id).replaceChildren(a);
+      } else {
+        $(id).textContent = cardName(color);
+      }
+    }
     $("info-black").textContent = t("Captured: {n}", { n: game.captures[BLACK] });
     $("info-white").textContent = `${t("Captured: {n}", { n: game.captures[WHITE] })} · ${t("Komi 7.5")}`;
 

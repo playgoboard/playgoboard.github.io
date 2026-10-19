@@ -496,3 +496,34 @@ a.link-button { display: inline-block; }
 
 .status { margin: 0 0 6px; font-size: 18px; font-weight: 700; }
 .message { margin: 0 0 12px; min-height: 1.3em; color: var(--text-dim); font-size: 14px; }
+
+/* Player profiles (js/profile-extras.js, js/avatars.js) */
+.avatar {
+  display: inline-flex; align-items: center; justify-content: center; flex: none; border-radius: 50%;
+  color: #fff; font-weight: 700; line-height: 1; overflow: hidden; user-select: none;
+}
+.player-link { display: inline-flex; align-items: center; gap: 8px; }
+.profile-head { display: flex; align-items: center; gap: 14px; margin: 10px 0 14px; }
+.profile-head h1 { margin: 0; }
+.profile-about { margin: 4px 0 0; color: var(--text-dim); white-space: pre-wrap; overflow-wrap: anywhere; }
+.profile-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; }
+.profile-actions .btn { width: auto; padding: 8px 14px; text-decoration: none; }
+.profile-actions .message { flex-basis: 100%; margin: 0; }
+.friend-state { color: var(--accent); font-weight: 600; padding: 8px 4px; }
+.rating-graph { display: block; width: 100%; height: auto; }
+.rg-grid { stroke: var(--panel-light); stroke-width: 1; }
+.rg-line { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; }
+.rg-area { fill: var(--accent); opacity: 0.12; }
+.rg-dot { fill: var(--accent); }
+.rg-label { fill: var(--text-dim); font-size: 15px; font-family: inherit; }
+.size-stats { margin-top: 10px; }
+.avatar-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.avatar-grid button { padding: 3px; border: 2px solid transparent; border-radius: 50%; background: none; cursor: pointer; }
+.avatar-grid button.selected { border-color: var(--accent); }
+.about-input {
+  display: block; width: 100%; padding: 8px; border-radius: 6px; border: 1px solid var(--panel-light);
+  background: var(--bg); color: var(--text); font: inherit; resize: vertical;
+}
+.char-count { text-align: right; margin: 4px 0 10px; font-size: 12px; }
+.profile-name-link { color: inherit; text-decoration: none; }
+.profile-name-link:hover { text-decoration: underline; }

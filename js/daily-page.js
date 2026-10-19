@@ -53,6 +53,8 @@
 
   const daysText = (days) => (days === 1 ? t("1 day per move") : t("{n} days per move", { n: days }));
   const playerText = (p) => (p ? `${p.username} (${p.rating})` : t("Deleted player"));
+  // The same, as a link to the player's profile.
+  const playerCell = (p) => (p ? window.GoAvatars.profileLink(p.username, playerText(p)) : playerText(p));
   const myColorIn = (game) => (!me() ? null : game.black === me().id ? "black" : game.white === me().id ? "white" : null);
 
   function soundButtonSetup() {
@@ -86,14 +88,19 @@
     }
   }
 
-  // Your accepted friends, for "A friend".
+  // Your accepted friends, for "A player". Coming from someone's profile ("Daily challenge"),
+  // that player is in the list too, even if they aren't your friend.
   async function loadFriends() {
     const id = me().id;
     const { data } = await accounts.client.from("friendships").select(`requester, addressee,
       requester_profile:profiles!friendships_requester_fkey(id, username),
       addressee_profile:profiles!friendships_addressee_fkey(id, username)`).eq("status", "accepted");
-    return (data || []).map((r) => (r.requester === id ? r.addressee_profile : r.requester_profile)).filter(Boolean)
-      .sort((a, b) => a.username.localeCompare(b.username));
+    const list = (data || []).map((r) => (r.requester === id ? r.addressee_profile : r.requester_profile)).filter(Boolean);
+    if (challengeId && challengeId !== id && !list.some((f) => f.id === challengeId)) {
+      const { data: player } = await accounts.client.from("profiles").select("id, username").eq("id", challengeId).maybeSingle();
+      if (player) list.push(player);
+    }
+    return list.sort((a, b) => a.username.localeCompare(b.username));
   }
 
   function choiceRow(options, current, onPick) {
@@ -126,7 +133,7 @@
     friendPicker.addEventListener("change", () => { newGame.friend = friendPicker.value; });
     friendPicker.hidden = newGame.who !== "friend";
     box.append(element("p", "label", t("Who can join")),
-      choiceRow([["anyone", t("Anyone")], ["link", t("Invite link")], ["friend", t("A friend")]], newGame.who, (v) => {
+      choiceRow([["anyone", t("Anyone")], ["link", t("Invite link")], ["friend", t("A player")]], newGame.who, (v) => {
         newGame.who = v;
         friendPicker.hidden = v !== "friend";
       }), friendPicker);
@@ -155,10 +162,10 @@
       }
       await showList();
       if (newGame.who === "link") copyLink(data, note);
-      else if (newGame.who === "friend") note.textContent = t("Challenge sent. Your friend sees it on their Daily page.");
+      else if (newGame.who === "friend") note.textContent = t("Challenge sent. They see it on their Daily page.");
       else note.textContent = t("Challenge created. It shows in your games until someone joins.");
     }));
-    box.append(element("p", "rated-hint", t("Anyone: listed for everyone. Invite link: only people you send the link to. A friend: only that friend.")));
+    box.append(element("p", "rated-hint", t("Anyone: listed for everyone. Invite link: only people you send the link to. A player: only the friend or player you pick.")));
     return box;
   }
 
@@ -268,7 +275,7 @@
         }
         const mineColor = myColorIn(g);
         const opponent = mineColor === "black" ? g.white_player : g.black_player;
-        return row([playerText(opponent), `${g.board_size}×${g.board_size}`, mineColor === "black" ? t("Black") : t("White"),
+        return row([playerCell(opponent), `${g.board_size}×${g.board_size}`, mineColor === "black" ? t("Black") : t("White"),
           myTurn(g) ? t("Your move") : t("Their move"), timeLeft(g), openLink(g.id, myTurn(g) ? t("Play") : t("Open"))],
         myTurn(g) ? "my-turn" : "");
       })));
@@ -283,7 +290,7 @@
         const join = button(t("Join"), "btn-primary small-link", async (event) => {
           if (!(await joinGame(g.id, event.target))) showList();
         });
-        return row([playerText(g.creator), `${g.board_size}×${g.board_size}`, daysText(g.days),
+        return row([playerCell(g.creator), `${g.board_size}×${g.board_size}`, daysText(g.days),
           g.rated ? t("Rated") : t("Casual"), you, join]);
       })));
     }
@@ -302,7 +309,7 @@
             note.textContent = t("Challenge declined.");
             showList();
           }));
-        return row([playerText(g.creator), `${g.board_size}×${g.board_size}`, daysText(g.days),
+        return row([playerCell(g.creator), `${g.board_size}×${g.board_size}`, daysText(g.days),
           g.rated ? t("Rated") : t("Casual"), you, actions], "my-turn");
       })));
     }
@@ -315,7 +322,7 @@
         const mineColor = myColorIn(g);
         const opponent = mineColor === "black" ? g.white_player : g.black_player;
         const won = g.winner === mineColor;
-        return row([playerText(opponent), `${g.board_size}×${g.board_size}`, won ? t("Won") : t("Lost"), openLink(g.id, t("Open"))],
+        return row([playerCell(opponent), `${g.board_size}×${g.board_size}`, won ? t("Won") : t("Lost"), openLink(g.id, t("Open"))],
           won ? "won" : "lost");
       })));
     }
@@ -408,7 +415,7 @@
     for (const seat of ["top", "bottom"]) {
       const color = seats[seat];
       $(`stone-${seat}`).className = `stone-icon ${colorName(color)}`;
-      $(`name-${seat}`).textContent = playerText(players[color]);
+      $(`name-${seat}`).replaceChildren(playerCell(players[color]));
       const captured = t("Captured: {n}", { n: rules.captures[color] });
       const clock = game.status === "playing" && turnColor === color ? ` · ⏳ ${timeLeft(game)}` : "";
       $(`info-${seat}`).textContent = `${captured}${color === WHITE ? ` · ${t("Komi 7.5")}` : ""}${clock}`;

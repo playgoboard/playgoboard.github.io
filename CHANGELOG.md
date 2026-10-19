@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.34.0
+- Player profiles: a picture (16 to pick from) and an About me, a rating graph, more stats (win %, longest win streak, rated / casual / daily, results per board size), and Add friend / Daily challenge buttons. Daily challenges can now go to any player, not only friends.
+- Player names in the friends list, daily games and online game cards open that player's profile.
+- Fixed: a profile's game list broke when a game was won on points.
+
 ## 0.33.0
 - More choices in the Look window (🎨): 5 new boards (Bamboo, Marble, Blue ocean, Night, Paper), 3 new stone styles (Glass, Jade & pearl, Yunzi), stone sound (Wood, Soft, Slate, Off), accent color (Green, Blue, Purple, Red, Orange), page background (Plain, Soft gradient, Wood, Go pattern), text size (Small, Normal, Large) and board size on screen (Compact, Normal, Big).
 

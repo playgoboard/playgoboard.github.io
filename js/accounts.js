@@ -89,7 +89,7 @@
       <h2 class="profile-name"></h2>
       <div class="profile-stats"></div>
       <button class="btn btn-primary" data-go="friends">Friends <span class="friends-badge"></span></button>
-      <a class="btn my-games" href="leaderboard.html">My games</a>
+      <a class="btn my-games" href="leaderboard.html">My profile and games</a>
       <button class="btn" data-action="logout">Log out</button>
       <p class="account-links"><button class="link-button danger" data-go="delete">Delete my account</button></p>
     </div>

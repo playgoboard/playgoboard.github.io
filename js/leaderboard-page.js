@@ -8,6 +8,7 @@
   const { t } = window.GoI18n;
   const TOP_PLAYERS = 100;
   const HISTORY_GAMES = 50;
+  const STATS_GAMES = 500; // stats and the rating graph look further back than the list
 
   const $ = (id) => document.getElementById(id);
   const accounts = window.GoAccounts;
@@ -35,6 +36,13 @@
   function link(text, href, className) {
     const a = element("a", className || "", text);
     a.href = href;
+    return a;
+  }
+
+  // A name with its small profile picture, linking to the profile.
+  function nameWithPicture(p) {
+    const a = link("", playerLink(p.username), "player-link");
+    a.append(window.GoAvatars.element(p.avatar, p.username, 24), p.username);
     return a;
   }
 
@@ -81,7 +89,7 @@
 
   async function showTopPlayers() {
     const { data, error } = await accounts.client.from("profiles")
-      .select("username, rating, games, wins, losses")
+      .select("*")
       .gt("games", 0).order("rating", { ascending: false }).limit(TOP_PLAYERS);
     if (error) return problem(failText);
     const me = myProfile();
@@ -92,7 +100,7 @@
       box.append(element("p", "message", t("Nobody has played a rated game yet. Be the first! Play online and pick Rated.")));
     } else {
       box.append(table(["#", t("Player"), t("Rating"), t("Games"), t("Won / Lost")], data.map((p, k) =>
-        row([String(k + 1), link(p.username, playerLink(p.username)), String(p.rating), String(p.games), `${p.wins} / ${p.losses}`],
+        row([String(k + 1), nameWithPicture(p), String(p.rating), String(p.games), `${p.wins} / ${p.losses}`],
           me && me.username === p.username ? "me" : ""))));
     }
     if (me) box.append(link(t("See my games"), playerLink(me.username), "link-button spaced-link"));
@@ -136,7 +144,7 @@
         replayId: null,
       });
     }
-    return games.sort((a, b) => new Date(b.when) - new Date(a.when)).slice(0, HISTORY_GAMES);
+    return games.sort((a, b) => new Date(b.when) - new Date(a.when));
   }
 
   function resultText(game) {
@@ -144,8 +152,8 @@
     const won = game.won;
     if (game.how === "R") return won ? t("Won (resign)") : t("Lost (resign)");
     if (game.how === "T") return won ? t("Won (time)") : t("Lost (time)");
-    if (game.how) return `${word} (${game.how} pts)`;
-    return word;
+    if (game.how) return won ? t("Won by {n} points", { n: game.how }) : t("Lost by {n} points", { n: game.how });
+    return won ? t("Won") : t("Lost");
   }
 
   function typeText(game, color) {
@@ -162,8 +170,9 @@
 
   async function showPlayer(name) {
     const client = accounts.client;
-    const found = await client.from("profiles").select("id, username, rating, games, wins, losses, created_at")
-      .eq("username", name).maybeSingle();
+    const extras = window.GoProfileExtras;
+    // "*" so the page still works before supabase/08-profiles.sql adds the picture columns.
+    const found = await client.from("profiles").select("*").eq("username", name).maybeSingle();
     if (found.error) return problem(failText);
     const player = found.data;
     if (!player) return problem(t("There's no player with that name. They may have deleted their account."));
@@ -171,19 +180,36 @@
     const [records, rated] = await Promise.all([
       client.from("game_records")
         .select("id, my_color, opponent, opponent_name, board_size, winner, result, rated_game_id, quick, daily, rating_change, created_at")
-        .eq("player", player.id).order("created_at", { ascending: false }).limit(HISTORY_GAMES),
+        .eq("player", player.id).order("created_at", { ascending: false }).limit(STATS_GAMES),
       client.from("rated_games")
         .select(`id, black, white, board_size, winner, created_at, finished_at, black_change, white_change,
           black_player:profiles!rated_games_black_fkey(username), white_player:profiles!rated_games_white_fkey(username)`)
         .or(`black.eq.${player.id},white.eq.${player.id}`)
-        .order("created_at", { ascending: false }).limit(HISTORY_GAMES),
+        .order("created_at", { ascending: false }).limit(STATS_GAMES),
     ]);
     if (rated.error) return problem(failText);
     // Before the game history database step is set up, show rated games only.
-    const games = mergeGames(player, records.error ? [] : records.data, rated.data);
+    const savedRecords = records.error ? [] : records.data;
+    const allGames = mergeGames(player, savedRecords, rated.data);
+    const games = allGames.slice(0, HISTORY_GAMES);
 
+    // Every rating change: rated live games, and rated daily games (saved with their change).
+    const changes = [
+      ...rated.data.filter((g) => g.winner === "black" || g.winner === "white")
+        .map((g) => ({ when: g.finished_at || g.created_at, change: g.black === player.id ? g.black_change : g.white_change })),
+      ...savedRecords.filter((r) => r.daily && typeof r.rating_change === "number")
+        .map((r) => ({ when: r.created_at, change: r.rating_change })),
+    ];
+
+    const me = myProfile();
+    const isMe = Boolean(me && me.id === player.id);
     const profile = element("div", "panel-block");
-    profile.append(link(t("‹ Leaderboard"), "leaderboard.html", "link-button"), element("h1", "", player.username));
+    const head = element("div", "profile-head");
+    const titles = element("div");
+    titles.append(element("h1", "", player.username));
+    if (player.about) titles.append(element("p", "profile-about", player.about));
+    head.append(window.GoAvatars.element(player.avatar, player.username, 64), titles);
+    profile.append(link(t("‹ Leaderboard"), "leaderboard.html", "link-button"), head);
     const stats = element("div", "stat-row");
     for (const [label, value] of [[t("Rating"), player.rating], [t("Rated games"), player.games], [t("Wins"), player.wins],
       [t("Losses"), player.losses], [t("Member since"), dateText(player.created_at)]]) {
@@ -192,6 +218,21 @@
       stats.append(stat);
     }
     profile.append(stats);
+
+    const parts = [profile];
+    if (isMe) {
+      const edit = extras.editBox(client, player, () => window.location.reload());
+      const editButton = element("button", "btn", t("Edit profile"));
+      editButton.type = "button";
+      editButton.addEventListener("click", () => { edit.hidden = !edit.hidden; });
+      const row = element("div", "profile-actions");
+      row.append(editButton);
+      profile.append(row);
+      parts.push(edit);
+    } else {
+      profile.append(await extras.actions(client, me, player));
+    }
+    parts.push(extras.ratingGraph(player.rating, changes), extras.stats(allGames));
 
     const list = element("div", "panel-block");
     list.append(element("h2", "", t("Games")));
@@ -205,7 +246,8 @@
           resultText(g), typeText(g, g.color), replay], g.won ? "won" : "lost");
       })));
     }
-    showList(profile, list);
+    parts.push(list);
+    showList(...parts);
     document.title = `GoBoard — ${player.username}`;
   }
 

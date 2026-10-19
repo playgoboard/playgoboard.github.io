@@ -109,6 +109,10 @@
   Also data-accent/background/text/board-size; --board-texture (url(#tex-bamboo|marble), patterns in board-view defs),
   --stone-shine, --board-stone-edge, --board-max/--board-gap. Stone sound style: GoLook.soundStyle() read by sounds.js;
   "Off" = GoSounds mute, which fires a "goboard-sound" event so the 🔊 buttons update.
+- Profiles: leaderboard.html?player=NAME (showPlayer in leaderboard-page.js) + `js/profile-extras.js` (rating graph
+  walked back from the current rating, stats, Add friend / Daily challenge, Edit profile) + `js/avatars.js` (16 pictures,
+  names must match supabase/08-profiles.sql; GoAvatars.profileLink for clickable names). profiles.avatar/about are set
+  only via set_my_profile. Profiles are read with select("*") so pages work before 08 is run.
 - Languages: `js/i18n.js` (GoI18n.t, sentences, beforeChange) + `js/i18n-zh.js` (GO_TEXT_ZH: "English": [simplified, traditional]).
   The ENGLISH TEXT IS THE KEY: wrap new player-visible text in t("...") (placeholders {name}) and add a line to
   i18n-zh.js. Static HTML text nodes, placeholders, titles and aria-labels are translated on DOMContentLoaded;

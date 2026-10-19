@@ -47,7 +47,10 @@
   function personRow(player, detail, ...buttons) {
     const row = element("div", "friend-row");
     const who = element("div", "friend-who");
-    who.append(element("b", "", player ? player.username : t("Unknown player")), element("span", "friend-detail", detail));
+    const name = element("b");
+    if (player) name.append(window.GoAvatars.profileLink(player.username));
+    else name.textContent = t("Unknown player");
+    who.append(name, element("span", "friend-detail", detail));
     const actions = element("div", "friend-actions");
     actions.append(...buttons);
     row.append(who, actions);
