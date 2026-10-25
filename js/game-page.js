@@ -46,6 +46,11 @@
   let onlineMeta = {};       // from the creator: { ratedGameId, players: { [color]: { username, rating } }, note }
   let ratedReported = false; // this browser already sent the result of the rated game
   let recordSaved = false;   // this game is already in your game history
+  // Achievements (js/achievements.js), tracked by gameNumber. Undo or a custom start position
+  // makes a game "unfair": it still counts for the streak, but not for bot achievements.
+  let unfairGame = -1;
+  let achievementsGame = -1;
+  let capturesSeen = { gameNumber: -1, count: 0 };
 
   // Hints come from the strongest bot and are only valid for the position they were asked in.
   const HINT_LEVEL = 5;
@@ -344,6 +349,36 @@
     startBotIfItsTurn();
     reportRatedResult();
     saveGameRecord();
+    noteAchievements();
+  }
+
+  // The game so far, for the admin to replay (supabase/10-achievements.sql).
+  function proofOfGame() {
+    return {
+      kind: opponent, level: opponent === "bot" ? botLevel : null, size: game.size,
+      you: humanColor === BLACK ? "black" : "white",
+      moves: game.moves.map((m) => (m.pass ? "pass" : [m.x, m.y])),
+      dead: [...game.dead], result: game.result,
+    };
+  }
+
+  function noteAchievements() {
+    if (!window.GoAchievements || opponent === "friend") return;
+    const fair = unfairGame !== gameNumber;
+    const mine = game.captures[humanColor];
+    const last = game.moves[game.moves.length - 1];
+    if (capturesSeen.gameNumber === gameNumber && fair && last && last.color === humanColor && mine - capturesSeen.count >= 10) {
+      window.GoAchievements.claim("big-capture", proofOfGame());
+    }
+    capturesSeen = { gameNumber, count: mine };
+    if (game.phase !== "over" || achievementsGame === gameNumber) return;
+    achievementsGame = gameNumber;
+    window.GoAchievements.gameFinished(game.size, opponent === "online");
+    if (opponent === "bot" && fair && game.result && game.result.winner === humanColor) {
+      const botColor = otherColor(humanColor);
+      const deadMine = [...game.dead].filter((i) => game.board[i] === humanColor).length;
+      window.GoAchievements.botWin({ level: botLevel, size: game.size, lostStones: game.captures[botColor] + deadMine, proof: proofOfGame() });
+    }
   }
 
   // ---- The computer's turn ----
@@ -624,6 +659,7 @@
   function startFromPosition(board, turn) {
     beginGame(setup.size, setup.mode === "bot" ? "bot" : "friend", pickedColor(), clockSetup());
     game.setPosition(board, turn);
+    unfairGame = gameNumber;
     const parts = [t("Playing from your position.")];
     if (opponent === "bot") parts.push(youAre(humanColor));
     parts.push(turn === BLACK ? t("Black moves first.") : t("White moves first."));
@@ -768,6 +804,7 @@
 
   hintButton.addEventListener("click", () => {
     if (hintThinking || game.phase !== "play" || isOpponentTurn() || opponent === "online") return;
+    unfairGame = gameNumber; // a hint is Dragon helping you, so no bot achievements this game
     hint = null;
     hintThinking = true;
     hintKey = positionKey();
@@ -801,6 +838,7 @@
 
   // Against the bot, undo takes back the bot's reply too, so it's your move again.
   undoButton.addEventListener("click", () => {
+    unfairGame = gameNumber;
     game.undo();
     while (opponent === "bot" && game.turn !== humanColor && game.canUndo()) game.undo();
     messageEl.textContent = "";

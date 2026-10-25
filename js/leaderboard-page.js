@@ -212,7 +212,8 @@
     profile.append(link(t("‹ Leaderboard"), "leaderboard.html", "link-button"), head);
     const stats = element("div", "stat-row");
     for (const [label, value] of [[t("Rating"), player.rating], [t("Rated games"), player.games], [t("Wins"), player.wins],
-      [t("Losses"), player.losses], [t("Member since"), dateText(player.created_at)]]) {
+      [t("Losses"), player.losses], [t("Member since"), dateText(player.created_at)],
+      ...(window.GoAchievements ? [[t("Streak"), `🔥 ${window.GoAchievements.currentStreak(player)}`]] : [])]) {
       const stat = element("div", "stat");
       stat.append(element("b", "", String(value)), element("span", "", label));
       stats.append(stat);
@@ -232,7 +233,7 @@
     } else {
       profile.append(await extras.actions(client, me, player));
     }
-    parts.push(extras.ratingGraph(player.rating, changes), extras.stats(allGames));
+    parts.push(await extras.badges(client, player), extras.ratingGraph(player.rating, changes), extras.stats(allGames));
 
     const list = element("div", "panel-block");
     list.append(element("h2", "", t("Games")));

@@ -119,6 +119,14 @@
     $("puzzle-count").textContent = t("Solved ✓");
     draw();
     drawList();
+    if (window.GoAchievements) {
+      const solvedByLevel = {};
+      for (const [level] of LEVELS) {
+        const all = PUZZLES.map((p, i) => [p, i]).filter(([p]) => p.level === level);
+        solvedByLevel[level] = [all.filter(([, i]) => solved.has(i)).length, all.length];
+      }
+      window.GoAchievements.puzzleSolved({ isDaily: index === daily, solvedByLevel });
+    }
   }
 
   function whiteTurn() {

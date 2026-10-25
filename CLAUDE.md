@@ -117,6 +117,12 @@
   opens the code view). supabase/09-two-step.sql adds pgrst.db_pre_request public.check_two_step, which blocks every
   Data API request from an aal1 session of a user with a verified factor. No backup codes: a player who lost their phone
   needs their factor removed in Supabase (Authentication -> Users -> the player -> MFA factors).
+- Achievements: `js/achievements.js` (GROUPS list; ids must match supabase/10-achievements.sql; only for logged-in
+  players). DB-checked ones via check_my_achievements(); proof ones (bot wins, big capture) via claim_achievement with
+  the game; trusted ones (puzzles, stylist, all-sizes). Undo, Hint or a custom position makes a bot game unfair
+  (unfairGame in game-page.js). Streak: record_activity(local date, checked within 1 day). Admin = table admins
+  (reinj); admin.html reviews proofs and admin_ban (7 days, removes achievements). Bans are enforced in
+  check_two_step (the pre-request function), and accounts.js shows the ban text.
 - Languages: `js/i18n.js` (GoI18n.t, sentences, beforeChange) + `js/i18n-zh.js` (GO_TEXT_ZH: "English": [simplified, traditional]).
   The ENGLISH TEXT IS THE KEY: wrap new player-visible text in t("...") (placeholders {name}) and add a line to
   i18n-zh.js. Static HTML text nodes, placeholders, titles and aria-labels are translated on DOMContentLoaded;

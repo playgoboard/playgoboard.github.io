@@ -113,7 +113,10 @@
       container.append(section(t("Friend requests for you"), incoming.map((r) => {
         const p = other(r);
         return personRow(p, t("Rating {n}", { n: p.rating }),
-          button(t("Accept"), "btn-primary", () => act(() => client.rpc("answer_friend_request", { friend: p.id, accept: true }), t("You and {name} are now friends!", { name: p.username }))),
+          button(t("Accept"), "btn-primary", async () => {
+            await act(() => client.rpc("answer_friend_request", { friend: p.id, accept: true }), t("You and {name} are now friends!", { name: p.username }));
+            if (window.GoAchievements) window.GoAchievements.check();
+          }),
           button(t("Decline"), "", () => act(() => client.rpc("answer_friend_request", { friend: p.id, accept: false }), t("Request declined."))));
       })));
     }

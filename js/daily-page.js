@@ -478,6 +478,7 @@
     sending = true;
     drawGame();
     const { error } = await accounts.client.rpc("daily_move", { p_game: game.id, p_count: game.moves.length, p_x: x, p_y: y });
+    if (!error && window.GoAchievements) window.GoAchievements.activity(); // a daily move keeps your streak
     sending = false;
     if (error) say(errorText(error));
     pending = null;

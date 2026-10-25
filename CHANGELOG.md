@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.36.0
+- Achievements (30, for logged-in players): bots, puzzles, online, fun and streak groups, on a new Achievements page and as badges on profiles, with a pop-up and chime. Rating, wins, daily games, friends and streaks are checked by the database; bot achievements send the game as proof.
+- Daily streak 🔥: solve a puzzle, finish a bot or online game, or make a daily move each day. Shown next to your name and on profiles.
+- Admin page (admin.html, only for the admin account) to replay proof games with Dragon's Review and ban cheaters for 7 days, removing all their achievements.
+
 ## 0.35.0
 - Two-step verification (optional): turn it on in your account window, scan the QR code with an authenticator app, and logging in then also asks for the 6-digit code. The database itself refuses requests from an account that still needs its code.
 

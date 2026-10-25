@@ -193,5 +193,29 @@
     return box;
   }
 
-  window.GoProfileExtras = { ratingGraph, stats, actions, editBox };
+  // ---- Achievements (js/achievements.js) ----
+
+  async function badges(client, player) {
+    const box = element("div", "panel-block");
+    const ach = window.GoAchievements;
+    const { data } = await client.from("player_achievements").select("achievement, unlocked_at")
+      .eq("player", player.id).order("unlocked_at", { ascending: false });
+    const list = (data || []).filter((r) => ach && ach.BY_ID.has(r.achievement));
+    box.append(element("h2", "", t("Achievements ({n})", { n: list.length })));
+    if (!list.length) {
+      box.append(element("p", "message", t("No achievements yet.")));
+      return box;
+    }
+    const row = element("div", "badge-row");
+    for (const r of list) {
+      const a = ach.BY_ID.get(r.achievement);
+      const badge = element("span", "badge", a.icon);
+      badge.title = `${t(a.title)}: ${t(a.how)} (${new Date(r.unlocked_at).toLocaleDateString()})`;
+      row.append(badge);
+    }
+    box.append(row);
+    return box;
+  }
+
+  window.GoProfileExtras = { ratingGraph, stats, actions, editBox, badges };
 })();

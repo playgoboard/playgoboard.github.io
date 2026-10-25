@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GoBoard — Admin</title>
+  <meta name="description" content="GoBoard admin page.">
+  <link rel="canonical" href="https://playgoboard.netlify.app/admin.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GoBoard">
+  <meta property="og:title" content="GoBoard — Admin">
+  <meta property="og:description" content="GoBoard admin page.">
+  <meta property="og:url" content="https://playgoboard.github.io/admin.html">
+  <meta property="og:image" content="https://playgoboard.github.io/preview.png?v=2">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#302e2b">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script src="js/theme.js?v=51"></script>
+  <link rel="stylesheet" href="css/style.css?v=51">
+</head>
+<body>
+  <header class="top-bar">
+    <a class="logo" href="index.html"><img class="logo-mark" src="img/logo.svg" alt="" width="30" height="30">GoBoard</a>
+    <nav id="nav">
+      <a class="nav-item" href="index.html?mode=friend">Play a friend</a>
+      <a class="nav-item" href="index.html?mode=bot">Bots</a>
+      <a class="nav-item" href="index.html?mode=online">Online</a>
+      <a class="nav-item daily-link" href="daily.html">Daily</a>
+      <a class="nav-item" href="puzzles.html">Puzzles</a>
+      <a class="nav-item" href="leaderboard.html">Leaderboard</a>
+      <a class="nav-item" href="achievements.html">Achievements</a>
+    </nav>
+    <button id="btn-sound" class="sound-toggle" type="button" hidden></button>
+  </header>
+
+  <!-- Only for the admin (checked by the database). Filled in by js/admin-page.js. -->
+  <main class="list-page" id="admin-list"></main>
+  <main class="game-layout" id="replay-panel" hidden>
+    <section class="board-column">
+      <p class="status" id="replay-title"></p>
+      <div id="admin-board" class="board no-ghost"></div>
+    </section>
+    <aside class="side-panel">
+      <div class="panel-block">
+        <p class="message" id="replay-count"></p>
+        <div class="button-row replay-row">
+          <button id="btn-first" class="btn" title="Go to the start">«</button>
+          <button id="btn-prev" class="btn" title="Back one move (← key)">‹</button>
+          <button id="btn-next" class="btn" title="Forward one move (→ key)">›</button>
+          <button id="btn-last" class="btn" title="Go to the end">»</button>
+        </div>
+        <button id="btn-admin-review" class="btn btn-review">Dragon's Review</button>
+      </div>
+      <div class="panel-block review-block" id="review-box"></div>
+    </aside>
+  </main>
+
+  <script src="js/i18n-zh.js?v=51"></script>
+  <script src="js/i18n.js?v=51"></script>
+  <script src="js/go-rules.js?v=51"></script>
+  <script src="js/sounds.js?v=51"></script>
+  <script src="js/vendor/supabase-js-2.115.0.js"></script>
+  <script src="js/supabase-config.js?v=51"></script>
+  <script src="js/board-view.js?v=51"></script>
+  <script src="js/chat-filter.js?v=51"></script>
+  <script src="js/accounts.js?v=51"></script>
+  <script src="js/avatars.js?v=51"></script>
+  <script src="js/friends.js?v=51"></script>
+  <script src="js/daily-badge.js?v=51"></script>
+  <script src="js/achievements.js?v=51"></script>
+  <script src="js/move-list.js?v=51"></script>
+  <script src="js/game-history.js?v=51"></script>
+  <script src="js/go-bot.js?v=51"></script>
+  <script src="js/nn-features.js?v=51"></script>
+  <script src="js/dragon-search.js?v=51"></script>
+  <script src="js/dragon-review.js?v=51"></script>
+  <script src="js/admin-page.js?v=51"></script>
+</body>
+</html>

@@ -81,6 +81,17 @@
     }
     apply();
     save();
+    if (key === "board") noteBoardTried(value);
+  }
+
+  // For the "Stylist" achievement: how many different boards you picked.
+  function noteBoardTried(board) {
+    if (!window.GoAchievements || !window.GoAchievements.loggedIn()) return;
+    let tried = [];
+    try { tried = JSON.parse(localStorage.getItem("goboard-boards-tried") || "[]"); } catch { /* starts empty */ }
+    if (!tried.includes(board)) tried.push(board);
+    try { localStorage.setItem("goboard-boards-tried", JSON.stringify(tried)); } catch { /* not saved */ }
+    if (window.GoAchievements) window.GoAchievements.boardTried(tried.length);
   }
 
   function buildWindow() {

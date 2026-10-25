@@ -35,6 +35,7 @@
   let profile = null;
   let needsCode = false;   // logged in with the password, but two-step is on and the code isn't typed yet
   let setupFactor = null;  // the factor being set up in the "turn on" view
+  let bannedText = "";     // set when the database says this account is banned (supabase/10-achievements.sql)
   let badge = 0;          // e.g. friend requests waiting; shown on the account button
   const listeners = [];
   const viewHooks = {};   // other files can fill in a view of the window (friends.js does)
@@ -165,7 +166,9 @@
     accountButton.hidden = false;
     logoutButton.hidden = !session;
     logoutButton.textContent = t("Log out");
-    const label = profile ? `${profile.username} · ${profile.rating}` : session ? t("My account") : t("Log in");
+    const streak = window.GoAchievements ? window.GoAchievements.currentStreak(profile) : 0;
+    const label = profile ? `${profile.username} · ${profile.rating}${streak ? ` · 🔥${streak}` : ""}`
+      : session ? t("My account") : t("Log in");
     accountButton.textContent = badge && session ? `${label} 🔔${badge}` : label;
     accountButton.title = !session ? t("Log in or create an account")
       : badge ? t("You have friend requests waiting") : t("Your profile");
@@ -176,7 +179,7 @@
     const box = dialog.querySelector(".profile-stats");
     dialog.querySelector(".profile-name").textContent = profile ? profile.username : t("Your account");
     if (!profile) {
-      box.textContent = t("Loading your profile…");
+      box.textContent = bannedText || t("Loading your profile…");
       return;
     }
     dialog.querySelector(".my-games").href = `leaderboard.html?player=${encodeURIComponent(profile.username)}`;
@@ -389,8 +392,10 @@
       profile = null;
       return;
     }
-    const { data } = await client.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
+    const { data, error } = await client.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
     profile = data || null;
+    const ban = error && /BANNED_UNTIL (.+)/.exec(error.message);
+    bannedText = ban ? t("Your account is banned until {when} for cheating on achievements.", { when: ban[1] }) : "";
   }
 
   let known = false; // true once we know who is logged in (or that nobody is)
