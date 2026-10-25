@@ -239,16 +239,16 @@ returns void
 language plpgsql security definer set search_path = ''
 as $$
 declare
-  until timestamptz;
+  ban_end timestamptz;
 begin
   if auth.uid() is null then return; end if;
   if coalesce(auth.jwt() ->> 'aal', 'aal1') <> 'aal2'
      and exists (select 1 from auth.mfa_factors where user_id = auth.uid() and status = 'verified') then
     raise exception 'Two-step verification code needed';
   end if;
-  select banned_until into until from public.profiles where id = auth.uid();
-  if until is not null and until > now() then
-    raise exception 'BANNED_UNTIL %', to_char(until at time zone 'utc', 'YYYY-MM-DD HH24:MI "UTC"');
+  select banned_until into ban_end from public.profiles where id = auth.uid();
+  if ban_end is not null and ban_end > now() then
+    raise exception 'BANNED_UNTIL %', to_char(ban_end at time zone 'utc', 'YYYY-MM-DD HH24:MI "UTC"');
   end if;
 end;
 $$;
