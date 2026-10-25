@@ -527,3 +527,8 @@ a.link-button { display: inline-block; }
 .char-count { text-align: right; margin: 4px 0 10px; font-size: 12px; }
 .profile-name-link { color: inherit; text-decoration: none; }
 .profile-name-link:hover { text-decoration: underline; }
+
+/* Two-step verification (accounts.js) */
+.two-step-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; font-size: 14px; color: var(--text-dim); }
+.two-step-qr { display: block; width: 180px; height: 180px; margin: 4px auto 8px; padding: 8px; background: #fff; border-radius: 8px; }
+.two-step-secret { display: block; padding: 6px 8px; border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; overflow-wrap: anywhere; user-select: all; }

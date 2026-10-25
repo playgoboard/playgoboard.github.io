@@ -1,4 +1,5 @@
-// Player accounts: sign up, log in, forgotten password, profile, log out, delete account.
+// Player accounts: sign up, log in, forgotten password, profile, log out, delete account,
+// and two-step verification (6-digit codes from an authenticator app, done by Supabase).
 // Adds an account button to the top bar and a pop-up window, on every page that loads it.
 // Other files can use window.GoAccounts to see who is logged in.
 (function () {
@@ -30,8 +31,10 @@
   const USERNAME_RULE = /^[A-Za-z0-9_]{3,16}$/;
   const MIN_PASSWORD = 8;
 
-  let session = null;
+  let session = null;      // null while a two-step code is still needed: the site treats you as logged out
   let profile = null;
+  let needsCode = false;   // logged in with the password, but two-step is on and the code isn't typed yet
+  let setupFactor = null;  // the factor being set up in the "turn on" view
   let badge = 0;          // e.g. friend requests waiting; shown on the account button
   const listeners = [];
   const viewHooks = {};   // other files can fill in a view of the window (friends.js does)
@@ -91,7 +94,31 @@
       <button class="btn btn-primary" data-go="friends">Friends <span class="friends-badge"></span></button>
       <a class="btn my-games" href="leaderboard.html">My profile and games</a>
       <button class="btn" data-action="logout">Log out</button>
+      <div class="two-step-row">
+        <span class="two-step-status"></span>
+        <button class="link-button two-step-on" data-action="two-step-start" hidden>Turn on</button>
+        <button class="link-button two-step-off" data-action="two-step-off" hidden>Turn off</button>
+      </div>
       <p class="account-links"><button class="link-button danger" data-go="delete">Delete my account</button></p>
+    </div>
+    <div class="account-view" data-view="two-step">
+      <h2>Two-step verification</h2>
+      <p>Open your authenticator app and type the 6-digit code for GoBoard.</p>
+      <label>Code <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6"></label>
+      <button class="btn btn-primary" data-action="two-step-login">Confirm</button>
+      <p class="account-links"><button class="link-button" data-action="logout">Cancel and log out</button></p>
+    </div>
+    <div class="account-view" data-view="two-step-setup">
+      <h2>Turn on two-step verification</h2>
+      <p>1. Install an authenticator app on your phone (Google Authenticator, Microsoft Authenticator or Tencent Authenticator).</p>
+      <p>2. In the app, add an account and scan this code:</p>
+      <img class="two-step-qr" alt="">
+      <p>Can't scan it? Type this key instead:</p>
+      <p><code class="two-step-secret"></code></p>
+      <p>3. Type the 6-digit code the app shows:</p>
+      <label>Code <input type="text" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="6"></label>
+      <button class="btn btn-primary" data-action="two-step-enable">Turn on</button>
+      <p class="account-links"><button class="link-button" data-go="profile">Not now</button></p>
     </div>
     <div class="account-view" data-view="friends"></div>
     <div class="account-view" data-view="delete">
@@ -167,7 +194,30 @@
       row.append(name, number);
       box.append(row);
     }
+    drawTwoStep();
   }
+
+  async function verifiedFactors() {
+    const { data } = await client.auth.mfa.listFactors();
+    return data ? data.totp : [];
+  }
+
+  async function drawTwoStep() {
+    const status = dialog.querySelector(".two-step-status");
+    status.textContent = t("Two-step verification: …");
+    const on = (await verifiedFactors()).length > 0;
+    status.textContent = on ? t("Two-step verification: on ✓") : t("Two-step verification: off");
+    dialog.querySelector(".two-step-on").hidden = on;
+    dialog.querySelector(".two-step-off").hidden = !on;
+  }
+
+  // True when the password is done but the account still needs its two-step code.
+  async function codeStillNeeded() {
+    const { data } = await client.auth.mfa.getAuthenticatorAssuranceLevel();
+    return Boolean(data && data.currentLevel === "aal1" && data.nextLevel === "aal2");
+  }
+
+  const codeField = (view) => field(view, "code").value.replace(/\s/g, "");
 
   // Supabase's error messages are technical; these are friendlier.
   function friendly(error) {
@@ -178,6 +228,7 @@
     if (/rate limit|too many/i.test(text)) return t("Too many tries. Please wait a few minutes and try again.");
     if (/password/i.test(text) && /least|short|weak/i.test(text)) return t("Please use a longer password (at least {n} characters).", { n: MIN_PASSWORD });
     if (/failed to fetch|network/i.test(text)) return t("Can't reach the server. Check your internet connection.");
+    if (/invalid totp|invalid code|challenge|expired/i.test(text)) return t("That code didn't work. Check that your phone's clock is right, and try the newest code.");
     return t("Something went wrong: {reason}", { reason: t(text) });
   }
 
@@ -194,7 +245,61 @@
       const { error } = await client.auth.signInWithPassword({ email, password });
       busy(button, false);
       if (error) return showError(friendly(error));
+      if (await codeStillNeeded()) return showView("two-step");
       dialog.close();
+    },
+
+    async "two-step-login"(button) {
+      const code = codeField("two-step");
+      if (!/^\d{6}$/.test(code)) return showError(t("Please type the 6-digit code."));
+      busy(button, true);
+      const [factor] = await verifiedFactors();
+      const { error } = factor ? await client.auth.mfa.challengeAndVerify({ factorId: factor.id, code }) : { error: null };
+      busy(button, false);
+      if (error) return showError(friendly(error));
+      field("two-step", "code").value = "";
+      dialog.close();
+    },
+
+    async "two-step-start"(button) {
+      busy(button, true);
+      // Throw away any half-finished setup from before, then start a new one.
+      const { data: list } = await client.auth.mfa.listFactors();
+      for (const f of (list && list.all) || []) {
+        if (f.status !== "verified") await client.auth.mfa.unenroll({ factorId: f.id });
+      }
+      const { data, error } = await client.auth.mfa.enroll({ factorType: "totp", issuer: "GoBoard", friendlyName: `GoBoard ${Date.now()}` });
+      busy(button, false);
+      if (error) return showError(friendly(error));
+      setupFactor = data.id;
+      dialog.querySelector(".two-step-qr").src = data.totp.qr_code;
+      dialog.querySelector(".two-step-secret").textContent = data.totp.secret;
+      field("two-step-setup", "code").value = "";
+      showView("two-step-setup");
+    },
+
+    async "two-step-enable"(button) {
+      const code = codeField("two-step-setup");
+      if (!/^\d{6}$/.test(code)) return showError(t("Please type the 6-digit code."));
+      busy(button, true);
+      const { error } = await client.auth.mfa.challengeAndVerify({ factorId: setupFactor, code });
+      busy(button, false);
+      if (error) return showError(friendly(error));
+      showView("profile", t("Two-step verification is on. Next time you log in, you'll need a code from your app."));
+    },
+
+    async "two-step-off"(button) {
+      if (!confirm(t("Turn off two-step verification? Your account will only need your password again."))) return;
+      busy(button, true);
+      let failed = null;
+      for (const f of await verifiedFactors()) {
+        const { error } = await client.auth.mfa.unenroll({ factorId: f.id });
+        if (error) failed = error;
+      }
+      await client.auth.refreshSession();
+      busy(button, false);
+      if (failed) return showError(friendly(failed));
+      showView("profile", t("Two-step verification is off."));
     },
 
     async signup(button) {
@@ -274,7 +379,7 @@
     mainButton.click();
   });
 
-  accountButton.addEventListener("click", () => showView(session ? "profile" : "login"));
+  accountButton.addEventListener("click", () => showView(session ? "profile" : needsCode ? "two-step" : "login"));
   logoutButton.addEventListener("click", () => client.auth.signOut());
 
   // ---- Keeping track of who is logged in ----
@@ -299,10 +404,14 @@
 
   if (ready) {
     client.auth.onAuthStateChange((event, newSession) => {
-      session = newSession;
       if (event === "PASSWORD_RECOVERY") setTimeout(() => showView("new-password"), 0);
-      // Supabase asks not to call it again inside this callback, so load the profile right after.
-      setTimeout(async () => { await loadProfile(); announce(); }, 0);
+      // Supabase asks not to call it again inside this callback, so do the rest right after.
+      setTimeout(async () => {
+        needsCode = Boolean(newSession) && await codeStillNeeded();
+        session = needsCode ? null : newSession;
+        await loadProfile();
+        announce();
+      }, 0);
     });
   }
   drawButton();

@@ -113,6 +113,10 @@
   walked back from the current rating, stats, Add friend / Daily challenge, Edit profile) + `js/avatars.js` (16 pictures,
   names must match supabase/08-profiles.sql; GoAvatars.profileLink for clickable names). profiles.avatar/about are set
   only via set_my_profile. Profiles are read with select("*") so pages work before 08 is run.
+- Two-step: accounts.js (Supabase MFA TOTP; while a code is needed, session is exposed as null and the account button
+  opens the code view). supabase/09-two-step.sql adds pgrst.db_pre_request public.check_two_step, which blocks every
+  Data API request from an aal1 session of a user with a verified factor. No backup codes: a player who lost their phone
+  needs their factor removed in Supabase (Authentication -> Users -> the player -> MFA factors).
 - Languages: `js/i18n.js` (GoI18n.t, sentences, beforeChange) + `js/i18n-zh.js` (GO_TEXT_ZH: "English": [simplified, traditional]).
   The ENGLISH TEXT IS THE KEY: wrap new player-visible text in t("...") (placeholders {name}) and add a line to
   i18n-zh.js. Static HTML text nodes, placeholders, titles and aria-labels are translated on DOMContentLoaded;

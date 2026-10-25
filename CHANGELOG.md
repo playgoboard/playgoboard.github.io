@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.35.0
+- Two-step verification (optional): turn it on in your account window, scan the QR code with an authenticator app, and logging in then also asks for the 6-digit code. The database itself refuses requests from an account that still needs its code.
+
 ## 0.34.0
 - Player profiles: a picture (16 to pick from) and an About me, a rating graph, more stats (win %, longest win streak, rated / casual / daily, results per board size), and Add friend / Daily challenge buttons. Daily challenges can now go to any player, not only friends.
 - Player names in the friends list, daily games and online game cards open that player's profile.
