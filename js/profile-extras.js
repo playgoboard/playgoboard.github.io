@@ -138,6 +138,12 @@
         friendButton.replaceWith(state);
       });
     }
+    const live = window.GoLive ? await window.GoLive.playerGame(player.id) : null;
+    if (live) {
+      const watch = element("a", "btn btn-primary", live.as === "admin" ? t("🔴 In a game now · Watch (admin)") : t("🔴 In a game now · Watch live"));
+      watch.href = window.GoLive.watchLink(live.key, live.as === "admin");
+      box.append(watch);
+    }
     const challenge = element("a", "btn", t("Daily challenge"));
     challenge.href = `daily.html?challenge=${encodeURIComponent(player.id)}`;
     box.append(friendButton, challenge, note);

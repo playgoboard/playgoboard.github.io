@@ -26,7 +26,16 @@
     if (error) throw error;
     rows = data || [];
     accounts.setBadge(rows.filter((r) => r.status === "pending" && r.addressee === me().id).length);
+    // Friends playing online right now (js/live-games.js): friend id -> game key.
+    liveGames = new Map();
+    if (window.GoLive) {
+      for (const g of await window.GoLive.friendGames()) {
+        if (g.black) liveGames.set(g.black, g.game_key);
+        if (g.white) liveGames.set(g.white, g.game_key);
+      }
+    }
   }
+  let liveGames = new Map();
 
   // The other player in a friendship row.
   const other = (row) => (row.requester === me().id ? row.addressee_profile : row.requester_profile);
@@ -123,7 +132,10 @@
 
     container.append(section(t("Your friends"), friends.map((r) => {
       const p = other(r);
-      return personRow(p, t("Rating {n} · {w} W / {l} L", { n: p.rating, w: p.wins, l: p.losses }),
+      const live = p && liveGames.get(p.id);
+      const watch = live ? [button(t("🔴 Watch"), "btn-primary", () => { window.location.href = window.GoLive.watchLink(live); })] : [];
+      return personRow(p, live ? t("🔴 In a game right now") : t("Rating {n} · {w} W / {l} L", { n: p.rating, w: p.wins, l: p.losses }),
+        ...watch,
         button(t("Daily game"), "btn-primary", () => { window.location.href = `daily.html?challenge=${encodeURIComponent(p.id)}`; }),
         button(t("Remove"), "", () => {
           if (confirm(t("Remove {name} from your friends?", { name: p.username }))) act(() => client.rpc("remove_friend", { friend: p.id }), t("{name} was removed.", { name: p.username }));

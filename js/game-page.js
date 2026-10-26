@@ -350,6 +350,30 @@
     reportRatedResult();
     saveGameRecord();
     noteAchievements();
+    reportLive();
+  }
+
+  // Online games go to the database so friends can watch (js/live-games.js).
+  function reportLive() {
+    const watchers = $("watchers");
+    if (opponent !== "online" || !onlineMeta.gameKey || !window.GoLive) {
+      watchers.hidden = true;
+      return;
+    }
+    window.GoLive.report({
+      key: onlineMeta.gameKey, size: game.size, myColor: humanColor === BLACK ? "black" : "white",
+      blackName: cardName(BLACK), whiteName: cardName(WHITE),
+      moves: game.moves.map((m) => (m.pass ? "pass" : [m.x, m.y])),
+      result: game.phase === "over" && game.result ? window.GoHistory.resultCode(game.result) : null,
+    });
+  }
+  if (window.GoLive) {
+    window.GoLive.onWatchers((n) => {
+      const watchers = $("watchers");
+      watchers.hidden = !n || opponent !== "online";
+      watchers.textContent = n === 1 ? t("👁 1 friend watching") : t("👁 {n} friends watching", { n });
+    });
+    setInterval(reportLive, window.GoLive.HEARTBEAT_MS); // keeps the game "live" and the count fresh
   }
 
   // The game so far, for the admin to replay (supabase/10-achievements.sql).

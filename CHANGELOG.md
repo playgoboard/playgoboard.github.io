@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.39.0
+- Watch live games: friends of a player can watch their live online games (Friends window "🔴 Watch", or "Watch live" on the profile), updated every 2 seconds. The admin can watch any game from a profile with the admin code. Players see how many friends are watching. Only games with a logged-in player can be watched.
+
 ## 0.38.2
 - Admin code: every admin action (seeing the list, Looks fine, Ban) asks for a secret code that can only be set in Supabase. 5 wrong codes lock admin actions for 15 minutes.
 

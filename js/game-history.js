@@ -56,5 +56,5 @@
     return game;
   }
 
-  window.GoHistory = { save, rebuild, resultWords, colorName, BLACK, WHITE };
+  window.GoHistory = { save, rebuild, resultWords, resultCode, colorName, BLACK, WHITE };
 })();

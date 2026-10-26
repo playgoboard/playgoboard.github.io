@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="robots" content="noindex">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GoBoard — Watch</title>
+  <meta name="description" content="Watch a friend's live Go game on GoBoard.">
+  <link rel="canonical" href="https://playgoboard.netlify.app/watch.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GoBoard">
+  <meta property="og:title" content="GoBoard — Watch">
+  <meta property="og:description" content="Watch a friend's live Go game on GoBoard.">
+  <meta property="og:url" content="https://playgoboard.github.io/watch.html">
+  <meta property="og:image" content="https://playgoboard.github.io/preview.png?v=2">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#302e2b">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script src="js/theme.js?v=56"></script>
+  <link rel="stylesheet" href="css/style.css?v=56">
+</head>
+<body>
+  <header class="top-bar">
+    <a class="logo" href="index.html"><img class="logo-mark" src="img/logo.svg" alt="" width="30" height="30">GoBoard</a>
+    <a class="menu-button" href="index.html" title="Main menu" aria-label="Main menu">☰</a>
+    <nav id="nav">
+      <a class="nav-item" href="index.html?mode=friend">Play a friend</a>
+      <a class="nav-item" href="index.html?mode=bot">Bots</a>
+      <a class="nav-item" href="index.html?mode=online">Online</a>
+      <a class="nav-item daily-link" href="daily.html">Daily</a>
+      <a class="nav-item" href="puzzles.html">Puzzles</a>
+      <a class="nav-item" href="leaderboard.html">Leaderboard</a>
+      <a class="nav-item" href="achievements.html">Achievements</a>
+    </nav>
+    <button id="btn-sound" class="sound-toggle" type="button" hidden></button>
+  </header>
+
+  <!-- A friend's live game. Filled in by js/watch-page.js. -->
+  <main class="game-layout">
+    <section class="board-column" id="watch-board" hidden>
+      <div class="player-card top-seat">
+        <span class="stone-icon white"></span>
+        <span class="player-name" id="name-white"></span>
+        <span class="player-info" id="info-white"></span>
+      </div>
+      <div id="board" class="board no-ghost"></div>
+      <div class="player-card bottom-seat">
+        <span class="stone-icon black"></span>
+        <span class="player-name" id="name-black"></span>
+        <span class="player-info" id="info-black"></span>
+      </div>
+    </section>
+    <aside class="side-panel">
+      <div class="panel-block">
+        <h2>Watching</h2>
+        <p class="status" id="watch-status">Loading…</p>
+        <p class="message" id="watch-moves"></p>
+        <p class="message" id="watch-count"></p>
+        <p class="message small-note">You're only watching: the players can't see you, and you can't talk to them.</p>
+      </div>
+    </aside>
+  </main>
+
+  <script src="js/i18n-zh.js?v=56"></script>
+  <script src="js/i18n.js?v=56"></script>
+  <script src="js/go-rules.js?v=56"></script>
+  <script src="js/sounds.js?v=56"></script>
+  <script src="js/vendor/supabase-js-2.115.0.js"></script>
+  <script src="js/supabase-config.js?v=56"></script>
+  <script src="js/board-view.js?v=56"></script>
+  <script src="js/chat-filter.js?v=56"></script>
+  <script src="js/accounts.js?v=56"></script>
+  <script src="js/avatars.js?v=56"></script>
+  <script src="js/friends.js?v=56"></script>
+  <script src="js/daily-badge.js?v=56"></script>
+  <script src="js/achievements.js?v=56"></script>
+  <script src="js/live-games.js?v=56"></script>
+  <script src="js/move-list.js?v=56"></script>
+  <script src="js/game-history.js?v=56"></script>
+  <script src="js/admin-code.js?v=56"></script>
+  <script src="js/watch-page.js?v=56"></script>
+</body>
+</html>

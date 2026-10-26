@@ -24,30 +24,7 @@
 
   let showReviewed = false;
 
-  // Asks for the admin code in a small window. Resolves to the code, or null if cancelled.
-  // The code is never kept: every action asks again.
-  function askCode(what) {
-    return new Promise((resolve) => {
-      const dialog = element("dialog", "account-dialog");
-      const input = element("input");
-      input.type = "password";
-      input.autocomplete = "off";
-      const label = element("label", "", t("Admin code"));
-      label.append(input);
-      let answer = null; // stays null when closed with Cancel or Escape
-      const ok = button(t("Confirm"), "btn-primary", () => { answer = input.value || null; dialog.close(); });
-      const cancel = button(t("Cancel"), "", () => dialog.close());
-      input.addEventListener("keydown", (event) => { if (event.key === "Enter") ok.click(); });
-      dialog.append(element("h2", "", what), label, ok, cancel);
-      dialog.addEventListener("close", () => {
-        dialog.remove();
-        resolve(answer);
-      });
-      document.body.append(dialog);
-      dialog.showModal();
-      input.focus();
-    });
-  }
+  const askCode = window.GoAdminCode.ask;
 
   const note = element("p", "message admin-note");
 
