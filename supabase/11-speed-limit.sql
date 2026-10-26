@@ -38,7 +38,9 @@ begin
     end if;
   end if;
 
-  if coalesce(current_setting('request.method', true), 'GET') in ('POST', 'PATCH', 'PUT', 'DELETE') then
+  -- Read-only calls (plain reads, and functions that only look things up) can't write a count.
+  if coalesce(current_setting('request.method', true), 'GET') in ('POST', 'PATCH', 'PUT', 'DELETE')
+     and current_setting('transaction_read_only') = 'off' then
     if auth.uid() is not null then
       who := 'user:' || auth.uid()::text;
       max_hits := 120;
