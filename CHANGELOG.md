@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.37.0
+- Speed limit against floods: the database refuses more than 120 actions a minute from one account, or 300 from one internet address for guests.
+
 ## 0.36.0
 - Achievements (30, for logged-in players): bots, puzzles, online, fun and streak groups, on a new Achievements page and as badges on profiles, with a pop-up and chime. Rating, wins, daily games, friends and streaks are checked by the database; bot achievements send the game as proof.
 - Daily streak 🔥: solve a puzzle, finish a bot or online game, or make a daily move each day. Shown next to your name and on profiles.

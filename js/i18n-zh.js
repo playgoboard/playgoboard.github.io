@@ -500,6 +500,7 @@ window.GO_TEXT_ZH = {
   "Turn off two-step verification? Your account will only need your password again.": ["要关闭两步验证吗？之后登录只需要密码。", "要關閉兩步驟驗證嗎？之後登入只需要密碼。"],
   "Two-step verification is off.": ["两步验证已关闭。", "兩步驟驗證已關閉。"],
   "Two-step verification code needed": ["需要两步验证码", "需要兩步驟驗證碼"],
+  "Too many actions. Please wait a minute and try again.": ["操作太频繁了。请等一分钟再试。", "操作太頻繁了。請等一分鐘再試。"],
   "Delete your account?": ["要删除你的账号吗？", "要刪除你的帳號嗎？"],
   "This removes your account, username and rating for good. It can't be undone. Type your username to confirm.":
     ["这会永久删除你的账号、用户名和等级分，无法恢复。请输入你的用户名来确认。", "這會永久刪除你的帳號、用戶名和等級分，無法復原。請輸入你的用戶名來確認。"],
