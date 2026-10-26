@@ -362,6 +362,15 @@
     };
   }
 
+  // Undo, Hint or a custom position: tell logged-in players this bot game won't count.
+  function markUnfair() {
+    if (unfairGame === gameNumber) return;
+    unfairGame = gameNumber;
+    if (opponent === "bot" && window.GoAchievements && window.GoAchievements.loggedIn()) {
+      $("achievement-note").textContent = t("Undo, Hint or a custom position was used: this game won't count for bot achievements.");
+    }
+  }
+
   function noteAchievements() {
     if (!window.GoAchievements || opponent === "friend") return;
     const fair = unfairGame !== gameNumber;
@@ -390,6 +399,8 @@
     }
   }
 
+  let botFailures = 0; // thinking that failed in a row; after 2 the bot passes instead of freezing
+
   function startBotIfItsTurn() {
     if (!isBotTurn() || botThinking) return;
     botThinking = true;
@@ -397,9 +408,18 @@
     updatePanel();
     noteBrainDownload(botLevel);
 
-    chooseBotMove(game, botLevel, () => token !== botToken).then((choice) => {
+    Promise.resolve().then(() => chooseBotMove(game, botLevel, () => token !== botToken)).catch((error) => {
+      console.warn("The bot couldn't think:", error);
+      if (++botFailures <= 2) return { retry: true };
+      return { pass: true };
+    }).then((choice) => {
       if (token !== botToken) return;
       botThinking = false;
+      if (choice.retry) {
+        setTimeout(startBotIfItsTurn, 300);
+        return;
+      }
+      botFailures = 0;
       const placed = !choice.pass && choice.moves.some(({ x, y }) => game.play(x, y).ok);
       if (messageEl.textContent === t("Dragon is waking up: loading its brain (about 15 MB, only the first time)…")) messageEl.textContent = "";
       if (!placed) {
@@ -614,6 +634,7 @@
 
   function beginGame(size, newOpponent, myColor, clockSettings) {
     resetReview();
+    $("achievement-note").textContent = "";
     cancelBot();
     leaveOnlineGame();
     onlineActions = [];
@@ -659,7 +680,7 @@
   function startFromPosition(board, turn) {
     beginGame(setup.size, setup.mode === "bot" ? "bot" : "friend", pickedColor(), clockSetup());
     game.setPosition(board, turn);
-    unfairGame = gameNumber;
+    markUnfair();
     const parts = [t("Playing from your position.")];
     if (opponent === "bot") parts.push(youAre(humanColor));
     parts.push(turn === BLACK ? t("Black moves first.") : t("White moves first."));
@@ -804,7 +825,7 @@
 
   hintButton.addEventListener("click", () => {
     if (hintThinking || game.phase !== "play" || isOpponentTurn() || opponent === "online") return;
-    unfairGame = gameNumber; // a hint is Dragon helping you, so no bot achievements this game
+    markUnfair(); // a hint is Dragon helping you, so no bot achievements this game
     hint = null;
     hintThinking = true;
     hintKey = positionKey();
@@ -838,7 +859,7 @@
 
   // Against the bot, undo takes back the bot's reply too, so it's your move again.
   undoButton.addEventListener("click", () => {
-    unfairGame = gameNumber;
+    markUnfair();
     game.undo();
     while (opponent === "bot" && game.turn !== humanColor && game.canUndo()) game.undo();
     messageEl.textContent = "";

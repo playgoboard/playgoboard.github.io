@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.38.1
+- Fixed: Tiger (and the old search) could think forever when a phone quietly stopped its background helpers. It now uses what it has, or thinks on the page, a few seconds after its thinking time; if thinking fails twice, the bot passes instead of freezing.
+- Bot games with Undo, Hint or a custom position now say they won't count for bot achievements (for logged-in players).
+
 ## 0.38.0
 - Main menu: the site now opens on a menu of big square buttons (two side by side) for Daily games, Today's puzzle, Bots, Play online, Puzzles, Play a friend, Leaderboard and Achievements, each with live info (games waiting for you, puzzle solved, rating, achievements and streak). The ☰ button in the top bar of every page brings it back.
 

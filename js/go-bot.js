@@ -24,6 +24,7 @@
   const MAX_WORKERS = 8;
 
   const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const WORKER_GRACE_MS = 4000; // extra wait for background helpers before giving up on them
   const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 
   // Neighbor lists and scratch buffers, built once per board size.
@@ -572,6 +573,7 @@
         if (finished) return;
         finished = true;
         clearInterval(watch);
+        clearTimeout(safety);
         current.busy = false;
         resolve(value);
       };
@@ -580,6 +582,12 @@
         if (pool === current) stopPool();
         finish({ ranked: [], winRate: 0 });
       }, 100);
+      // Phones can quietly stop background helpers (screen locked, app switched): then no answer
+      // ever comes. Shortly after the thinking time, use what came back, or think on the page.
+      const safety = setTimeout(() => {
+        if (pool === current) stopPool();
+        finish(results.length ? rankStats(results) : null);
+      }, thinkMs + WORKER_GRACE_MS);
       for (const worker of current.workers) {
         worker.onmessage = (event) => {
           results.push(event.data);

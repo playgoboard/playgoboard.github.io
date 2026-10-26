@@ -514,6 +514,7 @@ window.GO_TEXT_ZH = {
   "Turn off two-step verification? Your account will only need your password again.": ["要关闭两步验证吗？之后登录只需要密码。", "要關閉兩步驟驗證嗎？之後登入只需要密碼。"],
   "Two-step verification is off.": ["两步验证已关闭。", "兩步驟驗證已關閉。"],
   "Two-step verification code needed": ["需要两步验证码", "需要兩步驟驗證碼"],
+  "Undo, Hint or a custom position was used: this game won't count for bot achievements.": ["用了悔棋、提示或自定义局面：这盘棋不算电脑对局成就。", "用了悔棋、提示或自訂局面：這盤棋不算電腦對局成就。"],
   "Too many actions. Please wait a minute and try again.": ["操作太频繁了。请等一分钟再试。", "操作太頻繁了。請等一分鐘再試。"],
   "Delete your account?": ["要删除你的账号吗？", "要刪除你的帳號嗎？"],
   "This removes your account, username and rating for good. It can't be undone. Type your username to confirm.":
