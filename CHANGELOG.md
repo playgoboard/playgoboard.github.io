@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.38.0
+- Main menu: the site now opens on a menu of big square buttons (two side by side) for Daily games, Today's puzzle, Bots, Play online, Puzzles, Play a friend, Leaderboard and Achievements, each with live info (games waiting for you, puzzle solved, rating, achievements and streak). The ☰ button in the top bar of every page brings it back.
+
 ## 0.37.0
 - Speed limit against floods: the database refuses more than 120 actions a minute from one account, or 300 from one internet address for guests.
 
