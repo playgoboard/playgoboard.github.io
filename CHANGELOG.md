@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.38.2
+- Admin code: every admin action (seeing the list, Looks fine, Ban) asks for a secret code that can only be set in Supabase. 5 wrong codes lock admin actions for 15 minutes.
+
 ## 0.38.1
 - Fixed: Tiger (and the old search) could think forever when a phone quietly stopped its background helpers. It now uses what it has, or thinks on the page, a few seconds after its thinking time; if thinking fails twice, the bot passes instead of freezing.
 - Bot games with Undo, Hint or a custom position now say they won't count for bot achievements (for logged-in players).

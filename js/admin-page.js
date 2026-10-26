@@ -1,5 +1,6 @@
 // The Admin page (only for the admin, checked by the database): replay the games sent as proof
 // for bot achievements and big captures, mark them fine, or ban the player for 7 days.
+// Every admin action asks for the admin code (set in Supabase, see supabase/12-admin-code.sql).
 (function () {
   const { t } = window.GoI18n;
   const { BLACK, WHITE } = window.Go;
@@ -23,27 +24,62 @@
 
   let showReviewed = false;
 
+  // Asks for the admin code in a small window. Resolves to the code, or null if cancelled.
+  // The code is never kept: every action asks again.
+  function askCode(what) {
+    return new Promise((resolve) => {
+      const dialog = element("dialog", "account-dialog");
+      const input = element("input");
+      input.type = "password";
+      input.autocomplete = "off";
+      const label = element("label", "", t("Admin code"));
+      label.append(input);
+      let answer = null; // stays null when closed with Cancel or Escape
+      const ok = button(t("Confirm"), "btn-primary", () => { answer = input.value || null; dialog.close(); });
+      const cancel = button(t("Cancel"), "", () => dialog.close());
+      input.addEventListener("keydown", (event) => { if (event.key === "Enter") ok.click(); });
+      dialog.append(element("h2", "", what), label, ok, cancel);
+      dialog.addEventListener("close", () => {
+        dialog.remove();
+        resolve(answer);
+      });
+      document.body.append(dialog);
+      dialog.showModal();
+      input.focus();
+    });
+  }
+
+  const note = element("p", "message admin-note");
+
   async function drawList() {
     listBox.textContent = "";
     const head = element("div", "panel-block");
     head.append(element("h1", "", t("Admin: check achievements")),
       element("p", "message", t("Replay each game and run Dragon's Review. If the bot kept making big mistakes that the real bot never makes, the game was probably faked. Only ban when it's obvious.")));
     const toggle = button(showReviewed ? t("Show games to check") : t("Show checked games"), "", () => { showReviewed = !showReviewed; drawList(); });
-    head.append(toggle);
+    head.append(toggle, note);
     listBox.append(head);
 
-    const { data, error } = await accounts.client.rpc("admin_proofs", { p_reviewed: showReviewed });
     const box = element("div", "panel-block");
-    if (error) {
-      box.append(element("p", "message", t(error.message.replace(/^.*?:\s*/, ""))));
-      listBox.append(box);
+    listBox.append(box);
+    const code = await askCode(t("Admin code to see the list"));
+    if (!code) {
+      box.append(button(t("Show the list"), "btn-primary", drawList));
       return;
     }
-    if (!data.length) box.append(element("p", "message", t("Nothing here.")));
-    for (const row of data) {
+    const { data, error } = await accounts.client.rpc("admin_proofs", { p_reviewed: showReviewed, p_code: code });
+    const problem = error ? error.message.replace(/^.*?:\s*/, "") : data.error;
+    if (problem) {
+      box.append(element("p", "message", t(problem)), button(t("Try again"), "btn-primary", drawList));
+      return;
+    }
+    const rows = data.rows;
+    if (!rows.length) box.append(element("p", "message", t("Nothing here.")));
+    for (const row of rows) {
       const a = window.GoAchievements.BY_ID.get(row.achievement);
       const p = row.proof || {};
       const line = element("div", "admin-row");
+      line.dataset.player = row.player;
       const what = element("div");
       what.append(element("b", "", `${row.username} — ${a ? `${a.icon} ${t(a.title)}` : row.achievement}`),
         element("span", "message", `${p.kind === "bot" ? BOT_NAMES[(p.level || 1) - 1] : t("Online")} · ${p.size}×${p.size} · ${(p.moves || []).length} ${t("moves")} · ${new Date(row.unlocked_at).toLocaleString()}`));
@@ -51,20 +87,31 @@
       actions.append(button(t("Replay"), "small-link", () => replay(row)));
       if (!showReviewed) {
         actions.append(button(t("Looks fine"), "small-link", async () => {
-          await accounts.client.rpc("admin_mark_reviewed", { p_player: row.player, p_achievement: row.achievement });
-          drawList();
+          const okCode = await askCode(t("Admin code to mark this game fine"));
+          if (!okCode) return;
+          const { data: problem, error: e } = await accounts.client.rpc("admin_mark_reviewed", { p_player: row.player, p_achievement: row.achievement, p_code: okCode });
+          if (e || problem) return showProblem(e ? e.message : problem);
+          line.remove();
+          note.textContent = t("Marked fine.");
         }));
       }
       actions.append(button(t("Ban 7 days"), "btn-danger small-link", async () => {
         if (!confirm(t("Ban {name} for 7 days and remove all their achievements?", { name: row.username }))) return;
-        const { error: banError } = await accounts.client.rpc("admin_ban", { p_player: row.player });
-        if (banError) alert(t(banError.message.replace(/^.*?:\s*/, "")));
-        drawList();
+        const banCode = await askCode(t("Admin code to ban {name}", { name: row.username }));
+        if (!banCode) return;
+        const { data: problem, error: e } = await accounts.client.rpc("admin_ban", { p_player: row.player, p_code: banCode });
+        if (e || problem) return showProblem(e ? e.message : problem);
+        for (const other of [...box.querySelectorAll(".admin-row")]) if (other.dataset.player === row.player) other.remove();
+        note.textContent = t("{name} is banned for 7 days.", { name: row.username });
       }));
       line.append(what, actions);
       box.append(line);
     }
     listBox.append(box);
+  }
+
+  function showProblem(text) {
+    note.textContent = t(String(text).replace(/^.*?:\s*/, ""));
   }
 
   // Replay one proof game on the board, with Dragon's Review.

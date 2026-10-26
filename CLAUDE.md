@@ -123,6 +123,8 @@
   (unfairGame in game-page.js). Streak: record_activity(local date, checked within 1 day). Admin = table admins
   (reinj); admin.html reviews proofs and admin_ban (7 days, removes achievements). Bans are enforced in
   check_two_step (the pre-request function), and accounts.js shows the ban text.
+- Admin code: supabase/12-admin-code.sql (bcrypt hash in admin_codes, set only via SQL; admin_* functions take
+  p_code and return the problem text instead of raising, so wrong tries are counted; 5 wrong = 15 min lock).
 - Speed limit: supabase/11-speed-limit.sql extends check_two_step (the pre-request function) with per-minute counts
   of POST/PATCH/PUT/DELETE in the unlogged table request_counts (120 per account, 300 per IP for guests).
   Any new pre-request logic must keep the two-step, ban and speed-limit parts together in that one function.
