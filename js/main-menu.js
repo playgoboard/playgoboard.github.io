@@ -53,7 +53,30 @@
   const heading = document.createElement("h1");
   heading.className = "menu-title";
   heading.textContent = t("What do you want to play?");
-  menu.append(heading, grid);
+  // Install as an app (js/app-install.js): a button, or the iPhone tip.
+  const install = document.createElement("div");
+  install.className = "menu-install";
+  function drawInstall() {
+    const kind = window.GoInstall ? window.GoInstall.kind() : null;
+    install.textContent = "";
+    install.hidden = !kind;
+    if (kind === "button") {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "btn btn-primary";
+      b.textContent = t("📲 Install GoBoard as an app");
+      b.addEventListener("click", () => window.GoInstall.install());
+      install.append(b);
+    } else if (kind === "ios") {
+      const tip = document.createElement("p");
+      tip.className = "message";
+      tip.textContent = t("📲 Get GoBoard as an app: tap the Share button, then \"Add to Home Screen\".");
+      install.append(tip);
+    }
+  }
+  if (window.GoInstall) window.GoInstall.onChange(drawInstall);
+  drawInstall();
+  menu.append(heading, grid, install);
 
   function solvedPuzzles() {
     try { return new Set(JSON.parse(localStorage.getItem("goboard-puzzles-solved") || "[]")); } catch { return new Set(); }

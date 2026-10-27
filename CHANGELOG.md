@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.40.0
+- Install as an app: GoBoard can be added to a phone or computer like an app (own icon, full screen). The main menu shows an install button (Chrome, Edge, Android) or a tip for iPhones. An offline helper (sw.js) keeps copies of the site so it loads fast and bots and puzzles work offline after first use; pages always load fresh when online.
+
 ## 0.39.0
 - Watch live games: friends of a player can watch their live online games (Friends window "🔴 Watch", or "Watch live" on the profile), updated every 2 seconds. The admin can watch any game from a profile with the admin code. Players see how many friends are watching. Only games with a logged-in player can be watched.
 

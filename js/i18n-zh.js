@@ -32,6 +32,8 @@ window.GO_TEXT_ZH = {
   "Admin code to watch this game": ["输入管理员密码来观看这盘棋", "輸入管理員密碼來觀看這盤棋"],
   "Watching needs the admin code.": ["观战需要管理员密码。", "觀戰需要管理員密碼。"],
   // ---- Main menu ----
+  "📲 Install GoBoard as an app": ["📲 把 GoBoard 安装成应用", "📲 把 GoBoard 安裝成應用程式"],
+  "📲 Get GoBoard as an app: tap the Share button, then \"Add to Home Screen\".": ["📲 把 GoBoard 变成应用：点“分享”按钮，再选“添加到主屏幕”。", "📲 把 GoBoard 變成應用程式：點「分享」按鈕，再選「加入主畫面」。"],
   "Main menu": ["主菜单", "主選單"],
   "What do you want to play?": ["你想玩什么？", "你想玩什麼？"],
   "Play online": ["在线对局", "線上對局"],

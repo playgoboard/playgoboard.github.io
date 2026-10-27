@@ -587,3 +587,5 @@ a.link-button { display: inline-block; }
   .menu-button { width: 32px; height: 32px; font-size: 17px; }
 }
 .watchers { color: var(--accent); font-weight: 600; margin: 0; }
+.menu-install { margin-top: 16px; text-align: center; }
+.menu-install .btn-primary { width: auto; padding: 12px 20px; }

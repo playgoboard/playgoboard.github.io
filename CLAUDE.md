@@ -128,6 +128,10 @@
 - Watching: supabase/13-live-games.sql (live_games written by players via live_update; watch_game decides: players,
   their friends, or admin + code). js/live-games.js (GoLive.report from game-page reportLive, friendGames, playerGame),
   watch.html + js/watch-page.js (polls every 2 s), js/admin-code.js (GoAdminCode.ask, shared with admin-page.js).
+- App: manifest.json, sw.js (cache "goboard-files": ?v= files, models/ and js/vendor/ saved-first; everything else
+  internet-first with the saved copy only when offline; other sites untouched), js/app-install.js (registers sw.js,
+  GoInstall for the main-menu install button / iOS tip). Icons from tools/make_app_icons.py. The Claude app's built-in
+  browser refuses service workers, so test sw.js logic by running it with a fake self/fetch in a page.
 - Speed limit: supabase/11-speed-limit.sql extends check_two_step (the pre-request function) with per-minute counts
   of POST/PATCH/PUT/DELETE in the unlogged table request_counts (120 per account, 300 per IP for guests).
   Any new pre-request logic must keep the two-step, ban and speed-limit parts together in that one function.
