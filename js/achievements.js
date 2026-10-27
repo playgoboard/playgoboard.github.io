@@ -40,7 +40,7 @@
       ["first-friend", "🤝", "First friend", "Add your first friend."],
       ["big-capture", "💥", "Big capture", "Capture 10 or more stones with one move, against a bot or online."],
       ["half-point", "✂️", "By a hair", "Win a daily game by half a point."],
-      ["all-sizes", "📐", "Every size", "Finish a game on 9×9, 13×13 and 19×19."],
+      ["all-sizes", "📐", "Every size", "Win a game on 9×9, 13×13 and 19×19."],
       ["stylist", "🎨", "Stylist", "Try 5 different boards in the Look window."],
     ]],
     ["Streak", [
@@ -169,15 +169,18 @@
     if (lostStones === 0) claim("flawless", proof);
   }
 
-  // Any finished game against a bot or online: streak, and the three board sizes.
-  function gameFinished(size, online) {
+  // Any finished game against a bot or online: streak. A fair win also counts toward
+  // "Every size" (a win on all three boards; resigning on purpose doesn't count).
+  function gameFinished(size, online, fairWin) {
     if (!me()) return; // achievements and streaks are only for logged-in players
     activity();
-    let sizes = [];
-    try { sizes = JSON.parse(localStorage.getItem("goboard-sizes-played") || "[]"); } catch { /* starts empty */ }
-    if (!sizes.includes(size)) sizes.push(size);
-    try { localStorage.setItem("goboard-sizes-played", JSON.stringify(sizes)); } catch { /* not saved */ }
-    if ([9, 13, 19].every((s) => sizes.includes(s))) claim("all-sizes");
+    if (fairWin) {
+      let sizes = [];
+      try { sizes = JSON.parse(localStorage.getItem("goboard-sizes-won") || "[]"); } catch { /* starts empty */ }
+      if (!sizes.includes(size)) sizes.push(size);
+      try { localStorage.setItem("goboard-sizes-won", JSON.stringify(sizes)); } catch { /* not saved */ }
+      if ([9, 13, 19].every((s) => sizes.includes(s))) claim("all-sizes");
+    }
     if (online) setTimeout(check, 5000); // rated results take a moment to be saved
   }
 

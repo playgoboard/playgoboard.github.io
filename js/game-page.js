@@ -406,7 +406,8 @@
     capturesSeen = { gameNumber, count: mine };
     if (game.phase !== "over" || achievementsGame === gameNumber) return;
     achievementsGame = gameNumber;
-    window.GoAchievements.gameFinished(game.size, opponent === "online");
+    const won = Boolean(game.result && game.result.winner === humanColor);
+    window.GoAchievements.gameFinished(game.size, opponent === "online", won && (opponent === "online" || fair));
     if (opponent === "bot" && fair && game.result && game.result.winner === humanColor) {
       const botColor = otherColor(humanColor);
       const deadMine = [...game.dead].filter((i) => game.board[i] === humanColor).length;

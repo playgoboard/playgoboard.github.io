@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.40.1
+- "Every size" now needs a win on 9×9, 13×13 and 19×19 (online, or a fair bot game), not just a finished game, so resigning doesn't count.
+
 ## 0.40.0
 - Install as an app: GoBoard can be added to a phone or computer like an app (own icon, full screen). The main menu shows an install button (Chrome, Edge, Android) or a tip for iPhones. An offline helper (sw.js) keeps copies of the site so it loads fast and bots and puzzles work offline after first use; pages always load fresh when online.
 

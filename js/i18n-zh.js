@@ -88,7 +88,7 @@ window.GO_TEXT_ZH = {
   "First friend": ["第一位好友", "第一位好友"], "Add your first friend.": ["加第一位好友。", "加第一位好友。"],
   "Big capture": ["大丰收", "大豐收"], "Capture 10 or more stones with one move, against a bot or online.": ["和电脑或在线对局时，一步吃掉 10 颗以上的子。", "和電腦或線上對局時，一步吃掉 10 顆以上的子。"],
   "By a hair": ["险胜", "險勝"], "Win a daily game by half a point.": ["以半目赢一盘每日对局。", "以半目贏一盤每日對局。"],
-  "Every size": ["全尺寸", "全尺寸"], "Finish a game on 9×9, 13×13 and 19×19.": ["在 9×9、13×13 和 19×19 上各下完一盘。", "在 9×9、13×13 和 19×19 上各下完一盤。"],
+  "Every size": ["全尺寸", "全尺寸"], "Win a game on 9×9, 13×13 and 19×19.": ["在 9×9、13×13 和 19×19 上各赢一盘。", "在 9×9、13×13 和 19×19 上各贏一盤。"],
   "Stylist": ["造型师", "造型師"], "Try 5 different boards in the Look window.": ["在外观窗口里试用 5 种不同的棋盘。", "在外觀視窗裡試用 5 種不同的棋盤。"],
   "3-day streak": ["连续 3 天", "連續 3 天"], "Play 3 days in a row.": ["连续 3 天下棋。", "連續 3 天下棋。"],
   "7-day streak": ["连续 7 天", "連續 7 天"], "Play 7 days in a row.": ["连续 7 天下棋。", "連續 7 天下棋。"],
