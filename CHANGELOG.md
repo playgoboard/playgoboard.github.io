@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.44.0
+- Learn Go (learn.html): 6 short interactive lessons (liberties, capturing, illegal moves and ko, eyes, counting, ending the game), each with explanations on a small board and your-turn tasks with hints. Progress is saved, with a Continue button. New achievements First lesson and Graduate (Fun group). A Learn Go square leads the main menu.
+
 ## 0.43.0
 - Puzzle Rush (puzzle-rush.html): 3 minutes, 5 minutes or Survival; 3 mistakes and the run ends. 645 new capture puzzles from Dragon's self-play games (each with exactly one winning first move, White always defends its best) plus the 60 normal puzzles, easiest first. Best scores on your profile, a Rush top-scores list on the Leaderboard, and 3 new Puzzles achievements (Rush 10, 20, 30). New Puzzle Rush square on the main menu.
 

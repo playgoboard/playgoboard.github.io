@@ -22,6 +22,7 @@
 
   // [key, icon, name, link]
   const TILES = [
+    ["learn", "🎓", "Learn Go", "learn.html"],
     ["daily", "📅", "Daily games", "daily.html"],
     ["puzzle", "⭐", "Today's puzzle", "puzzles.html"],
     ["bots", "🤖", "Bots", "index.html?mode=bot"],
@@ -88,6 +89,12 @@
     info.bots.textContent = t("5 levels, Pebble to Dragon");
     info.online.textContent = t("Quick match or invite a friend");
     info.friend.textContent = t("Two players, one screen");
+    let lessonsDone = [];
+    try { lessonsDone = JSON.parse(localStorage.getItem("goboard-lessons-done") || "[]"); } catch { /* none yet */ }
+    const lessonCount = window.GO_LESSONS ? window.GO_LESSONS.length : 6;
+    info.learn.textContent = lessonsDone.length >= lessonCount ? t("All lessons done ✓")
+      : lessonsDone.length ? t("{n} of {total} lessons done", { n: lessonsDone.length, total: lessonCount }) : t("New to Go? Start here");
+    tiles.learn.classList.toggle("highlight", lessonsDone.length === 0);
     let rushBest = {};
     try { rushBest = JSON.parse(localStorage.getItem("goboard-rush-best") || "{}"); } catch { /* none yet */ }
     const top = Math.max(0, ...Object.values(rushBest));

@@ -45,6 +45,8 @@
       ["half-point", "✂️", "By a hair", "Win a daily game by half a point."],
       ["all-sizes", "📐", "Every size", "Win a game on 9×9, 13×13 and 19×19."],
       ["stylist", "🎨", "Stylist", "Try 5 different boards in the Look window."],
+      ["first-lesson", "📖", "First lesson", "Finish a Learn Go lesson."],
+      ["graduate", "🎓", "Graduate", "Finish all the Learn Go lessons."],
     ]],
     ["Streak", [
       ["streak-3", "🔥", "3-day streak", "Play 3 days in a row."],

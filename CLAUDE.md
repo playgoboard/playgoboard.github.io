@@ -147,6 +147,9 @@
   tools/puzzle-maker.html options {minMoves: 1, perGame: 3}; puzzles pulled out of the browser through the jwebserver
   log). supabase/16-puzzle-rush.sql: rush_scores, submit_rush_score (gives rush-10/20/30), reward_groups now has the
   Rush achievements in Puzzles.
+- Learn Go: learn.html + js/learn-page.js; lessons are data in js/lessons-data.js (text steps, point tasks, choice
+  tasks). Progress in localStorage goboard-lessons-done / goboard-lesson-at. supabase/17-lessons.sql adds first-lesson
+  and graduate to claim_achievement and the Fun reward group.
 - Speed limit: supabase/11-speed-limit.sql extends check_two_step (the pre-request function) with per-minute counts
   of POST/PATCH/PUT/DELETE in the unlogged table request_counts (120 per account, 300 per IP for guests).
   Any new pre-request logic must keep the two-step, ban and speed-limit parts together in that one function.

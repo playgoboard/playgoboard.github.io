@@ -634,3 +634,23 @@ a.link-button { display: inline-block; }
 .rush-clock { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
 .rush-clock.low { color: var(--danger); }
 .rush-link { display: block; text-align: center; text-decoration: none; margin-top: 6px; }
+
+/* Learn Go (js/learn-page.js) */
+.lesson-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; margin: 12px 0; }
+.lesson-card { display: grid; grid-template-columns: 40px 1fr; grid-template-rows: auto auto; column-gap: 10px; align-items: center;
+  padding: 12px; border: 2px solid transparent; border-radius: 10px; background: var(--bg); color: var(--text); text-align: left; cursor: pointer; font: inherit; }
+.lesson-card:hover { border-color: var(--accent); }
+.lesson-card .lesson-number { grid-row: span 2; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--panel-light); font-weight: 700; }
+.lesson-card.done .lesson-number { background: var(--accent); color: #fff; }
+.lesson-card .message { margin: 0; font-size: 13px; }
+.lesson-board-column { width: min(480px, 100%, calc(100vh - 170px)); }
+.lesson-text { font-size: 17px; line-height: 1.5; }
+.lesson-text.task { font-weight: 600; }
+.lesson-choices { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.lesson-choices:empty { display: none; }
+.lesson-choices .btn.selected { outline: 2px solid var(--accent); }
+.lesson-good { color: var(--accent); font-weight: 600; }
+.lesson-bad { color: var(--error-text); }
+.lesson-finish { display: flex; gap: 8px; margin-bottom: 10px; }
+.lesson-finish .btn { text-align: center; text-decoration: none; }
