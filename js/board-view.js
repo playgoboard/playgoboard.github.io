@@ -38,6 +38,15 @@
           <path d="M-1 4.6 C1.5 5.6 3 3.6 5 4.4 S7 6.2 8 5.6" fill="none" stroke="rgba(110,110,125,0.25)" stroke-width="0.04"/>
           <path d="M2 -1 C2.6 1 1.6 3 2.8 5 S3.2 7 2.6 8" fill="none" stroke="rgba(110,110,125,0.15)" stroke-width="0.03"/>
         </pattern>
+        <radialGradient id="tex-golden" cx="0.3" cy="0.25" r="0.9">
+          <stop offset="0" stop-color="#fff6c8" stop-opacity="0.75"/><stop offset="0.45" stop-color="#fff6c8" stop-opacity="0"/><stop offset="1" stop-color="#8a5a08" stop-opacity="0.35"/>
+        </radialGradient>
+        <radialGradient id="tex-neon" cx="0.5" cy="0.5" r="0.75">
+          <stop offset="0" stop-color="#3fd0d6" stop-opacity="0.16"/><stop offset="1" stop-color="#c040e0" stop-opacity="0.18"/>
+        </radialGradient>
+        <linearGradient id="tex-fire" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stop-color="#ffb030" stop-opacity="0.65"/><stop offset="0.55" stop-color="#ff6a1a" stop-opacity="0.15"/><stop offset="1" stop-color="#4a0a04" stop-opacity="0.55"/>
+        </linearGradient>
       </defs>
       <rect width="${s + 1}" height="${s + 1}" fill="var(--wood)"/>
       <rect width="${s + 1}" height="${s + 1}" style="fill: var(--board-texture)"/>`);

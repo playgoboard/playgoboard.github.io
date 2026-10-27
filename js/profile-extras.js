@@ -157,8 +157,11 @@
     box.hidden = true;
     box.append(element("h2", "", t("Edit profile")), element("p", "label", t("Picture")));
     let avatar = player.avatar || null;
+    // Rewards from finished achievement groups (js/avatars.js REWARDS, checked again by the database).
+    const rewards = window.GoAvatars.REWARDS;
+    const earned = (window.GoAchievements ? window.GoAchievements.finishedGroups() : []).filter((g) => rewards[g]);
     const grid = element("div", "avatar-grid");
-    for (const key of [null, ...window.GoAvatars.names]) {
+    for (const key of [null, ...earned.map((g) => rewards[g].picture), ...window.GoAvatars.names]) {
       const b = element("button", key === avatar ? "selected" : "");
       b.type = "button";
       b.title = key ? "" : t("No picture");
@@ -187,7 +190,8 @@
       }
       save.disabled = true;
       const clean = window.GoChatFilter.cleanMessage(text);
-      const { error } = await client.rpc("set_my_profile", { p_avatar: avatar, p_about: clean });
+      let { error } = await client.rpc("set_my_profile", { p_avatar: avatar, p_about: clean });
+      if (!error) ({ error } = await saveRewards());
       save.disabled = false;
       if (error) {
         note.textContent = errorText(error);
@@ -195,9 +199,36 @@
       }
       onSaved();
     });
-    box.append(grid, element("p", "label", t("About me")), about, count, save, note);
+    box.append(grid);
+
+    // Title and frame: only from finished groups.
+    let title = player.title || null, frame = player.frame || null;
+    const choiceRow = (options, current, onPick) => {
+      const row = element("div", "choice-row wrap");
+      for (const [value, label] of options) {
+        const b = element("button", value === current ? "selected" : "", label);
+        b.type = "button";
+        b.addEventListener("click", () => {
+          onPick(value);
+          for (const other of row.children) other.classList.toggle("selected", other === b);
+        });
+        row.append(b);
+      }
+      return row;
+    };
+    if (earned.length) {
+      box.append(element("p", "label", t("Title")),
+        choiceRow([[null, t("None")], ...earned.map((g) => [rewards[g].title, t(rewards[g].title)])], title, (v) => { title = v; }),
+        element("p", "label", t("Frame")),
+        choiceRow([[null, t("None")], ...earned.map((g) => [rewards[g].frame, t(rewards[g].frame)])], frame, (v) => { frame = v; }));
+    } else {
+      box.append(element("p", "message small-note", t("Finish a whole group of achievements to unlock special pictures, a title and a frame.")));
+    }
+    box.append(element("p", "label", t("About me")), about, count, save, note);
+    saveRewards = async () => client.rpc("set_my_rewards", { p_title: title, p_frame: frame });
     return box;
   }
+  let saveRewards = async () => ({ error: null });
 
   // ---- Achievements (js/achievements.js) ----
 

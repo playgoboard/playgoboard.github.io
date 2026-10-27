@@ -16,7 +16,7 @@
   }
 
   async function profile(id) {
-    const { data } = await client().from("profiles").select("id, username, rating").eq("id", id).maybeSingle();
+    const { data } = await client().from("profiles").select("*").eq("id", id).maybeSingle();
     return data;
   }
 

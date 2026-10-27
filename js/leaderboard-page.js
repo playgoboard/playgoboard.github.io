@@ -42,7 +42,7 @@
   // A name with its small profile picture, linking to the profile.
   function nameWithPicture(p) {
     const a = link("", playerLink(p.username), "player-link");
-    a.append(window.GoAvatars.element(p.avatar, p.username, 24), p.username);
+    a.append(window.GoAvatars.element(p.avatar, p.username, 24, p.frame), p.username);
     return a;
   }
 
@@ -207,8 +207,9 @@
     const head = element("div", "profile-head");
     const titles = element("div");
     titles.append(element("h1", "", player.username));
+    if (player.title) titles.append(element("p", "profile-title", `🏅 ${t(player.title)}`));
     if (player.about) titles.append(element("p", "profile-about", player.about));
-    head.append(window.GoAvatars.element(player.avatar, player.username, 64), titles);
+    head.append(window.GoAvatars.element(player.avatar, player.username, 64, player.frame), titles);
     profile.append(link(t("‹ Leaderboard"), "leaderboard.html", "link-button"), head);
     const stats = element("div", "stat-row");
     for (const [label, value] of [[t("Rating"), player.rating], [t("Rated games"), player.games], [t("Wins"), player.wins],

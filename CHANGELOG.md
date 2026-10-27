@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.41.0
+- Achievement rewards: finishing a whole group (Bots, Puzzles, Online, Fun, Streak) unlocks a special picture, a title, a picture frame and a board or stone style (Dragon stones, Golden board, Royal stones, Neon board, Fire board). Checked by the database.
+- Profile pictures are now drawings instead of emojis (16 normal ones plus 5 reward pictures, including a robot for Bots).
+- Titles show on profiles and online game cards; frames show around pictures on profiles and the Leaderboard.
+
 ## 0.40.2
 - Resign asks right where the button is: it turns into "Yes, resign" and "No" (and turns back by itself after 6 seconds) instead of a browser pop-up.
 

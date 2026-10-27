@@ -6,9 +6,10 @@
   const STORAGE_KEY = "goboard-look";
   const CHOICES = {
     board: [["classic", "Classic wood"], ["maple", "Light maple"], ["walnut", "Dark walnut"], ["green", "Green"],
-      ["bamboo", "Bamboo"], ["marble", "Marble"], ["ocean", "Blue ocean"], ["night", "Night"], ["paper", "Paper"]],
+      ["bamboo", "Bamboo"], ["marble", "Marble"], ["ocean", "Blue ocean"], ["night", "Night"], ["paper", "Paper"],
+      ["golden", "Golden board"], ["neon", "Neon board"], ["fire", "Fire board"]],
     stones: [["classic", "Classic"], ["flat", "Flat"], ["shell", "Slate & shell"], ["glass", "Glass"],
-      ["jade", "Jade & pearl"], ["yunzi", "Yunzi"]],
+      ["jade", "Jade & pearl"], ["yunzi", "Yunzi"], ["dragon", "Dragon stones"], ["royal", "Royal stones"]],
     sound: [["wood", "Wood"], ["soft", "Soft"], ["slate", "Slate"], ["off", "Off"]],
     theme: [["dark", "Dark"], ["light", "Light"], ["auto", "Match my device"]],
     accent: [["green", "Green"], ["blue", "Blue"], ["purple", "Purple"], ["red", "Red"], ["orange", "Orange"]],
@@ -21,8 +22,19 @@
     ["accent", "Accent color"], ["background", "Page background"], ["text", "Text size"], ["boardSize", "Board size on screen"]];
   const SWATCH = {
     board: { classic: "#dcb35c", maple: "#f0d9a3", walnut: "#a9743f", green: "#8fbf8a", bamboo: "#d8c27c",
-      marble: "#dedbd5", ocean: "#6fa8c9", night: "#3c3f45", paper: "#fbfaf6" },
+      marble: "#dedbd5", ocean: "#6fa8c9", night: "#3c3f45", paper: "#fbfaf6", golden: "#f1c84b", neon: "#16202e", fire: "#b8401c" },
     accent: { green: "#81b64c", blue: "#4c8fd6", purple: "#9b6bd6", red: "#d65a5a", orange: "#e08a3c" },
+  };
+
+  // Rewards: these styles unlock when the whole achievement group is finished (js/achievements.js
+  // keeps the finished groups in the browser). They only change your own screen.
+  const REWARD_STYLES = { board: { golden: "Puzzles", neon: "Fun", fire: "Streak" }, stones: { dragon: "Bots", royal: "Online" } };
+  function finishedGroups() {
+    try { return JSON.parse(localStorage.getItem("goboard-rewards") || "[]"); } catch { return []; }
+  }
+  const lockedBy = (key, value) => {
+    const group = REWARD_STYLES[key] && REWARD_STYLES[key][value];
+    return group && !finishedGroups().includes(group) ? group : null;
   };
 
   const look = { board: "classic", stones: "classic", sound: "wood", theme: "dark", accent: "green",
@@ -33,6 +45,8 @@
       if (CHOICES[key].some(([value]) => value === saved[key])) look[key] = saved[key];
     }
   } catch { /* nothing saved, or storage blocked: use the default look */ }
+  if (lockedBy("board", look.board)) look.board = "classic";
+  if (lockedBy("stones", look.stones)) look.stones = "classic";
   // "Off" is the same as the mute button, so it is kept by sounds.js, not here.
   if (look.sound === "off") look.sound = "wood";
 
@@ -48,6 +62,17 @@
   }
   apply();
   window.GoLook = { soundStyle: () => look.sound };
+
+  // Rewards changed (logged in or out, or a group just finished): drop styles that are locked now.
+  let dialog = null; // the Look window, built the first time it opens
+  window.addEventListener("goboard-rewards", () => {
+    let changed = false;
+    for (const key of ["board", "stones"]) {
+      if (lockedBy(key, look[key])) { look[key] = "classic"; changed = true; }
+    }
+    if (changed) { apply(); save(); }
+    if (dialog && dialog.markSelected) dialog.markSelected();
+  });
 
   function save() {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(look)); } catch { /* only for this visit */ }
@@ -106,6 +131,8 @@
     if (board) dialog.append(board);
 
     const rows = [];
+    const lockNote = document.createElement("p");
+    lockNote.className = "message small-note";
     for (const [key, label] of ROWS) {
       if (key === "sound" && !sounds()) continue; // pages without a board have no stone sounds
       const title = document.createElement("p");
@@ -125,6 +152,13 @@
         }
         button.append(t(name));
         button.addEventListener("click", () => {
+          const group = lockedBy(key, value);
+          if (group) {
+            lockNote.textContent = t("🔒 Finish every {group} achievement to unlock this.", { group: t(group) });
+            row.after(lockNote);
+            return;
+          }
+          lockNote.remove();
           choose(key, value);
           markSelected();
         });
@@ -135,7 +169,10 @@
     }
     function markSelected() {
       for (const [key, row] of rows) {
-        for (const button of row.children) button.classList.toggle("selected", button.dataset.value === selectedValue(key));
+        for (const button of row.children) {
+          button.classList.toggle("selected", button.dataset.value === selectedValue(key));
+          button.classList.toggle("locked", Boolean(lockedBy(key, button.dataset.value)));
+        }
       }
     }
     dialog.markSelected = markSelected;
@@ -158,7 +195,6 @@
     button.className = "sound-toggle look-button";
     button.textContent = "🎨";
     button.title = t("Look: colors, board and stones");
-    let dialog = null;
     button.addEventListener("click", () => {
       if (!dialog) dialog = buildWindow();
       dialog.markSelected(); // the mute button may have changed since last time

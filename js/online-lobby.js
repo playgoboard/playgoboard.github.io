@@ -176,8 +176,9 @@
       const me = window.GoAccounts && window.GoAccounts.ready ? window.GoAccounts.current().profile : null;
       const guest = this.guestUserId && window.GoRated
         ? await window.GoRated.profile(this.guestUserId).catch(() => null) : null;
-      if (me) meta.players[this.hostColor] = { id: me.id, username: me.username, rating: me.rating };
-      if (guest) meta.players[this.guestColor] = { id: guest.id, username: guest.username, rating: guest.rating };
+      // title: a reward title from finished achievement groups (supabase/14-rewards.sql), or null.
+      if (me) meta.players[this.hostColor] = { id: me.id, username: me.username, rating: me.rating, title: me.title || null };
+      if (guest) meta.players[this.guestColor] = { id: guest.id, username: guest.username, rating: guest.rating, title: guest.title || null };
       // Quick match guests without an account show the level they picked.
       if (!me && this.options.level) meta.players[this.hostColor] = { username: "Guest", level: this.options.level };
       if (!guest && this.guestLevel) meta.players[this.guestColor] = { username: "Guest", level: this.guestLevel };

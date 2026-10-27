@@ -74,9 +74,8 @@
     });
   }
 
-  function announce(id) {
-    const a = BY_ID.get(id);
-    if (!a) return;
+  // A banner at the bottom: { icon, head, title, href }.
+  function banner({ icon, head, title, href }) {
     if (!toastBox) {
       toastBox = document.createElement("div");
       toastBox.className = "achievement-toasts";
@@ -84,21 +83,55 @@
     }
     const toast = document.createElement("a");
     toast.className = "achievement-toast";
-    toast.href = "achievements.html";
-    const icon = document.createElement("span");
-    icon.className = "achievement-icon";
-    icon.textContent = a.icon;
+    toast.href = href;
+    const iconEl = document.createElement("span");
+    iconEl.className = "achievement-icon";
+    if (icon instanceof Node) iconEl.append(icon);
+    else iconEl.textContent = icon;
     const words = document.createElement("span");
-    const head = document.createElement("small");
-    head.textContent = t("🏆 Achievement unlocked");
-    const title = document.createElement("b");
-    title.textContent = t(a.title);
-    words.append(head, title);
-    toast.append(icon, words);
+    const headEl = document.createElement("small");
+    headEl.textContent = head;
+    const titleEl = document.createElement("b");
+    titleEl.textContent = title;
+    words.append(headEl, titleEl);
+    toast.append(iconEl, words);
     toastBox.append(toast);
     chime();
     setTimeout(() => toast.classList.add("leaving"), 5000);
     setTimeout(() => toast.remove(), 5600);
+  }
+
+  function announce(id) {
+    const a = BY_ID.get(id);
+    if (!a) return;
+    banner({ icon: a.icon, head: t("🏆 Achievement unlocked"), title: t(a.title), href: "achievements.html" });
+  }
+
+  // ---- Rewards: finishing a whole group (supabase/14-rewards.sql) ----
+  // The finished groups are also kept in the browser so the Look window (theme.js) can unlock styles.
+  const REWARDS_KEY = "goboard-rewards";
+  let finished = [];
+  try { finished = JSON.parse(localStorage.getItem(REWARDS_KEY) || "[]"); } catch { /* none yet */ }
+
+  async function refreshRewards(announceNew) {
+    const p = me();
+    const before = new Set(finished);
+    if (!p) {
+      finished = [];
+    } else {
+      const { data, error } = await accounts().client.rpc("finished_groups", { p_player: p.id });
+      if (error) return;
+      finished = data || [];
+    }
+    try { localStorage.setItem(REWARDS_KEY, JSON.stringify(finished)); } catch { /* only for this visit */ }
+    window.dispatchEvent(new Event("goboard-rewards"));
+    if (!announceNew || !window.GoAvatars) return;
+    for (const group of finished) {
+      if (before.has(group)) continue;
+      const reward = window.GoAvatars.REWARDS[group];
+      banner({ icon: window.GoAvatars.element(reward.picture, "", 40, reward.frame), head: t("🎁 Reward unlocked"),
+        title: t("{group} finished: \"{title}\" and more", { group: t(group), title: t(reward.title) }), href: "achievements.html" });
+    }
   }
 
   // ---- Talking to the database ----
@@ -121,7 +154,10 @@
     const { data, error } = await accounts().client.rpc("claim_achievement", { p_id: id, p_proof: proof });
     if (error) return;
     have.add(id);
-    if (data) announce(id);
+    if (data) {
+      announce(id);
+      refreshRewards(true);
+    }
   }
 
   async function check() {
@@ -130,6 +166,7 @@
     if (error || !data) return;
     const have = await loadMine();
     for (const id of data) { have.add(id); announce(id); }
+    if (data.length) refreshRewards(true);
   }
 
   function localDay(offset = 0) {
@@ -210,11 +247,13 @@
       mine = null;
       activeToday = false;
       if (id) check();
+      refreshRewards(false);
     });
   }
 
   window.GoAchievements = {
     GROUPS, BY_ID, claim, check, activity, botWin, gameFinished, puzzleSolved, boardTried,
     currentStreak, loggedIn: () => Boolean(me()),
+    finishedGroups: () => finished.slice(),
   };
 })();

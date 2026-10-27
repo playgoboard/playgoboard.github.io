@@ -47,6 +47,9 @@
 :root[data-board="ocean"] { --wood: #6fa8c9; --line: #0d2b40; }
 :root[data-board="night"] { --wood: #3c3f45; --line: #c9ccd1; }
 :root[data-board="paper"] { --wood: #fbfaf6; --line: #333333; --board-stone-edge: rgba(0, 0, 0, 0.5); }
+:root[data-board="golden"] { --wood: #f1c84b; --line: #6b4a10; --board-texture: url(#tex-golden); }
+:root[data-board="neon"] { --wood: #16202e; --line: #3fd0d6; --board-texture: url(#tex-neon); }
+:root[data-board="fire"] { --wood: #b8401c; --line: #ffd27a; --board-texture: url(#tex-fire); }
 
 /* Stones */
 :root[data-stones="flat"] {
@@ -68,6 +71,14 @@
 :root[data-stones="yunzi"] {
   --stone-black-1: #343a34; --stone-black-2: #141814;
   --stone-white-1: #f5f1e1; --stone-white-2: #dcd4b8;
+}
+:root[data-stones="dragon"] {
+  --stone-black-1: #9a2a20; --stone-black-2: #2a0806;
+  --stone-white-1: #fff3c4; --stone-white-2: #d9a62f; --stone-shine: rgba(255, 240, 200, 0.45);
+}
+:root[data-stones="royal"] {
+  --stone-black-1: #5a3d8a; --stone-black-2: #0c0614;
+  --stone-white-1: #ffffff; --stone-white-2: #e9e0f2; --stone-white-edge: #d9b44a; --stone-shine: rgba(255, 255, 255, 0.5);
 }
 
 /* Accent color (buttons, highlights) */
@@ -593,3 +604,12 @@ a.link-button { display: inline-block; }
 .resign-ask { display: flex; gap: 6px; flex: 1.6; }
 .resign-ask[hidden] { display: none; }
 .resign-ask .btn { padding-left: 6px; padding-right: 6px; font-size: 14px; }
+.look-dialog .choice-row button.locked { opacity: 0.45; }
+.look-dialog .choice-row button.locked::after { content: " 🔒"; }
+.reward-box { display: flex; align-items: center; gap: 12px; margin: 0 0 12px; padding: 10px; border-radius: 8px; border: 1px dashed var(--panel-light); }
+.reward-box:not(.earned) .avatar { filter: grayscale(1); opacity: 0.6; }
+.reward-box.earned { border: 1px solid var(--accent); }
+.reward-box b, .reward-box span, .reward-box small { display: block; }
+.reward-box span { font-size: 13px; color: var(--text-dim); }
+.reward-box small { font-size: 12px; color: var(--accent); }
+.profile-title { margin: 2px 0 0; color: var(--accent); font-weight: 600; }

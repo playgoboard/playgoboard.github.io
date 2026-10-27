@@ -39,7 +39,21 @@
 
     for (const [group, list] of ach.GROUPS) {
       const section = element("div", "panel-block");
-      section.append(element("h2", "", t(group)));
+      const done = list.filter(([id]) => unlocked.has(id)).length;
+      section.append(element("h2", "", `${t(group)} · ${done}/${list.length}`));
+      const reward = window.GoAvatars && window.GoAvatars.REWARDS[group];
+      if (reward) {
+        // What finishing the whole group gives (js/avatars.js, supabase/14-rewards.sql).
+        const earned = done === list.length;
+        const box = element("div", `reward-box${earned ? " earned" : ""}`);
+        const words = element("div");
+        words.append(element("b", "", earned ? t("🎁 Reward unlocked!") : t("🎁 Reward: {n} left", { n: list.length - done })),
+          element("span", "", t("Picture, title \"{title}\", {frame} frame and {look}", {
+            title: t(reward.title), frame: t(reward.frame), look: t(reward.look[2]) })));
+        if (earned) words.append(element("small", "", t("Pick them in Edit profile and the Look window.")));
+        box.append(window.GoAvatars.element(reward.picture, "", 52, earned ? reward.frame : null), words);
+        section.append(box);
+      }
       const grid = element("div", "achievement-grid");
       for (const [id, icon, title, how] of list) {
         const when = unlocked.get(id);
