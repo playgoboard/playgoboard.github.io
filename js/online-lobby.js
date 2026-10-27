@@ -5,7 +5,9 @@
 // Real internet connections hiccup, so this file:
 // - lets the joiner keep saying "hello" until the creator answers with the full game ("sync"),
 // - sends a small "ping" every few seconds and treats long silence as a dropped connection,
-// - reconnects automatically after a drop; the creator then re-sends every move so both boards match.
+// - reconnects automatically after a drop; the creator then re-sends every move so both boards match,
+// - switches to a backup messenger through Supabase (js/online-relay.js) when the two browsers
+//   can't link up directly, which is normal on phone hotspots and many school networks.
 (function () {
   // v2: the connection rules changed, so old and new versions of the page don't mix.
   const PEER_ID_PREFIX = "goboard-v2-";
@@ -14,7 +16,8 @@
   const TICK_MS = 3000;              // ping + retry rhythm
   const SILENCE_LIMIT_MS = 12000;    // no message for this long = connection is dead
   const DIAL_TIMEOUT_MS = 8000;      // a connection attempt that hasn't opened by now is retried
-  const FIRST_JOIN_LIMIT_MS = 25000; // give up on a first join after this long
+  const FIRST_JOIN_LIMIT_MS = 30000; // give up on a first join after this long
+  const RELAY_AFTER_MS = 6000;       // no direct link by now: use the Supabase backup messenger
   const RECONNECT_LIMIT_MS = 120000; // give up reconnecting after 2 minutes
 
   // Servers that help two browsers find a direct path to each other. Google's is PeerJS's default but
@@ -132,6 +135,7 @@
       clearInterval(this.ticker);
       if (this.conn) this.conn.close();
       if (this.peer) this.peer.destroy();
+      if (this.relay) this.relay.close();
     }
 
     onOpen() {}
@@ -215,6 +219,8 @@
       peer.on("open", () => {
         if (this.code) return; // just logged back in after a blip
         this.code = code;
+        // Joiners who can't reach us directly come in through the backup messenger.
+        if (window.GoRelay && window.GoRelay.available()) this.relay = window.GoRelay.host(code, (conn) => this.listenForHello(conn));
         this.ui.onCode(code);
       });
       peer.on("connection", (conn) => this.listenForHello(conn));
@@ -315,8 +321,17 @@
     }
 
     dial() {
-      if (this.closed || this.connected || !this.peer.open) return;
+      if (this.closed || this.connected) return;
+      if (this.relay) return this.useConnection(this.relay.connect("host"));
+      if (!this.peer.open) return;
       this.useConnection(this.peer.connect(PEER_ID_PREFIX + this.code, { reliable: true }));
+    }
+
+    // No direct link after a few seconds: from now on, talk through the backup messenger.
+    switchToRelay() {
+      if (this.relay || !window.GoRelay || !window.GoRelay.available()) return;
+      this.relay = window.GoRelay.join(this.code, this.token).hub;
+      this.dial();
     }
 
     onOpen() {
@@ -336,7 +351,9 @@
         return this.close();
       }
       if (this.conn && this.conn.open) return this.onOpen(); // say hello again until the game arrives
+      if (!this.relay && now - this.startedAt > RELAY_AFTER_MS && this.lastError !== "peer-unavailable") return this.switchToRelay();
       if (this.conn && now - this.dialedAt < DIAL_TIMEOUT_MS) return; // still trying
+      if (this.relay) return this.dial();
       if (this.peer.destroyed) this.makePeer();
       else this.dial();
     }

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.42.1
+- Fixed: joining an online game could never connect on phone hotspots (and some school networks), because the two browsers can't link up directly there. After 6 seconds without a direct link, the game now switches to a backup messenger through Supabase Realtime (js/online-relay.js). Works for invites, invite links and Quick match.
+
 ## 0.42.0
 - Refresh lock: when a newer GoBoard is online, pages show "GoBoard was updated, please refresh" and can't be played until refreshed (an online game in progress finishes first). Achievement claims from older versions are refused by the database (supabase/15-min-version.sql).
 

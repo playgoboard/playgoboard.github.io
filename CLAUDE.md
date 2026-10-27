@@ -140,6 +140,9 @@
   compares them and covers old pages with "please refresh"). claim_achievement(p_id, p_proof, p_version) refuses
   versions below app_settings.min_client_version; after fixing a cheat, tell the user to run
   `update public.app_settings set min_client_version = N;`.
+- Online relay: js/online-relay.js (GoRelay) uses a Supabase Realtime broadcast channel "goboard-room-CODE" as a
+  stand-in PeerJS connection; HostSession listens on it from the start, GuestSession switches after RELAY_AFTER_MS.
+  The Claude app test browser can't do WebRTC at all, so it always tests the relay path.
 - Speed limit: supabase/11-speed-limit.sql extends check_two_step (the pre-request function) with per-minute counts
   of POST/PATCH/PUT/DELETE in the unlogged table request_counts (120 per account, 300 per IP for guests).
   Any new pre-request logic must keep the two-step, ban and speed-limit parts together in that one function.
