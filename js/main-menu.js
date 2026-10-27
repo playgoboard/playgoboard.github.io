@@ -27,6 +27,7 @@
     ["bots", "🤖", "Bots", "index.html?mode=bot"],
     ["online", "🌐", "Play online", "index.html?mode=online"],
     ["puzzles", "🧩", "Puzzles", "puzzles.html"],
+    ["rush", "⚡", "Puzzle Rush", "puzzle-rush.html"],
     ["friend", "👥", "Play a friend", "index.html?mode=friend"],
     ["leaderboard", "🏆", "Leaderboard", "leaderboard.html"],
     ["achievements", "🎖️", "Achievements", "achievements.html"],
@@ -87,6 +88,10 @@
     info.bots.textContent = t("5 levels, Pebble to Dragon");
     info.online.textContent = t("Quick match or invite a friend");
     info.friend.textContent = t("Two players, one screen");
+    let rushBest = {};
+    try { rushBest = JSON.parse(localStorage.getItem("goboard-rush-best") || "{}"); } catch { /* none yet */ }
+    const top = Math.max(0, ...Object.values(rushBest));
+    info.rush.textContent = top ? t("Your best: {n}", { n: top }) : t("Beat the clock");
     const puzzles = window.GO_PUZZLES || [];
     const solved = solvedPuzzles();
     info.puzzles.textContent = t("Solved {n} of {total}.", { n: solved.size, total: puzzles.length });

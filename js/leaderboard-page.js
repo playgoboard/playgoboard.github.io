@@ -104,7 +104,59 @@
           me && me.username === p.username ? "me" : ""))));
     }
     if (me) box.append(link(t("See my games"), playerLink(me.username), "link-button spaced-link"));
-    showList(box);
+    const rush = await rushTopScores(me);
+    showList(box, rush);
+    if (params.get("rush")) rush.scrollIntoView();
+  }
+
+  // ---- Puzzle Rush top scores (supabase/16-puzzle-rush.sql) ----
+
+  const RUSH_MODES = [["3min", "3 minutes"], ["5min", "5 minutes"], ["survival", "Survival"]];
+  async function rushTopScores(me) {
+    const box = element("div", "panel-block");
+    box.append(element("h2", "", t("⚡ Puzzle Rush top scores")));
+    const tabs = element("div", "choice-row");
+    const list = element("div");
+    box.append(tabs, list);
+    const show = async (mode) => {
+      for (const b of tabs.children) b.classList.toggle("selected", b.dataset.mode === mode);
+      const { data, error } = await accounts.client.from("rush_scores")
+        .select("best, achieved_at, player:profiles!rush_scores_player_fkey(username, avatar, frame)")
+        .eq("mode", mode).order("best", { ascending: false }).limit(TOP_PLAYERS);
+      list.textContent = "";
+      if (error || !data.length) {
+        list.append(element("p", "message", error ? failText : t("No scores yet. Be the first!")));
+      } else {
+        list.append(table(["#", t("Player"), t("Score"), t("Date")], data.filter((r) => r.player).map((r, k) =>
+          row([String(k + 1), nameWithPicture(r.player), String(r.best), dateText(r.achieved_at)],
+            me && me.username === r.player.username ? "me" : ""))));
+      }
+    };
+    for (const [mode, name] of RUSH_MODES) {
+      const b = element("button", "", t(name));
+      b.type = "button";
+      b.dataset.mode = mode;
+      b.addEventListener("click", () => show(mode));
+      tabs.append(b);
+    }
+    box.append(link(t("⚡ Play Puzzle Rush"), "puzzle-rush.html", "link-button spaced-link"));
+    await show("3min");
+    return box;
+  }
+
+  async function rushBests(player) {
+    const { data } = await accounts.client.from("rush_scores").select("mode, best").eq("player", player.id);
+    const best = Object.fromEntries((data || []).map((r) => [r.mode, r.best]));
+    const box = element("div", "panel-block");
+    box.append(element("h2", "", t("⚡ Puzzle Rush")));
+    const stats = element("div", "stat-row");
+    for (const [mode, name] of RUSH_MODES) {
+      const stat = element("div", "stat");
+      stat.append(element("b", "", best[mode] ? String(best[mode]) : "–"), element("span", "", t(name)));
+      stats.append(stat);
+    }
+    box.append(stats);
+    return box;
   }
 
   // ---- One player's profile and games ----
@@ -234,7 +286,7 @@
     } else {
       profile.append(await extras.actions(client, me, player));
     }
-    parts.push(await extras.badges(client, player), extras.ratingGraph(player.rating, changes), extras.stats(allGames));
+    parts.push(await extras.badges(client, player), extras.ratingGraph(player.rating, changes), extras.stats(allGames), await rushBests(player));
 
     const list = element("div", "panel-block");
     list.append(element("h2", "", t("Games")));

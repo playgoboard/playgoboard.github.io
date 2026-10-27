@@ -24,6 +24,9 @@
       ["puzzles-intermediate", "🟡", "Intermediate done", "Solve every Intermediate puzzle."],
       ["puzzles-advanced", "🔴", "Advanced done", "Solve every Advanced puzzle."],
       ["daily-puzzle-7", "⭐", "Puzzle week", "Solve today's puzzle 7 days in a row."],
+      ["rush-10", "⚡", "Rush 10", "Score 10 in Puzzle Rush."],
+      ["rush-20", "⚡", "Rush 20", "Score 20 in Puzzle Rush."],
+      ["rush-30", "⚡", "Rush 30", "Score 30 in Puzzle Rush."],
     ]],
     ["Online", [
       ["first-win", "🏅", "First rated win", "Win a rated game."],
@@ -257,5 +260,11 @@
     GROUPS, BY_ID, claim, check, activity, botWin, gameFinished, puzzleSolved, boardTried,
     currentStreak, loggedIn: () => Boolean(me()),
     finishedGroups: () => finished.slice(),
+    // Achievements the database gave directly (e.g. Puzzle Rush): banner, chime and reward check.
+    async announceNew(ids) {
+      const have = await loadMine();
+      for (const id of ids) { have.add(id); announce(id); }
+      if (ids.length) refreshRewards(true);
+    },
   };
 })();

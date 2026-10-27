@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.43.0
+- Puzzle Rush (puzzle-rush.html): 3 minutes, 5 minutes or Survival; 3 mistakes and the run ends. 645 new capture puzzles from Dragon's self-play games (each with exactly one winning first move, White always defends its best) plus the 60 normal puzzles, easiest first. Best scores on your profile, a Rush top-scores list on the Leaderboard, and 3 new Puzzles achievements (Rush 10, 20, 30). New Puzzle Rush square on the main menu.
+
 ## 0.42.1
 - Fixed: joining an online game could never connect on phone hotspots (and some school networks), because the two browsers can't link up directly there. After 6 seconds without a direct link, the game now switches to a backup messenger through Supabase Realtime (js/online-relay.js). Works for invites, invite links and Quick match.
 

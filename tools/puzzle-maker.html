@@ -84,19 +84,25 @@
       let category;
       if (own.libs.length === 1) category = "sacrifice";
       else if (ataris >= 2) category = "double-atari";
+      else if (n === 1) category = "capture";
       else if (tg.libs.length === 1) category = n >= 4 ? "chase" : "atari";
       else category = "quiet";
       const level = n >= 4 || category === "sacrifice" || category === "quiet" ? "advanced" : "intermediate";
       return { category, level };
     }
 
-    window.makePuzzles = async function (games = 40, log = (s) => { document.getElementById("log").textContent += s + "\n"; }) {
+    // options: minMoves (1 also keeps one-move captures, for Puzzle Rush), perGame (puzzles kept per game).
+    window.makePuzzles = async function (games = 40, log = (s) => { document.getElementById("log").textContent += s + "\n"; }, options = {}) {
+      const minMoves = options.minMoves || 2, perGame = options.perGame || 1;
       const evaluator = window.GoBot.dragonEvaluator();
-      const found = [];
+      const found = [], seenRows = new Set();
       for (let g = 0; g < games; g++) {
         const positions = await selfPlay(evaluator, 70);
-        // Look at positions with 14-50 stones, latest first, and keep one puzzle per game.
-        for (let k = positions.length - 1; k >= 0; k--) {
+        // Look at positions with 10-36 stones, latest first, and keep up to perGame puzzles per game
+        // (at least 6 moves apart, so they aren't the same fight).
+        let kept = 0, lastKept = Infinity;
+        for (let k = positions.length - 1; k >= 0 && kept < perGame; k--) {
+          if (lastKept - k < 6) continue;
           const pos = positions[k];
           const stones = pos.board.reduce((s, c) => s + (c ? 1 : 0), 0);
           if (stones < 10 || stones > 36) continue;
@@ -107,9 +113,9 @@
             if (board.cells[i] !== WHITE || done.has(i)) continue;
             const info = groupInfo(board, i);
             info.stones.forEach((s) => done.add(s));
-            if (info.libs.length < 2 || info.libs.length > 3 || info.stones.length < 2) continue;
+            if (info.libs.length < (minMoves === 1 ? 1 : 2) || info.libs.length > 3 || info.stones.length < (minMoves === 1 ? 1 : 2)) continue;
             const sol = uniqueSolution(board, i, 5);
-            if (!sol || sol.n < 2) continue;
+            if (!sol || sol.n < minMoves) continue;
             // The answer must be near the fight (touching or one point from the group).
             const ax = sol.answer % SIZE, ay = Math.floor(sol.answer / SIZE);
             const near = info.stones.some((st) => Math.max(Math.abs(st % SIZE - ax), Math.abs(Math.floor(st / SIZE) - ay)) <= 2);
@@ -127,9 +133,12 @@
             for (let x = 0; x < SIZE; x++) { const c = board.cells[y * SIZE + x]; row += c === BLACK ? "X" : c === WHITE ? "O" : "."; }
             rows.push(row);
           }
+          if (seenRows.has(rows.join(""))) continue;
+          seenRows.add(rows.join(""));
           found.push({ rows, targets: [coord(best.target)], moves: best.n, answer: coord(best.answer), category: best.category, level: best.level, groupSize: best.stones });
           log(`game ${g + 1}: ${best.level} ${best.category} n=${best.n} answer ${coord(best.answer)} target ${coord(best.target)}`);
-          break;
+          kept++;
+          lastKept = k;
         }
       }
       return found;

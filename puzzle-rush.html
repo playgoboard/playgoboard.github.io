@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GoBoard — Puzzle Rush</title>
+  <meta name="description" content="Puzzle Rush: solve as many Go capture puzzles as you can in 3 or 5 minutes, or until 3 mistakes.">
+  <link rel="canonical" href="https://playgoboard.netlify.app/puzzle-rush.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GoBoard">
+  <meta property="og:title" content="GoBoard — Puzzle Rush">
+  <meta property="og:description" content="Puzzle Rush: solve as many Go capture puzzles as you can in 3 or 5 minutes, or until 3 mistakes.">
+  <meta property="og:url" content="https://playgoboard.github.io/puzzle-rush.html">
+  <meta property="og:image" content="https://playgoboard.github.io/preview.png?v=2">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#302e2b">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script src="js/theme.js?v=64"></script>
+  <link rel="stylesheet" href="css/style.css?v=64">
+</head>
+<body>
+  <header class="top-bar">
+    <a class="logo" href="index.html"><img class="logo-mark" src="img/logo.svg" alt="" width="30" height="30">GoBoard</a>
+    <a class="menu-button" href="index.html" title="Main menu" aria-label="Main menu">☰</a>
+    <nav id="nav">
+      <a class="nav-item" href="index.html?mode=friend">Play a friend</a>
+      <a class="nav-item" href="index.html?mode=bot">Bots</a>
+      <a class="nav-item" href="index.html?mode=online">Online</a>
+      <a class="nav-item daily-link" href="daily.html">Daily</a>
+      <a class="nav-item active" href="puzzles.html">Puzzles</a>
+      <a class="nav-item" href="leaderboard.html">Leaderboard</a>
+      <a class="nav-item" href="achievements.html">Achievements</a>
+    </nav>
+    <button id="btn-sound" class="sound-toggle" type="button"></button>
+  </header>
+
+  <main class="game-layout">
+    <section class="board-column">
+      <div class="player-card puzzle-title-card">
+        <span class="stone-icon black"></span>
+        <span class="player-name">⚡ Puzzle Rush</span>
+        <span class="player-info rush-clock" id="rush-clock"></span>
+      </div>
+      <div id="board" class="board"></div>
+    </section>
+
+    <aside class="side-panel">
+      <!-- Pick a mode (js/rush-page.js). -->
+      <div class="panel-block" id="rush-start">
+        <h2>⚡ Puzzle Rush</h2>
+        <p class="message">Solve as many puzzles as you can. They start easy and get harder. White always plays its best defense. 3 mistakes and the run is over.</p>
+        <div class="rush-modes">
+          <button class="btn rush-mode" data-rush-mode="3min"><b>3 minutes</b><span data-rush-best="3min"></span></button>
+          <button class="btn rush-mode" data-rush-mode="5min"><b>5 minutes</b><span data-rush-best="5min"></span></button>
+          <button class="btn rush-mode" data-rush-mode="survival"><b>Survival</b><span data-rush-best="survival"></span></button>
+        </div>
+        <p class="message small-note" id="rush-count"></p>
+        <p class="account-links"><a class="link-button" href="leaderboard.html?rush=1">🏆 Rush top scores</a> · <a class="link-button" href="puzzles.html">All puzzles</a></p>
+      </div>
+
+      <!-- During a run. -->
+      <div class="panel-block" id="rush-play" hidden>
+        <p class="label" id="rush-mode-name"></p>
+        <div class="rush-scoreline"><span class="rush-score" id="rush-score">0</span><span class="rush-mistakes" id="rush-mistakes"></span></div>
+        <p id="rush-prompt" class="puzzle-prompt"></p>
+        <div class="rush-results" id="rush-results"></div>
+        <button id="rush-quit" class="btn">Stop</button>
+      </div>
+
+      <!-- After a run. -->
+      <div class="panel-block" id="rush-end" hidden>
+        <h2 id="rush-end-why"></h2>
+        <p class="rush-score" id="rush-end-score"></p>
+        <p class="status" id="rush-end-best"></p>
+        <p class="message" id="rush-end-note"></p>
+        <div class="button-row">
+          <button id="rush-again" class="btn btn-primary">Play again</button>
+          <button id="rush-menu" class="btn">Other mode</button>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <script src="js/i18n-zh.js?v=64"></script>
+  <script src="js/i18n.js?v=64"></script>
+  <script src="js/app-install.js?v=64"></script>
+  <script src="js/version-check.js?v=64"></script>
+  <script src="js/go-rules.js?v=64"></script>
+  <script src="js/go-bot.js?v=64"></script>
+  <script src="js/sounds.js?v=64"></script>
+  <script src="js/vendor/supabase-js-2.115.0.js"></script>
+  <script src="js/supabase-config.js?v=64"></script>
+  <script src="js/board-view.js?v=64"></script>
+  <script src="js/puzzle-solver.js?v=64"></script>
+  <script src="js/puzzles-data.js?v=64"></script>
+  <script src="js/rush-puzzles.js?v=64"></script>
+  <script src="js/chat-filter.js?v=64"></script>
+  <script src="js/accounts.js?v=64"></script>
+  <script src="js/avatars.js?v=64"></script>
+  <script src="js/friends.js?v=64"></script>
+  <script src="js/achievements.js?v=64"></script>
+  <script src="js/live-games.js?v=64"></script>
+  <script src="js/daily-badge.js?v=64"></script>
+  <script src="js/rush-page.js?v=64"></script>
+</body>
+</html>

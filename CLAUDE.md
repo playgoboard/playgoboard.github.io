@@ -143,6 +143,10 @@
 - Online relay: js/online-relay.js (GoRelay) uses a Supabase Realtime broadcast channel "goboard-room-CODE" as a
   stand-in PeerJS connection; HostSession listens on it from the start, GuestSession switches after RELAY_AFTER_MS.
   The Claude app test browser can't do WebRTC at all, so it always tests the relay path.
+- Puzzle Rush: puzzle-rush.html + js/rush-page.js; js/rush-puzzles.js (compact [moves, target, 81 chars], made with
+  tools/puzzle-maker.html options {minMoves: 1, perGame: 3}; puzzles pulled out of the browser through the jwebserver
+  log). supabase/16-puzzle-rush.sql: rush_scores, submit_rush_score (gives rush-10/20/30), reward_groups now has the
+  Rush achievements in Puzzles.
 - Speed limit: supabase/11-speed-limit.sql extends check_two_step (the pre-request function) with per-minute counts
   of POST/PATCH/PUT/DELETE in the unlogged table request_counts (120 per account, 300 per IP for guests).
   Any new pre-request logic must keep the two-step, ban and speed-limit parts together in that one function.
