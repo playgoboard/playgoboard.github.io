@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.41.1
+- Fixed a cheat: at the end of a bot game the bot now decides which stones are dead (using Dragon's network, or quick practice games if it can't run), so you can't win by marking the bot's live stones dead. If you disagree, Keep playing and capture them.
+
 ## 0.41.0
 - Achievement rewards: finishing a whole group (Bots, Puzzles, Online, Fun, Streak) unlocks a special picture, a title, a picture frame and a board or stone style (Dragon stones, Golden board, Royal stones, Neon board, Fire board). Checked by the database.
 - Profile pictures are now drawings instead of emojis (16 normal ones plus 5 reward pictures, including a robot for Bots).

@@ -657,6 +657,63 @@
     }
   }
 
+  // ---- Which stones are dead at the end of a bot game ----
+  // The bot decides (so you can't win by marking its live stones dead): Dragon's network says
+  // who owns each point; without it, many quick practice games from this position decide.
+  const DEAD_IF_OWNED_BY_OTHER = 0.4; // a group is dead when the other side owns it this surely (-1..1)
+  const OWNERSHIP_PLAYOUTS = 400;
+
+  // -1..1 per point, positive = Black's.
+  async function blackOwnership(game) {
+    const evaluator = getEvaluator();
+    if (evaluator) {
+      try {
+        const [result] = await evaluator.evaluate([positionFromGame(game)]);
+        if (result && result.ownership) return Array.from(result.ownership, (v) => (game.turn === BLACK ? v : -v));
+      } catch { /* use the practice games below */ }
+    }
+    const start = FastBoard.fromGame(game), work = new FastBoard(game.size);
+    const last = typeof game.lastMove === "number" ? game.lastMove : -1;
+    const total = new Float32Array(start.n);
+    for (let k = 0; k < OWNERSHIP_PLAYOUTS; k++) {
+      work.copyFrom(start);
+      work.playout(game.turn, last, null);
+      for (let i = 0; i < work.n; i++) {
+        let c = work.cells[i];
+        if (c === EMPTY) {
+          const first = work.cells[work.nbrs[i][0]];
+          if (first !== EMPTY && work.nbrs[i].every((nb) => work.cells[nb] === first)) c = first;
+        }
+        if (c === BLACK) total[i]++;
+        else if (c === WHITE) total[i]--;
+      }
+      if ((k & 31) === 31) await delay(0); // let the page breathe
+    }
+    return Array.from(total, (v) => v / OWNERSHIP_PLAYOUTS);
+  }
+
+  // Resolves to the board indexes of all dead stones.
+  async function deadStones(game) {
+    const own = await blackOwnership(game);
+    const size = game.size, board = game.board, seen = new Set(), dead = [];
+    for (let i = 0; i < board.length; i++) {
+      if (board[i] === EMPTY || seen.has(i)) continue;
+      const color = board[i], group = [i];
+      seen.add(i);
+      for (let k = 0; k < group.length; k++) {
+        const p = group[k], x = p % size, y = Math.floor(p / size);
+        for (const [nx, ny] of [[x - 1, y], [x + 1, y], [x, y - 1], [x, y + 1]]) {
+          if (nx < 0 || ny < 0 || nx >= size || ny >= size) continue;
+          const q = ny * size + nx;
+          if (board[q] === color && !seen.has(q)) { seen.add(q); group.push(q); }
+        }
+      }
+      const mine = group.reduce((sum, p) => sum + (color === BLACK ? own[p] : -own[p]), 0) / group.length;
+      if (mine < -DEAD_IF_OWNED_BY_OTHER) dead.push(...group);
+    }
+    return dead;
+  }
+
   function monteCarlo(board, color, last, thinkMs, isCancelled) {
     const current = getPool();
     if (!current) return searchOnPage(board, color, last, thinkMs, isCancelled);
@@ -718,5 +775,5 @@
   // True until Dragon's network has answered once on this page (it may still be downloading).
   const brainLoading = () => !nnReady && !nnBroken;
 
-  window.GoBot = { BOT_LEVELS, chooseBotMove, FastBoard, searchInWorker, brainLoading, dragonEvaluator: getEvaluator };
+  window.GoBot = { BOT_LEVELS, chooseBotMove, FastBoard, searchInWorker, brainLoading, dragonEvaluator: getEvaluator, deadStones };
 })();

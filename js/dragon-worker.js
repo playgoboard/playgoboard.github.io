@@ -36,7 +36,7 @@ async function evaluate(positions) {
     bin_input: new ort.Tensor("float32", bin, [count, GoNN.NUM_SPATIAL, size, size]),
     global_input: new ort.Tensor("float32", glob, [count, GoNN.NUM_GLOBAL]),
   });
-  const policy = out.policy.data, value = out.value.data, misc = out.miscvalue.data;
+  const policy = out.policy.data, value = out.value.data, misc = out.miscvalue.data, owner = out.ownership.data;
   return positions.map((pos, k) => {
     const logits = policy.subarray(k * (n + 1), (k + 1) * (n + 1));
     const moves = [], priors = [];
@@ -55,7 +55,9 @@ async function evaluate(positions) {
     const vm = Math.max(v[0], v[1], v[2]);
     const ew = Math.exp(v[0] - vm), el = Math.exp(v[1] - vm), en = Math.exp(v[2] - vm);
     // lead: points ahead for the player to move (KataGo's lead output, scaled by 20).
-    return { moves, priors, win: (ew + 0.5 * en) / (ew + el + en), lead: misc[k * 4 + 2] * 20 };
+    // ownership: for each point, -1..1 how surely it ends up belonging to the player to move.
+    const ownership = Float32Array.from(owner.subarray(k * n, (k + 1) * n), Math.tanh);
+    return { moves, priors, win: (ew + 0.5 * en) / (ew + el + en), lead: misc[k * 4 + 2] * 20, ownership };
   });
 }
 

@@ -197,11 +197,16 @@
     resignButton.disabled = game.phase !== "play" || isBotTurn() || (online && !linkOpen);
     if (resignButton.disabled && !$("resign-ask").hidden) showResignAsk(false);
     $("btn-finish").disabled = $("btn-resume").disabled = online && !linkOpen;
+    if (opponent === "bot" && botScoring.busy) $("btn-finish").disabled = true;
     undoButton.title = online ? t("Undo is off in online games") : "";
 
     statusEl.classList.toggle("thinking", botThinking || hintThinking);
     statusEl.textContent = statusText();
-    if (game.phase === "scoring") {
+    if (game.phase === "scoring" && opponent === "bot") {
+      messageEl.textContent = botScoring.busy
+        ? t("{name} is checking which stones are dead…", { name: botShortName() })
+        : t("{name} marked the dead stones. Press Count score, or Keep playing if you disagree.", { name: botShortName() });
+    } else if (game.phase === "scoring") {
       messageEl.textContent = online
         ? t("Both passed. Either of you can click dead groups (you both see it), then press Count score.")
         : t("Both passed. Click any dead groups to remove them, then press Count score.");
@@ -352,6 +357,29 @@
     saveGameRecord();
     noteAchievements();
     reportLive();
+    markBotDeadStones();
+  }
+
+  // Against a bot, the bot decides which stones are dead (GoBot.deadStones), so nobody can win
+  // by marking the bot's live stones dead. If you disagree, Keep playing and capture them.
+  const botScoring = { key: null, busy: false };
+  function markBotDeadStones() {
+    if (opponent !== "bot" || game.phase !== "scoring") return;
+    const key = positionKey();
+    if (botScoring.key === key) return;
+    botScoring.key = key;
+    botScoring.busy = true;
+    $("btn-finish").disabled = true;
+    window.GoBot.deadStones(game).catch(() => []).then((dead) => {
+      if (botScoring.key !== key) return; // the game moved on meanwhile
+      botScoring.busy = false;
+      $("btn-finish").disabled = false;
+      if (game.phase !== "scoring") return;
+      game.dead.clear();
+      for (const i of dead) game.dead.add(i);
+      updatePanel();
+      drawBoard();
+    });
   }
 
   // Online games go to the database so friends can watch (js/live-games.js).
@@ -749,6 +777,10 @@
 
     const online = opponent === "online";
     if (game.phase === "scoring") {
+      if (opponent === "bot") {
+        messageEl.textContent = t("Against a bot, the bot decides which stones are dead. If you disagree, press Keep playing and capture them.");
+        return;
+      }
       if (online) doOnline({ type: "toggle-dead", x, y });
       else game.toggleDead(x, y);
     } else if (game.phase === "play" && !isOpponentTurn()) {
@@ -927,6 +959,7 @@
   });
 
   $("btn-finish").addEventListener("click", () => {
+    if (opponent === "bot" && botScoring.busy) return; // wait for the bot to mark dead stones
     if (opponent === "online") doOnline({ type: "finish" });
     else game.finishScoring();
     refresh();

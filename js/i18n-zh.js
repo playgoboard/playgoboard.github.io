@@ -13,6 +13,9 @@ window.GO_TEXT_ZH = {
   "Online": ["在线", "線上"],
   "Puzzles": ["练习题", "練習題"],
   "Leaderboard": ["排行榜", "排行榜"],
+  "{name} is checking which stones are dead…": ["{name}正在判断哪些棋子是死子…", "{name}正在判斷哪些棋子是死子…"],
+  "{name} marked the dead stones. Press Count score, or Keep playing if you disagree.": ["{name}已标出死子。按“数子”计算结果；如果不同意，按“继续下”。", "{name}已標出死子。按「數子」計算結果；如果不同意，按「繼續下」。"],
+  "Against a bot, the bot decides which stones are dead. If you disagree, press Keep playing and capture them.": ["和电脑下棋时，由电脑判断死子。如果不同意，按“继续下”把它们吃掉。", "和電腦下棋時，由電腦判斷死子。如果不同意，按「繼續下」把它們吃掉。"],
   // ---- Achievement rewards ----
   "Golden board": ["黄金棋盘", "黃金棋盤"],
   "Neon board": ["霓虹棋盘", "霓虹棋盤"],
