@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.40.2
+- Resign asks right where the button is: it turns into "Yes, resign" and "No" (and turns back by itself after 6 seconds) instead of a browser pop-up.
+
 ## 0.40.1
 - "Every size" now needs a win on 9×9, 13×13 and 19×19 (online, or a fair bot game), not just a finished game, so resigning doesn't count.
 

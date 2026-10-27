@@ -406,6 +406,9 @@ window.GO_TEXT_ZH = {
   "Hint: nothing useful left to play. Passing is a good idea.":
     ["提示：已经没有有用的棋可下了，可以停一手。", "提示：已經沒有有用的棋可下了，可以停一手。"],
   "{color}: are you sure you want to resign?": ["{color}：确定要认输吗？", "{color}：確定要認輸嗎？"],
+  "Yes, resign": ["确定认输", "確定認輸"],
+  "{color}: yes, resign": ["{color}：确定认输", "{color}：確定認輸"],
+  "No": ["取消", "取消"],
   "Are you sure you want to resign?": ["确定要认输吗？", "確定要認輸嗎？"],
   "Back to playing.": ["继续对局。", "繼續對局。"],
 

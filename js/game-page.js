@@ -195,6 +195,7 @@
     hintButton.disabled = online || game.phase !== "play" || isOpponentTurn() || hintThinking;
     passButton.disabled = game.phase !== "play" || isOpponentTurn() || (online && !linkOpen);
     resignButton.disabled = game.phase !== "play" || isBotTurn() || (online && !linkOpen);
+    if (resignButton.disabled && !$("resign-ask").hidden) showResignAsk(false);
     $("btn-finish").disabled = $("btn-resume").disabled = online && !linkOpen;
     undoButton.title = online ? t("Undo is off in online games") : "";
 
@@ -891,11 +892,25 @@
     refresh();
   });
 
+  // Resign asks "are you sure" right where the button is: it turns into "Yes, resign" and "No",
+  // and turns back by itself after a few seconds.
+  const RESIGN_ASK_MS = 6000;
+  let resignAskTimer = null;
+  function showResignAsk(on) {
+    clearTimeout(resignAskTimer);
+    resignButton.hidden = on;
+    $("resign-ask").hidden = !on;
+    if (on) resignAskTimer = setTimeout(() => showResignAsk(false), RESIGN_ASK_MS);
+  }
   resignButton.addEventListener("click", () => {
-    const question = opponent === "friend"
-      ? t("{color}: are you sure you want to resign?", { color: COLOR_NAME[game.turn] })
-      : t("Are you sure you want to resign?");
-    if (!confirm(question)) return;
+    $("btn-resign-yes").textContent = opponent === "friend"
+      ? t("{color}: yes, resign", { color: COLOR_NAME[game.turn] }) : t("Yes, resign");
+    showResignAsk(true);
+  });
+  $("btn-resign-no").addEventListener("click", () => showResignAsk(false));
+  $("btn-resign-yes").addEventListener("click", () => {
+    showResignAsk(false);
+    if (resignButton.disabled) return; // the game changed meanwhile (it ended, or it's not your turn to act)
     if (opponent === "online") doOnline({ type: "resign", loser: humanColor });
     else if (opponent === "bot") game.resign(humanColor);
     else game.resign();

@@ -589,3 +589,7 @@ a.link-button { display: inline-block; }
 .watchers { color: var(--accent); font-weight: 600; margin: 0; }
 .menu-install { margin-top: 16px; text-align: center; }
 .menu-install .btn-primary { width: auto; padding: 12px 20px; }
+/* "Yes, resign" / "No" take the Resign button's place (game-page.js). */
+.resign-ask { display: flex; gap: 6px; flex: 1.6; }
+.resign-ask[hidden] { display: none; }
+.resign-ask .btn { padding-left: 6px; padding-right: 6px; font-size: 14px; }
