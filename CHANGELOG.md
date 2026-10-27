@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.42.0
+- Refresh lock: when a newer GoBoard is online, pages show "GoBoard was updated, please refresh" and can't be played until refreshed (an online game in progress finishes first). Achievement claims from older versions are refused by the database (supabase/15-min-version.sql).
+
 ## 0.41.1
 - Fixed a cheat: at the end of a bot game the bot now decides which stones are dead (using Dragon's network, or quick practice games if it can't run), so you can't win by marking the bot's live stones dead. If you disagree, Keep playing and capture them.
 

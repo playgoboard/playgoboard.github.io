@@ -136,6 +136,10 @@
   finished_groups(player); set_my_rewards; set_my_profile allows earned reward pictures; admin_ban clears them).
   js/avatars.js has the SVG pictures, REWARDS and FRAME_COLORS; achievements.js keeps finished groups in localStorage
   "goboard-rewards" (event "goboard-rewards") for theme.js reward styles (golden/neon/fire boards, dragon/royal stones).
+- Versions: EVERY upload bumps ?v=N in all HTML files AND version.json {"version": N} together (js/version-check.js
+  compares them and covers old pages with "please refresh"). claim_achievement(p_id, p_proof, p_version) refuses
+  versions below app_settings.min_client_version; after fixing a cheat, tell the user to run
+  `update public.app_settings set min_client_version = N;`.
 - Speed limit: supabase/11-speed-limit.sql extends check_two_step (the pre-request function) with per-minute counts
   of POST/PATCH/PUT/DELETE in the unlogged table request_counts (120 per account, 300 per IP for guests).
   Any new pre-request logic must keep the two-step, ban and speed-limit parts together in that one function.

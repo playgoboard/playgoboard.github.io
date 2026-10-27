@@ -16,6 +16,10 @@ window.GO_TEXT_ZH = {
   "{name} is checking which stones are dead…": ["{name}正在判断哪些棋子是死子…", "{name}正在判斷哪些棋子是死子…"],
   "{name} marked the dead stones. Press Count score, or Keep playing if you disagree.": ["{name}已标出死子。按“数子”计算结果；如果不同意，按“继续下”。", "{name}已標出死子。按「數子」計算結果；如果不同意，按「繼續下」。"],
   "Against a bot, the bot decides which stones are dead. If you disagree, press Keep playing and capture them.": ["和电脑下棋时，由电脑判断死子。如果不同意，按“继续下”把它们吃掉。", "和電腦下棋時，由電腦判斷死子。如果不同意，按「繼續下」把它們吃掉。"],
+  "GoBoard was updated": ["GoBoard 已更新", "GoBoard 已更新"],
+  "Please refresh the page to keep playing with the newest version.": ["请刷新页面，用最新版本继续玩。", "請重新整理頁面，用最新版本繼續玩。"],
+  "Refresh": ["刷新", "重新整理"],
+  "Please refresh the page to get the newest version of GoBoard": ["请刷新页面，获取 GoBoard 最新版本", "請重新整理頁面，取得 GoBoard 最新版本"],
   // ---- Achievement rewards ----
   "Golden board": ["黄金棋盘", "黃金棋盤"],
   "Neon board": ["霓虹棋盘", "霓虹棋盤"],

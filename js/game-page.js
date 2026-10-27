@@ -358,7 +358,9 @@
     noteAchievements();
     reportLive();
     markBotDeadStones();
+    if (window.GoVersion && opponent === "online" && game.phase === "over") window.GoVersion.recheck();
   }
+  if (window.GoVersion) window.GoVersion.holdWhile(() => opponent === "online" && linkOpen && game.phase !== "over");
 
   // Against a bot, the bot decides which stones are dead (GoBot.deadStones), so nobody can win
   // by marking the bot's live stones dead. If you disagree, Keep playing and capture them.

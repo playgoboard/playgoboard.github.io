@@ -151,7 +151,9 @@
     if (!me()) return;
     const have = await loadMine();
     if (have.has(id)) return;
-    const { data, error } = await accounts().client.rpc("claim_achievement", { p_id: id, p_proof: proof });
+    const { data, error } = await accounts().client.rpc("claim_achievement", {
+      p_id: id, p_proof: proof, p_version: window.GoVersion ? window.GoVersion.version : 0, // old versions are refused
+    });
     if (error) return;
     have.add(id);
     if (data) {
