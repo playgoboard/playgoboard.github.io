@@ -35,7 +35,7 @@
     const typed = input.value.trim().slice(0, MAX_LENGTH);
     if (!typed) return;
     if (!window.GoChatFilter.isAllowedText(typed)) {
-      note("Only English and Chinese are allowed in chat. 聊天只能使用英文和中文。");
+      note(t("Some of those characters can't be used in chat."));
       return;
     }
     const text = window.GoChatFilter.cleanMessage(typed);

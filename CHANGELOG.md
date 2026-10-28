@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.45.0
+- 5 new languages: French, Spanish, German, Japanese and Korean (8 in total), with real Go terms in each. Each page only downloads the chosen language (js/i18n-load.js, js/lang/*.js).
+- First visit asks Choose your language, with the browser language suggested.
+- Chat and About me also allow French, Spanish and German letters and Japanese and Korean writing, with bad words in those languages filtered.
+
 ## 0.44.0
 - Learn Go (learn.html): 6 short interactive lessons (liberties, capturing, illegal moves and ko, eyes, counting, ending the game), each with explanations on a small board and your-turn tasks with hints. Progress is saved, with a Continue button. New achievements First lesson and Graduate (Fun group). A Learn Go square leads the main menu.
 

@@ -654,3 +654,11 @@ a.link-button { display: inline-block; }
 .lesson-bad { color: var(--error-text); }
 .lesson-finish { display: flex; gap: 8px; margin-bottom: 10px; }
 .lesson-finish .btn { text-align: center; text-decoration: none; }
+
+/* First-visit language window (js/i18n.js) */
+.language-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 10px 0; }
+.language-grid .btn { width: 100%; padding: 12px; }
+
+/* First-visit language window (js/i18n.js) */
+.language-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 10px 0; }
+.language-grid .btn { width: 100%; padding: 12px; }

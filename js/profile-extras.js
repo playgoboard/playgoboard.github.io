@@ -176,7 +176,7 @@
     about.maxLength = 160;
     about.rows = 3;
     about.value = player.about || "";
-    about.placeholder = t("A few words about you (English or Chinese)");
+    about.placeholder = t("A few words about you");
     const count = element("p", "message char-count");
     const updateCount = () => { count.textContent = `${about.value.length} / 160`; };
     about.addEventListener("input", updateCount);
@@ -185,7 +185,7 @@
     const save = button(t("Save"), "btn-primary", async () => {
       const text = about.value.replace(/\s+/g, " ").trim();
       if (!window.GoChatFilter.isAllowedText(text)) {
-        note.textContent = t("About me can only use English and Chinese");
+        note.textContent = t("About me can't use some of those characters");
         return;
       }
       save.disabled = true;
