@@ -711,3 +711,8 @@ a.link-button { display: inline-block; }
   to { transform: scale(1.08, 1.14) rotate(3deg); }
 }
 @media (prefers-reduced-motion: reduce) { .streak-flame { animation: none; } }
+
+/* Share a game (js/game-share.js) */
+.btn-share { width: 100%; }
+#share-note:empty { display: none; }
+#share-note { overflow-wrap: anywhere; }

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.47.0
+- Game sharing: a Share game button when a game ends (bots, friends, online) and on every replay. The link carries the whole game (two letters per move, like an SGF file), so it opens the replay with Dragon's Review for anyone, no account needed. Uses the phone/iPad share sheet when there is one, otherwise copies the link.
+
 ## 0.46.0
 - iPad: the top bar now uses two rows up to 1300px wide (the language menu no longer sticks out on iPad Pro, Log in no longer gets cut off in landscape); no stuck ghost stones or lifted squares after a tap; no zoom when tapping text boxes or double-tapping the board; the board fits the real visible height in Safari.
 - App icon on iPad and iPhone: PNG favicons (Safari can't show the SVG one) and /apple-touch-icon.png at the site root for Add to Home Screen.

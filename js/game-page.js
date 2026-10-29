@@ -49,6 +49,7 @@
   // Achievements (js/achievements.js), tracked by gameNumber. Undo or a custom start position
   // makes a game "unfair": it still counts for the streak, but not for bot achievements.
   let unfairGame = -1;
+  let customStart = -1; // gameNumber of a game started from the position editor
   let achievementsGame = -1;
   let capturesSeen = { gameNumber: -1, count: 0 };
 
@@ -185,6 +186,10 @@
     const rematchButton = $("btn-rematch");
     $("rematch-row").hidden = !(online && game.phase === "over");
     $("review-row").hidden = !(game.phase === "over" && game.moves.length >= 2 && !review && !reviewing && window.GoReview);
+    // A finished game can be shared as a link (js/game-share.js), except one from a custom position,
+    // whose starting stones aren't part of the moves.
+    $("share-row").hidden = !(game.phase === "over" && game.moves.length >= 1 && window.GoShare && customStart !== gameNumber);
+    if (game.phase !== "over") $("share-note").textContent = "";
     rematchButton.disabled = !linkOpen || rematchMine;
     rematchButton.textContent = rematchMine ? t("Waiting for {yourFriend}…", { yourFriend: yourFriend() })
       : rematchFriend ? t("Accept rematch") : t("Rematch");
@@ -686,6 +691,26 @@
 
   $("btn-review").addEventListener("click", startReview);
 
+  // The names that go into a shared game link.
+  function shareName(color) {
+    if (opponent === "online") return cardName(color);
+    if (opponent === "bot") {
+      if (color !== humanColor) return botName();
+      const profile = window.GoAccounts && window.GoAccounts.ready ? window.GoAccounts.current().profile : null;
+      return profile ? profile.username : t("Player");
+    }
+    return COLOR_NAME[color];
+  }
+  $("btn-share-game").addEventListener("click", async () => {
+    const url = window.GoShare.link({
+      size: game.size,
+      moves: game.moves.map((m) => (m.pass ? "pass" : [m.x, m.y])),
+      black: shareName(BLACK), white: shareName(WHITE),
+      result: game.result ? window.GoHistory.resultCode(game.result) : "",
+    });
+    $("share-note").textContent = await window.GoShare.share(url);
+  });
+
   // ---- Starting games ----
 
   function beginGame(size, newOpponent, myColor, clockSettings) {
@@ -736,6 +761,7 @@
   function startFromPosition(board, turn) {
     beginGame(setup.size, setup.mode === "bot" ? "bot" : "friend", pickedColor(), clockSetup());
     game.setPosition(board, turn);
+    customStart = gameNumber;
     markUnfair();
     const parts = [t("Playing from your position.")];
     if (opponent === "bot") parts.push(youAre(humanColor));

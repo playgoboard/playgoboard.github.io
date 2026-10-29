@@ -150,6 +150,9 @@
 - Learn Go: learn.html + js/learn-page.js; lessons are data in js/lessons-data.js (text steps, point tasks, choice
   tasks). Progress in localStorage goboard-lessons-done / goboard-lesson-at. supabase/17-lessons.sql adds first-lesson
   and graduate to claim_achievement and the Fun reward group.
+- Sharing: js/game-share.js (GoShare.link/read/share). Shared replays are leaderboard.html?replay=1&s=SIZE&m=MOVES
+  (aa-ss, tt = pass)&b=&w=&r=RESULT&d=DATE, shown by playReplay() in leaderboard-page.js (also used for saved games).
+  Games from a custom position can't be shared (their starting stones aren't in the moves).
 - Speed limit: supabase/11-speed-limit.sql extends check_two_step (the pre-request function) with per-minute counts
   of POST/PATCH/PUT/DELETE in the unlogged table request_counts (120 per account, 300 per IP for guests).
   Any new pre-request logic must keep the two-step, ban and speed-limit parts together in that one function.

@@ -27,8 +27,8 @@
   <meta name="apple-mobile-web-app-title" content="GoBoard">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <script src="js/theme.js?v=68"></script>
-  <link rel="stylesheet" href="css/style.css?v=68">
+  <script src="js/theme.js?v=69"></script>
+  <link rel="stylesheet" href="css/style.css?v=69">
 </head>
 <body>
   <header class="top-bar">
@@ -198,6 +198,10 @@
         <div id="review-row" class="button-row review-row" hidden>
           <button id="btn-review" class="btn btn-review">Dragon's Review</button>
         </div>
+        <div id="share-row" class="button-row" hidden>
+          <button id="btn-share-game" class="btn btn-share">🔗 Share game</button>
+        </div>
+        <p id="share-note" class="message"></p>
         <div id="rematch-row" class="button-row rematch-row" hidden>
           <button id="btn-rematch" class="btn btn-primary">Rematch</button>
         </div>
@@ -243,42 +247,43 @@
     </aside>
   </main>
 
-  <script src="js/i18n-load.js?v=68"></script>
-  <script src="js/i18n.js?v=68"></script>
-  <script src="js/app-install.js?v=68"></script>
-  <script src="js/version-check.js?v=68"></script>
+  <script src="js/i18n-load.js?v=69"></script>
+  <script src="js/i18n.js?v=69"></script>
+  <script src="js/app-install.js?v=69"></script>
+  <script src="js/version-check.js?v=69"></script>
   <!-- PeerJS connects two browsers for online games (free public service). Libraries are kept in js/vendor so
        nothing loads from other download sites (some are blocked in mainland China). -->
   <script src="js/vendor/peerjs-1.5.4.min.js"></script>
-  <script src="js/go-rules.js?v=68"></script>
-  <script src="js/go-bot.js?v=68"></script>
-  <script src="js/nn-features.js?v=68"></script>
-  <script src="js/dragon-search.js?v=68"></script>
-  <script src="js/dragon-review.js?v=68"></script>
-  <script src="js/sounds.js?v=68"></script>
+  <script src="js/go-rules.js?v=69"></script>
+  <script src="js/go-bot.js?v=69"></script>
+  <script src="js/nn-features.js?v=69"></script>
+  <script src="js/dragon-search.js?v=69"></script>
+  <script src="js/dragon-review.js?v=69"></script>
+  <script src="js/sounds.js?v=69"></script>
   <script src="js/vendor/supabase-js-2.115.0.js"></script>
-  <script src="js/supabase-config.js?v=68"></script>
-  <script src="js/game-clock.js?v=68"></script>
-  <script src="js/board-view.js?v=68"></script>
-  <script src="js/chat-filter.js?v=68"></script>
-  <script src="js/accounts.js?v=68"></script>
-  <script src="js/avatars.js?v=68"></script>
-  <script src="js/friends.js?v=68"></script>
-  <script src="js/achievements.js?v=68"></script>
-  <script src="js/live-games.js?v=68"></script>
-  <script src="js/daily-badge.js?v=68"></script>
-  <script src="js/rated-games.js?v=68"></script>
-  <script src="js/online-chat.js?v=68"></script>
-  <script src="js/move-list.js?v=68"></script>
-  <script src="js/game-history.js?v=68"></script>
-  <script src="js/game-page.js?v=68"></script>
-  <script src="js/position-editor.js?v=68"></script>
-  <script src="js/online-relay.js?v=68"></script>
-  <script src="js/online-lobby.js?v=68"></script>
-  <script src="js/quick-match.js?v=68"></script>
-  <script src="js/puzzles-data.js?v=68"></script>
-  <script src="js/daily-puzzle-box.js?v=68"></script>
-  <script src="js/lessons-data.js?v=68"></script>
-  <script src="js/main-menu.js?v=68"></script>
+  <script src="js/supabase-config.js?v=69"></script>
+  <script src="js/game-clock.js?v=69"></script>
+  <script src="js/board-view.js?v=69"></script>
+  <script src="js/chat-filter.js?v=69"></script>
+  <script src="js/accounts.js?v=69"></script>
+  <script src="js/avatars.js?v=69"></script>
+  <script src="js/friends.js?v=69"></script>
+  <script src="js/achievements.js?v=69"></script>
+  <script src="js/live-games.js?v=69"></script>
+  <script src="js/daily-badge.js?v=69"></script>
+  <script src="js/rated-games.js?v=69"></script>
+  <script src="js/online-chat.js?v=69"></script>
+  <script src="js/move-list.js?v=69"></script>
+  <script src="js/game-history.js?v=69"></script>
+  <script src="js/game-share.js?v=69"></script>
+  <script src="js/game-page.js?v=69"></script>
+  <script src="js/position-editor.js?v=69"></script>
+  <script src="js/online-relay.js?v=69"></script>
+  <script src="js/online-lobby.js?v=69"></script>
+  <script src="js/quick-match.js?v=69"></script>
+  <script src="js/puzzles-data.js?v=69"></script>
+  <script src="js/daily-puzzle-box.js?v=69"></script>
+  <script src="js/lessons-data.js?v=69"></script>
+  <script src="js/main-menu.js?v=69"></script>
 </body>
 </html>

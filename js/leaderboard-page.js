@@ -2,6 +2,7 @@
 //   leaderboard.html                  top players
 //   leaderboard.html?player=NAME      one player's profile and game history
 //   leaderboard.html?game=ID          replay of one saved game
+//   leaderboard.html?replay=1&s=…     replay of a game shared as a link (js/game-share.js)
 // Usernames come from other players, so they are always shown with textContent.
 (function () {
   const { BLACK, WHITE } = window.Go;
@@ -317,23 +318,52 @@
       rated = r.data;
     }
 
-    const game = gameHistory.rebuild(record.board_size, record.moves);
-    const total = game.moves.length;
-    let shown = total;
     const ownerColor = record.my_color === "black" ? BLACK : WHITE;
     const ownerName = record.owner ? record.owner.username : t("Deleted player");
-    const seats = { bottom: ownerColor, top: ownerColor === BLACK ? WHITE : BLACK };
-    const names = { [ownerColor]: ownerName, [seats.top]: shownName(record.opponent_name) };
-
-    $("replay-back").href = record.owner ? playerLink(record.owner.username) : "leaderboard.html";
-    $("replay-result").textContent = gameHistory.resultWords(record.result);
+    const opponentColor = ownerColor === BLACK ? WHITE : BLACK;
     const kind = rated ? `${t("Rated")}${typeof rated[`${record.my_color}_change`] === "number"
       ? ` (${ownerName} ${rated[`${record.my_color}_change`] >= 0 ? "+" : ""}${rated[`${record.my_color}_change`]})` : ""}`
       : record.daily ? (typeof record.rating_change === "number"
         ? `${t("Daily")} · ${t("Rated")} (${ownerName} ${record.rating_change >= 0 ? "+" : ""}${record.rating_change})`
         : `${t("Daily")} · ${t("Casual")}`)
       : record.quick ? t("Casual quick match") : t("Casual");
-    $("replay-details").textContent = `${record.board_size}×${record.board_size} · ${kind} · ${dateText(record.created_at)}`;
+    // Saved games are shared by their own short address.
+    const shareUrl = new URL(`leaderboard.html?game=${record.id}`, window.location.href).toString();
+    playReplay({
+      size: record.board_size, moves: record.moves, result: record.result, bottom: ownerColor,
+      names: { [ownerColor]: ownerName, [opponentColor]: shownName(record.opponent_name) },
+      details: `${record.board_size}×${record.board_size} · ${kind} · ${dateText(record.created_at)}`,
+      back: record.owner ? playerLink(record.owner.username) : "leaderboard.html", shareUrl,
+    });
+  }
+
+  // A game shared as a link (js/game-share.js): everything is in the address.
+  function showSharedGame() {
+    const shared = window.GoShare.read(params);
+    if (!shared) return problem(t("That game wasn't found."));
+    playReplay({
+      size: shared.size, moves: shared.moves, result: shared.result, bottom: BLACK,
+      names: { [BLACK]: shared.black, [WHITE]: shared.white },
+      details: `${shared.size}×${shared.size} · ${t("Shared game")}${shared.date ? ` · ${dateText(shared.date)}` : ""}`,
+      back: "leaderboard.html", shareUrl: window.location.href,
+    });
+  }
+
+  // The replay view, for a saved game or a shared link.
+  // game: { size, moves, result ("" if unknown), bottom (color at the bottom), names, details, back, shareUrl }
+  function playReplay(info) {
+    const game = gameHistory.rebuild(info.size, info.moves);
+    const total = game.moves.length;
+    let shown = total;
+    const seats = { bottom: info.bottom, top: info.bottom === BLACK ? WHITE : BLACK };
+    const names = info.names;
+    $("replay-back").href = info.back;
+    $("replay-result").textContent = info.result ? gameHistory.resultWords(info.result) : "";
+    $("replay-details").textContent = info.details;
+    $("btn-share-replay").hidden = false;
+    $("btn-share-replay").addEventListener("click", async () => {
+      $("share-note").textContent = await window.GoShare.share(info.shareUrl);
+    });
 
     for (const seat of ["top", "bottom"]) {
       const color = seats[seat];
@@ -420,6 +450,11 @@
 
   // ---- Start ----
 
+  // A shared game link needs no database, so it works even when the leaderboard can't load.
+  if (params.get("replay") && gameHistory && window.GoShare) {
+    showSharedGame();
+    return;
+  }
   if (!accounts || !accounts.ready || !gameHistory) {
     problem(t("The leaderboard couldn't load. Check your internet connection and reload the page."));
     return;
