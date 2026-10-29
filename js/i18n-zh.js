@@ -53,6 +53,8 @@ window.GO_TEXT_ZH = {
   "Rush 20": ["冲刺 20 题", "衝刺 20 題"], "Score 20 in Puzzle Rush.": ["在解题冲刺中得 20 分。", "在解題衝刺中得 20 分。"],
   "Rush 30": ["冲刺 30 题", "衝刺 30 題"], "Score 30 in Puzzle Rush.": ["在解题冲刺中得 30 分。", "在解題衝刺中得 30 分。"],
   // ---- Languages ----
+  "Streak started! Play tomorrow to keep it going.": ["连续天数开始了！明天再来就能继续。", "連續天數開始了！明天再來就能繼續。"],
+  "Your streak goes on! See you tomorrow.": ["连续天数继续！明天见。", "連續天數繼續！明天見。"],
   "A few words about you": ["简单介绍一下自己", "簡單介紹一下自己"],
   "About me can't use some of those characters": ["“关于我”里有不能使用的字符", "「關於我」裡有不能使用的字元"],
   "Some of those characters can't be used in chat.": ["有些字符不能在聊天里使用。", "有些字元不能在聊天裡使用。"],

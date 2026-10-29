@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.46.0
+- iPad: the top bar now uses two rows up to 1300px wide (the language menu no longer sticks out on iPad Pro, Log in no longer gets cut off in landscape); no stuck ghost stones or lifted squares after a tap; no zoom when tapping text boxes or double-tapping the board; the board fits the real visible height in Safari.
+- App icon on iPad and iPhone: PNG favicons (Safari can't show the SVG one) and /apple-touch-icon.png at the site root for Add to Home Screen.
+- Daily streak: the first game of the day lights a little fire with the day of your streak.
+
 ## 0.45.1
 - Learn Go, Ending the game: the border-point question now uses a realistic end position (both sides alive, one neutral point at C3) instead of a board where every stone shared one liberty.
 

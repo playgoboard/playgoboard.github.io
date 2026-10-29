@@ -228,6 +228,7 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
 
 .board-column {
   width: min(var(--board-max), 100%, calc(100vh - var(--board-gap)));
+  width: min(var(--board-max), 100%, calc(100dvh - var(--board-gap)));
   min-width: 280px;
   display: flex;
   flex-direction: column;
@@ -461,14 +462,18 @@ a.link-button { display: inline-block; }
 
 /* Phones and small windows: the panel drops under the board, so put the game
    buttons first instead of below the whole "New game" box. */
-@media (max-width: 1000px) {
+/* Tablets (iPads in both directions) and phones: the menu gets its own line, so the account,
+   sound and language buttons always fit next to the logo. */
+@media (max-width: 1300px) {
   .top-bar { gap: 14px; padding: 10px 12px; flex-wrap: wrap; row-gap: 8px; }
-  /* The menu gets its own line on small screens so the account and sound buttons fit. */
   .top-bar nav { order: 3; width: 100%; gap: 16px; }
   /* One row you can swipe sideways, instead of words breaking or sticking out of the page. */
   .top-bar nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
   .top-bar nav::-webkit-scrollbar { display: none; }
   .nav-item { white-space: nowrap; flex: none; }
+}
+
+@media (max-width: 1000px) {
   .game-layout { gap: 12px; padding-top: 10px; }
   .side-panel { width: min(720px, 100%); }
   .editor-block, .controls-block, .review-block, .chat-block, .moves-block { order: -1; }
@@ -644,7 +649,7 @@ a.link-button { display: inline-block; }
   background: var(--panel-light); font-weight: 700; }
 .lesson-card.done .lesson-number { background: var(--accent); color: #fff; }
 .lesson-card .message { margin: 0; font-size: 13px; }
-.lesson-board-column { width: min(480px, 100%, calc(100vh - 170px)); }
+.lesson-board-column { width: min(480px, 100%, calc(100vh - 170px)); width: min(480px, 100%, calc(100dvh - 170px)); }
 .lesson-text { font-size: 17px; line-height: 1.5; }
 .lesson-text.task { font-weight: 600; }
 .lesson-choices { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
@@ -662,3 +667,47 @@ a.link-button { display: inline-block; }
 /* First-visit language window (js/i18n.js) */
 .language-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin: 10px 0; }
 .language-grid .btn { width: 100%; padding: 12px; }
+
+/* Touch screens (iPad, phones) */
+.nav-item { white-space: nowrap; }
+/* Taps on the board: no grey flash and no double-tap zoom. */
+.board, .spot { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.btn, .menu-tile, button { touch-action: manipulation; }
+@media (hover: none) {
+  /* A tap leaves :hover stuck on touch screens: no ghost stone or lifted square left behind. */
+  .spot:hover .ghost { opacity: 0; }
+  .menu-tile:hover { transform: none; border-color: transparent; }
+  .menu-tile.highlight:hover { border-color: var(--accent); }
+  .menu-tile:active { transform: scale(0.98); }
+  /* iPad and iPhone Safari zoom in on text boxes with small text. */
+  input, select, textarea { font-size: 16px; }
+}
+
+/* Daily streak: a little fire lights up on the first game of the day (js/achievements.js) */
+.streak-fire-pop {
+  position: fixed; top: 76px; left: 50%; transform: translateX(-50%); z-index: 1001;
+  display: flex; align-items: center; gap: 12px; padding: 12px 20px 12px 14px; border-radius: 14px;
+  background: var(--panel); color: var(--text); border: 2px solid #f08a2c;
+  box-shadow: 0 8px 28px rgba(240, 138, 44, 0.35); animation: streak-pop-in 0.35s ease-out;
+  transition: opacity 0.5s, transform 0.5s; max-width: calc(100vw - 32px);
+}
+.streak-fire-pop.leaving { opacity: 0; transform: translate(-50%, -16px); }
+.streak-fire-pop b { display: block; font-size: 20px; }
+.streak-fire-pop small { display: block; color: var(--text-dim); font-size: 13px; }
+.streak-flame {
+  font-size: 44px; line-height: 1; display: inline-block; transform-origin: 50% 90%;
+  filter: drop-shadow(0 0 8px rgba(255, 140, 0, 0.8));
+  animation: streak-ignite 0.9s ease-out both, streak-flicker 0.6s ease-in-out 0.9s infinite alternate;
+}
+@keyframes streak-pop-in { from { opacity: 0; transform: translate(-50%, -20px); } to { opacity: 1; transform: translateX(-50%); } }
+@keyframes streak-ignite {
+  0% { transform: scale(0.1); opacity: 0; filter: drop-shadow(0 0 0 rgba(255, 140, 0, 0)); }
+  40% { transform: scale(0.5) rotate(-6deg); opacity: 1; }
+  70% { transform: scale(1.35) rotate(4deg); filter: drop-shadow(0 0 18px rgba(255, 170, 0, 1)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 8px rgba(255, 140, 0, 0.8)); }
+}
+@keyframes streak-flicker {
+  from { transform: scale(1) rotate(-3deg); }
+  to { transform: scale(1.08, 1.14) rotate(3deg); }
+}
+@media (prefers-reduced-motion: reduce) { .streak-flame { animation: none; } }

@@ -2,7 +2,8 @@
 
 Run: python tools/make_app_icons.py   (needs numpy). Writes img/icon-192.png, img/icon-512.png,
 img/icon-maskable-512.png (logo smaller, on a full background, for phones that cut icons into
-shapes) and img/apple-touch-icon.png (180, for iPhones).
+shapes), img/apple-touch-icon.png and /apple-touch-icon.png (180, for iPhones and iPads), and PNG
+favicons (Safari can't show the SVG one).
 """
 import struct
 import zlib
@@ -68,3 +69,7 @@ if __name__ == "__main__":
     write_png(img / "icon-512.png", draw(512, 1.0, None))
     write_png(img / "icon-maskable-512.png", draw(512, 0.7, BACKGROUND))
     write_png(img / "apple-touch-icon.png", draw(180, 0.86, BACKGROUND))
+    # iPad/iPhone Safari can't use the SVG favicon, and looks for /apple-touch-icon.png at the site root.
+    write_png(ROOT / "apple-touch-icon.png", draw(180, 0.86, BACKGROUND))
+    write_png(img / "favicon-32.png", draw(32, 1.0, None))
+    write_png(img / "favicon-96.png", draw(96, 1.0, None))

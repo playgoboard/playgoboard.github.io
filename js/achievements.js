@@ -186,13 +186,39 @@
   async function activity() {
     if (!me()) return;
     if (!activeToday) {
-      const { error } = await accounts().client.rpc("record_activity", { p_day: localDay() });
+      const already = me().streak_day === localDay(); // played earlier today: no new day
+      const { data, error } = await accounts().client.rpc("record_activity", { p_day: localDay() });
       if (!error) {
         activeToday = true;
         await accounts().refreshProfile(); // the streak next to your name
+        if (!already && data > 0) lightStreakFire(data);
       }
     }
     await check();
+  }
+
+  // The first game of the day: a little fire lights up with the day of the streak.
+  function lightStreakFire(days) {
+    const box = document.createElement("div");
+    box.className = "streak-fire-pop";
+    box.setAttribute("role", "status");
+    const flame = document.createElement("span");
+    flame.className = "streak-flame";
+    flame.textContent = "🔥";
+    const words = document.createElement("div");
+    const big = document.createElement("b");
+    big.textContent = t("{n}-day streak", { n: days });
+    const small = document.createElement("small");
+    small.textContent = days === 1 ? t("Streak started! Play tomorrow to keep it going.") : t("Your streak goes on! See you tomorrow.");
+    words.append(big, small);
+    box.append(flame, words);
+    // Just below the top bar, which is taller on tablets and phones (two rows).
+    const bar = document.querySelector(".top-bar");
+    box.style.top = `${Math.max(12, (bar ? bar.getBoundingClientRect().bottom : 0) + 12)}px`;
+    document.body.append(box);
+    chime();
+    setTimeout(() => box.classList.add("leaving"), 4000);
+    setTimeout(() => box.remove(), 4600);
   }
 
   // The streak to show: it only counts if you played today or yesterday.
@@ -262,6 +288,7 @@
     GROUPS, BY_ID, claim, check, activity, botWin, gameFinished, puzzleSolved, boardTried,
     currentStreak, loggedIn: () => Boolean(me()),
     finishedGroups: () => finished.slice(),
+    lightStreakFire, // the first-game-of-the-day fire (also handy for testing)
     // Achievements the database gave directly (e.g. Puzzle Rush): banner, chime and reward check.
     async announceNew(ids) {
       const have = await loadMine();
