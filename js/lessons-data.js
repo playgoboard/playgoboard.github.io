@@ -118,7 +118,7 @@
           rows: ["...XO", ".O.XO", "...XO", "...XO", "...XO"], answers: ["B4"],
           done: "Right! It can't live there, so it's removed before counting." },
         { task: "There's still an empty point on the border between you and White. Should you pass now?",
-          rows: ["XX.OO", "XXXOO", "XXXOO", "XXXOO", "XXXOO"], marks: { good: ["C5"] },
+          rows: [".XXO.", ".XXO.", ".X.O.", ".XOO.", ".XOO."], marks: { good: ["C3"] },
           choices: ["Pass now", "Play there first"], answer: 1,
           done: "Right! With area counting every point counts, so take it before you pass." },
         { text: "That's all the rules! Now play a real game against Pebble on a 9×9 board, or try the beginner puzzles.",

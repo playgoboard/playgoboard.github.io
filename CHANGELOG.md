@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.45.1
+- Learn Go, Ending the game: the border-point question now uses a realistic end position (both sides alive, one neutral point at C3) instead of a board where every stone shared one liberty.
+
 ## 0.45.0
 - 5 new languages: French, Spanish, German, Japanese and Korean (8 in total), with real Go terms in each. Each page only downloads the chosen language (js/i18n-load.js, js/lang/*.js).
 - First visit asks Choose your language, with the browser language suggested.
