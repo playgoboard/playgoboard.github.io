@@ -154,7 +154,7 @@ a.nav-item:hover, button.nav-item:hover { color: var(--text); }
   background: var(--panel-light); color: var(--text); font-weight: 600; font-family: inherit; font-size: 14px;
 }
 /* Pages without a sound button (privacy) push the menu to the right. */
-.top-bar nav + .lang-select { margin-left: auto; }
+.top-bar nav + .lang-select, .nav-wrap + .lang-select { margin-left: auto; }
 .account-button {
   margin-left: auto; padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer;
   background: var(--accent); color: #fff; font-weight: 700; font-family: inherit; white-space: nowrap;
@@ -467,6 +467,7 @@ a.link-button { display: inline-block; }
 @media (max-width: 1300px) {
   .top-bar { gap: 14px; padding: 10px 12px; flex-wrap: wrap; row-gap: 8px; }
   .top-bar nav { order: 3; width: 100%; gap: 16px; }
+  .top-bar .nav-wrap { order: 3; width: 100%; }
   /* One row you can swipe sideways, instead of words breaking or sticking out of the page. */
   .top-bar nav { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
   .top-bar nav::-webkit-scrollbar { display: none; }
@@ -716,3 +717,16 @@ a.link-button { display: inline-block; }
 .btn-share { width: 100%; }
 #share-note:empty { display: none; }
 #share-note { overflow-wrap: anywhere; }
+
+/* The category row and its ‹ › arrows (js/nav-arrows.js); the arrows only show while the row scrolls. */
+.nav-wrap { position: relative; display: flex; min-width: 0; }
+.nav-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 1;
+  width: 26px; height: 26px; padding: 0; border: none; border-radius: 50%; cursor: pointer;
+  background: var(--panel-light); color: var(--text); font-size: 18px; font-weight: 700; line-height: 24px;
+  box-shadow: 0 0 10px 8px var(--panel); /* fades the words underneath */
+}
+.nav-arrow[hidden] { display: none; }
+.nav-arrow-left { left: 0; }
+.nav-arrow-right { right: 0; }
+@media (min-width: 1301px) { .nav-arrow { display: none; } }

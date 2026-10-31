@@ -65,11 +65,15 @@ def write_png(path, pixels):
 
 if __name__ == "__main__":
     img = ROOT / "img"
-    write_png(img / "icon-192.png", draw(192, 1.0, None))
-    write_png(img / "icon-512.png", draw(512, 1.0, None))
+    # Solid backgrounds: iPadOS can use these for the Home Screen, and turns see-through edges black.
+    write_png(img / "icon-192.png", draw(192, 0.86, BACKGROUND))
+    write_png(img / "icon-512.png", draw(512, 0.86, BACKGROUND))
     write_png(img / "icon-maskable-512.png", draw(512, 0.7, BACKGROUND))
     write_png(img / "apple-touch-icon.png", draw(180, 0.86, BACKGROUND))
     # iPad/iPhone Safari can't use the SVG favicon, and looks for /apple-touch-icon.png at the site root.
     write_png(ROOT / "apple-touch-icon.png", draw(180, 0.86, BACKGROUND))
+    write_png(ROOT / "apple-touch-icon-precomposed.png", draw(180, 0.86, BACKGROUND))
+    for size in (152, 167, 180):  # iPad, iPad Pro, iPhone
+        write_png(img / f"touch-icon-{size}.png", draw(size, 0.86, BACKGROUND))
     write_png(img / "favicon-32.png", draw(32, 1.0, None))
     write_png(img / "favicon-96.png", draw(96, 1.0, None))

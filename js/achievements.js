@@ -255,8 +255,24 @@
   }
 
   // solvedByLevel: { beginner: [done, total], ... }
+  // ---- Solved puzzles on your account (supabase/19-puzzle-progress.sql) ----
+  // The browser keeps its list in localStorage "goboard-puzzles-solved"; logged in, it's merged with
+  // the account's list both ways, so every device shows every puzzle you solved anywhere.
+  const SOLVED_KEY = "goboard-puzzles-solved";
+  async function syncPuzzles() {
+    if (!me()) return;
+    let local = [];
+    try { local = JSON.parse(localStorage.getItem(SOLVED_KEY) || "[]"); } catch { /* starts empty */ }
+    const { data, error } = await accounts().client.rpc("add_solved_puzzles", { p_puzzles: local.filter(Number.isInteger) });
+    if (error || !Array.isArray(data)) return;
+    if (data.length === local.length && data.every((n) => local.includes(n))) return; // nothing new here
+    try { localStorage.setItem(SOLVED_KEY, JSON.stringify(data)); } catch { /* only for this visit */ }
+    window.dispatchEvent(new Event("goboard-puzzles-synced")); // the Puzzles page redraws its ✓ marks
+  }
+
   async function puzzleSolved({ isDaily, solvedByLevel }) {
     if (!me()) return;
+    syncPuzzles();
     claim("first-puzzle");
     for (const level of ["beginner", "intermediate", "advanced"]) {
       const [done, total] = solvedByLevel[level] || [0, 1];
@@ -280,6 +296,7 @@
       mine = null;
       activeToday = false;
       if (id) check();
+      if (id) syncPuzzles();
       refreshRewards(false);
     });
   }

@@ -16,6 +16,12 @@
 
   let solved = new Set();
   try { solved = new Set(JSON.parse(localStorage.getItem(SOLVED_KEY) || "[]")); } catch { /* starts empty */ }
+  // Puzzles solved on your other devices arrive after logging in (js/achievements.js).
+  window.addEventListener("goboard-puzzles-synced", () => {
+    try { solved = new Set(JSON.parse(localStorage.getItem(SOLVED_KEY) || "[]")); } catch { return; }
+    $("puzzle-count").textContent = solved.has(index) ? t("Solved ✓") : "";
+    drawList();
+  });
 
   let index = 0;
   let board = null;      // FastBoard of the current position
