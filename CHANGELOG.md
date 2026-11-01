@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.49.0
+- Block and report (supabase/20-block-report.sql): Block / Report buttons on other players' profiles, and Report on games in your own history. Blocking stops friend requests, daily challenges and quick match between you, and ends the friendship; unblock from the profile or the Friends window. Reports show on the admin page (Reports tab): Dismiss, or Ban 7 days (achievements stay).
+
 ## 0.48.0
 - Solved puzzles are saved on your account (supabase/19-puzzle-progress.sql), so every device you log in on shows the same ✓ marks.
 - Phones: small ‹ › arrows at the edges of the category row show that it scrolls sideways.

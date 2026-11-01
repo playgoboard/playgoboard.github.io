@@ -730,3 +730,11 @@ a.link-button { display: inline-block; }
 .nav-arrow-left { left: 0; }
 .nav-arrow-right { right: 0; }
 @media (min-width: 1301px) { .nav-arrow { display: none; } }
+
+/* Block / Report on someone's profile (js/block-report.js): quieter than Add friend. */
+.profile-actions.block-report { margin-top: 6px; }
+.block-report .btn { padding: 6px 12px; font-size: 13px; background: var(--panel-light); }
+.report-dialog .choice-row button { padding: 8px 10px; }
+.report-dialog .about-input { width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+.admin-switch { max-width: 320px; margin: 0 auto 12px; }
+.admin-report-note { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }

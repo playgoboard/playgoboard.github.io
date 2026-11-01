@@ -117,6 +117,14 @@
       box.append(note);
       return box;
     }
+    // Block / Report (js/block-report.js). While you block someone, only Unblock and Report show.
+    const reload = () => window.location.reload();
+    const blockRow = window.GoBlockReport ? await window.GoBlockReport.profileButtons(client, me, player, reload) : null;
+    if (blockRow && blockRow.blocked) {
+      const wrap = element("div");
+      wrap.append(blockRow.row);
+      return wrap;
+    }
     const { data } = await client.from("friendships").select("requester, addressee, status")
       .or(`and(requester.eq.${me.id},addressee.eq.${player.id}),and(requester.eq.${player.id},addressee.eq.${me.id})`);
     const link = (data || [])[0];
@@ -147,7 +155,10 @@
     const challenge = element("a", "btn", t("Daily challenge"));
     challenge.href = `daily.html?challenge=${encodeURIComponent(player.id)}`;
     box.append(friendButton, challenge, note);
-    return box;
+    if (!blockRow) return box;
+    const wrap = element("div");
+    wrap.append(box, blockRow.row);
+    return wrap;
   }
 
   // ---- Edit profile (your own) ----

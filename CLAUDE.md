@@ -166,6 +166,10 @@
   paragraphs with <b> use data-t-html="key". Switching = ?lang=xx reload (stored in localStorage "goboard-language").
   Database error messages are translated through t() too, so keep their English in the dictionary.
   Chat only allows English and Chinese (GoChatFilter.isAllowedText) and filters Chinese bad words.
+- Block + report: supabase/20-block-report.sql (blocks table, select only your own; block_problem(a,b) used by triggers on
+  friendships insert and daily_games insert/join, and by quick_match; reports table, no client access; report_player;
+  admin_reports / admin_handle_report with the admin code). js/block-report.js (GoBlockReport) is used by profile-extras.js,
+  the own-history Report button in leaderboard-page.js, friends.js ("Players you blocked") and admin-page.js (Reports tab).
 - Planned next (user picked, in this order):
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).

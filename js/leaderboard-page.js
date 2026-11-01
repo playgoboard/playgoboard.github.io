@@ -169,6 +169,7 @@
       when: r.created_at,
       opponent: r.opponent_name,
       opponentIsAccount: Boolean(r.opponent),
+      opponentId: r.opponent,
       color: r.my_color,
       size: r.board_size,
       won: r.winner === r.my_color,
@@ -297,8 +298,17 @@
       list.append(table([t("Date"), t("Opponent"), t("Color"), t("Board"), t("Result"), t("Type"), ""], games.map((g) => {
         const opponent = g.opponentIsAccount ? link(g.opponent, playerLink(g.opponent)) : shownName(g.opponent);
         const replay = g.replayId ? link(t("Replay"), `leaderboard.html?game=${g.replayId}`, "btn small-link") : element("span", "message", t("No replay"));
+        // In your own history you can report the player of a saved game (js/block-report.js).
+        let actions = replay;
+        if (isMe && g.replayId && g.opponentId && window.GoBlockReport) {
+          actions = element("span", "row-actions");
+          const report = element("button", "btn small-link", t("Report"));
+          report.type = "button";
+          report.addEventListener("click", () => window.GoBlockReport.openReport(client, { id: g.opponentId, username: g.opponent }, g.replayId));
+          actions.append(replay, report);
+        }
         return row([dateText(g.when), opponent, g.color === "black" ? t("Black") : t("White"), `${g.size}×${g.size}`,
-          resultText(g), typeText(g, g.color), replay], g.won ? "won" : "lost");
+          resultText(g), typeText(g, g.color), actions], g.won ? "won" : "lost");
       })));
     }
     parts.push(list);

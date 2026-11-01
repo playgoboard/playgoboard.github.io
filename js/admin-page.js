@@ -23,6 +23,7 @@
   }
 
   let showReviewed = false;
+  let showReports = false; // the Reports list (supabase/20-block-report.sql) instead of achievements
 
   const askCode = window.GoAdminCode.ask;
 
@@ -30,6 +31,15 @@
 
   async function drawList() {
     listBox.textContent = "";
+    const switchRow = element("div", "choice-row admin-switch");
+    for (const [reports, label] of [[false, t("Achievements")], [true, t("Reports")]]) {
+      const b = element("button", reports === showReports ? "selected" : "", label);
+      b.type = "button";
+      b.addEventListener("click", () => { if (showReports !== reports) { showReports = reports; drawList(); } });
+      switchRow.append(b);
+    }
+    listBox.append(switchRow);
+    if (showReports) return drawReports();
     const head = element("div", "panel-block");
     head.append(element("h1", "", t("Admin: check achievements")),
       element("p", "message", t("Replay each game and run Dragon's Review. If the bot kept making big mistakes that the real bot never makes, the game was probably faked. Only ban when it's obvious.")));
@@ -85,6 +95,65 @@
       box.append(line);
     }
     listBox.append(box);
+  }
+
+  // ---- Reports from players ----
+
+  const REASON_NAMES = { cheating: "Cheating", rude: "Rude in chat", name: "Bad name or profile", other: "Other" };
+
+  async function drawReports() {
+    const head = element("div", "panel-block");
+    head.append(element("h1", "", t("Admin: reports")),
+      element("p", "message", t("Look at the game or the player's profile first. Ban 7 days keeps their achievements and closes every report about them.")), note);
+    const box = element("div", "panel-block");
+    listBox.append(head, box);
+    const code = await askCode(t("Admin code to see the list"));
+    if (!code) {
+      box.append(button(t("Show the list"), "btn-primary", drawList));
+      return;
+    }
+    const { data, error } = await accounts.client.rpc("admin_reports", { p_code: code });
+    const problem = error ? error.message.replace(/^.*?:\s*/, "") : data.error;
+    if (problem) {
+      box.append(element("p", "message", t(problem)), button(t("Try again"), "btn-primary", drawList));
+      return;
+    }
+    if (!data.rows.length) box.append(element("p", "message", t("Nothing here.")));
+    for (const row of data.rows) {
+      const line = element("div", "admin-row");
+      line.dataset.player = row.reported;
+      const what = element("div");
+      const name = element("b");
+      name.append(window.GoAvatars.profileLink(row.reported_name),
+        document.createTextNode(` — ${t(REASON_NAMES[row.reason] || row.reason)}`));
+      what.append(name,
+        element("span", "message", `${t("From {name}", { name: row.reporter_name || t("Deleted player") })} · ${new Date(row.created_at).toLocaleString()} · ${t("Open reports: {n}", { n: row.open_reports })}`));
+      if (row.note) what.append(element("p", "admin-report-note", row.note));
+      const actions = element("div", "row-actions");
+      if (row.game) {
+        const game = element("a", "btn small-link", t("Replay"));
+        game.href = `leaderboard.html?game=${row.game}`;
+        game.target = "_blank";
+        actions.append(game);
+      }
+      const handle = (ban) => async () => {
+        if (ban && !confirm(t("Ban {name} for 7 days?", { name: row.reported_name }))) return;
+        const okCode = await askCode(ban ? t("Admin code to ban {name}", { name: row.reported_name }) : t("Admin code to dismiss this report"));
+        if (!okCode) return;
+        const { data: problem, error: e } = await accounts.client.rpc("admin_handle_report", { p_report: row.id, p_ban: ban, p_code: okCode });
+        if (e || problem) return showProblem(e ? e.message : problem);
+        if (ban) {
+          for (const other of [...box.querySelectorAll(".admin-row")]) if (other.dataset.player === row.reported) other.remove();
+          note.textContent = t("{name} is banned for 7 days.", { name: row.reported_name });
+        } else {
+          line.remove();
+          note.textContent = t("Report dismissed.");
+        }
+      };
+      actions.append(button(t("Dismiss"), "small-link", handle(false)), button(t("Ban 7 days"), "btn-danger small-link", handle(true)));
+      line.append(what, actions);
+      box.append(line);
+    }
   }
 
   function showProblem(text) {

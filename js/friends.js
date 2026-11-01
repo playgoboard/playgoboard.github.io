@@ -9,6 +9,7 @@
   const CHECK_EVERY_MS = 60000; // look for new friend requests once a minute
 
   let rows = [];
+  let blocked = []; // players you blocked (js/block-report.js)
   let container = null;
 
   const me = () => accounts.current().profile;
@@ -25,6 +26,7 @@
       addressee_profile:profiles!friendships_addressee_fkey(id, username, rating, games, wins, losses)`);
     if (error) throw error;
     rows = data || [];
+    blocked = window.GoBlockReport ? await window.GoBlockReport.blockedPlayers(client, me()) : [];
     accounts.setBadge(rows.filter((r) => r.status === "pending" && r.addressee === me().id).length);
     // Friends playing online right now (js/live-games.js): friend id -> game key.
     liveGames = new Map();
@@ -148,6 +150,17 @@
         return personRow(p, t("Waiting for an answer"),
           button(t("Cancel"), "", () => act(() => client.rpc("remove_friend", { friend: p.id }), t("Request cancelled."))));
       })));
+    }
+
+    if (blocked.length) {
+      container.append(section(t("Players you blocked"), blocked.map((p) =>
+        personRow(p, "", button(t("Unblock"), "", async () => {
+          if (await window.GoBlockReport.unblock(client, p)) {
+            await load();
+            draw();
+            setNote(t("{name} was unblocked.", { name: p.username }));
+          }
+        })))));
     }
 
     const back = element("p", "account-links");
