@@ -846,6 +846,7 @@ window.GO_TEXT = {
   "Your streak goes on! See you tomorrow.": "Deine Serie geht weiter! Bis morgen.",
   "🔗 Share game": "🔗 Partie teilen",
   "Shared game": "Geteilte Partie",
+  "Admin": "Admin",
   "Your account is banned": "Dein Konto ist gesperrt",
   "Your account is banned forever.": "Dein Konto ist dauerhaft gesperrt.",
   "Your account is banned until {when}.": "Dein Konto ist gesperrt bis {when}.",

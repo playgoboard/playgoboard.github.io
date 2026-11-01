@@ -94,6 +94,7 @@
       <div class="profile-stats"></div>
       <button class="btn btn-primary" data-go="friends">Friends <span class="friends-badge"></span></button>
       <a class="btn my-games" href="leaderboard.html">My profile and games</a>
+      <a class="btn admin-link" href="admin.html" style="display: none">Admin</a>
       <button class="btn" data-action="logout">Log out</button>
       <div class="two-step-row">
         <span class="two-step-status"></span>
@@ -175,9 +176,26 @@
     dialog.querySelector(".friends-badge").textContent = badge ? t("({n} new)", { n: badge }) : "";
   }
 
+  // The Admin button shows only for the admin. The database decides; it's asked once per account,
+  // the first time this window opens, so other players' pages make no extra request.
+  let adminCheckedFor = null;
+  function showAdminLink() {
+    const link = dialog.querySelector(".admin-link");
+    if (!profile) {
+      adminCheckedFor = null;
+      link.style.display = "none";
+      return;
+    }
+    if (adminCheckedFor === profile.id) return;
+    adminCheckedFor = profile.id;
+    link.style.display = "none";
+    client.rpc("is_admin").then(({ data }) => { link.style.display = data === true ? "" : "none"; });
+  }
+
   function drawProfile() {
     const box = dialog.querySelector(".profile-stats");
     dialog.querySelector(".profile-name").textContent = profile ? profile.username : t("Your account");
+    showAdminLink();
     if (!profile) {
       box.textContent = bannedText || t("Loading your profile…");
       return;

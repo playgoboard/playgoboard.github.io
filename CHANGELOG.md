@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.50.1
+- An Admin button in the account window, only for the admin account, so the admin page is easy to find.
+
 ## 0.50.0
 - More admin tools (supabase/21-admin-tools.sql), in tabs on the admin page. Numbers: players, new players, online games, open reports. Players: search anyone and open a card with their reports, warnings and rated games. From the card: ban for 1, 7 or 30 days or forever with a reason the player sees, unban, warn (the player taps OK next visit), clear picture and About me, force a new username, change rating, undo a game's rating for both players. Log: every admin action.
 - Banned players now see a window with how long the ban lasts and why.

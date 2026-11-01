@@ -55,6 +55,7 @@ window.GO_TEXT_ZH = {
   // ---- Languages ----
   "🔗 Share game": ["🔗 分享对局", "🔗 分享對局"],
   "Shared game": ["分享的对局", "分享的對局"],
+  "Admin": ["管理", "管理"],
   "Your account is banned": ["你的账号已被封禁", "你的帳號已被封鎖"],
   "Your account is banned forever.": ["你的账号已被永久封禁。", "你的帳號已被永久封鎖。"],
   "Your account is banned until {when}.": ["你的账号已被封禁，直到 {when}。", "你的帳號已被封鎖，直到 {when}。"],

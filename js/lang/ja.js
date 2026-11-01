@@ -846,6 +846,7 @@ window.GO_TEXT = {
   "Your streak goes on! See you tomorrow.": "連続記録が続いています！また明日。",
   "🔗 Share game": "🔗 対局を共有",
   "Shared game": "共有された対局",
+  "Admin": "管理",
   "Your account is banned": "アカウントが停止されています",
   "Your account is banned forever.": "アカウントは永久に停止されています。",
   "Your account is banned until {when}.": "アカウントは {when} まで停止されています。",
