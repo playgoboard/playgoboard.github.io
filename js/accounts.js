@@ -176,26 +176,45 @@
     dialog.querySelector(".friends-badge").textContent = badge ? t("({n} new)", { n: badge }) : "";
   }
 
-  // The Admin button shows only for the admin. The database decides; it's asked once per account,
-  // the first time this window opens, so other players' pages make no extra request.
-  let adminCheckedFor = null;
-  function showAdminLink() {
-    const link = dialog.querySelector(".admin-link");
-    if (!profile) {
-      adminCheckedFor = null;
-      link.style.display = "none";
-      return;
+  // The Admin button and tab show only for the admin. The database decides; it's asked once per
+  // visit, so other players' pages make no extra request after the first one.
+  let adminCheck = null;
+  function isAdmin() {
+    if (!profile) return Promise.resolve(false);
+    if (adminCheck && adminCheck.id === profile.id) return adminCheck.answer;
+    const key = `goboard-is-admin-${profile.id}`;
+    let saved = null;
+    try { saved = sessionStorage.getItem(key); } catch { /* asks on every page instead */ }
+    const answer = saved ? Promise.resolve(saved === "yes") : client.rpc("is_admin").then(({ data, error }) => {
+      if (!error) {
+        try { sessionStorage.setItem(key, data === true ? "yes" : "no"); } catch { /* asks on every page instead */ }
+      }
+      return data === true;
+    });
+    adminCheck = { id: profile.id, answer };
+    return answer;
+  }
+
+  async function showAdminLinks() {
+    const admin = await isAdmin();
+    dialog.querySelector(".admin-link").style.display = admin ? "" : "none";
+    const nav = document.getElementById("nav");
+    if (!nav) return;
+    const tab = nav.querySelector(".admin-tab");
+    if (admin && !tab) {
+      const link = document.createElement("a");
+      link.className = `nav-item admin-tab${location.pathname.endsWith("admin.html") ? " active" : ""}`;
+      link.href = "admin.html";
+      link.textContent = t("Admin");
+      nav.append(link);
+    } else if (!admin && tab) {
+      tab.remove();
     }
-    if (adminCheckedFor === profile.id) return;
-    adminCheckedFor = profile.id;
-    link.style.display = "none";
-    client.rpc("is_admin").then(({ data }) => { link.style.display = data === true ? "" : "none"; });
   }
 
   function drawProfile() {
     const box = dialog.querySelector(".profile-stats");
     dialog.querySelector(".profile-name").textContent = profile ? profile.username : t("Your account");
-    showAdminLink();
     if (!profile) {
       box.textContent = bannedText || t("Loading your profile…");
       return;
@@ -428,6 +447,7 @@
   function announce() {
     known = true;
     drawButton();
+    showAdminLinks();
     if (dialog.open && !dialog.querySelector('[data-view="profile"]').hidden) drawProfile();
     for (const fn of listeners) fn({ session, profile });
   }

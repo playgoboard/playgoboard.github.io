@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.50.2
+- An Admin tab in the top row next to Achievements, only for the admin account.
+
 ## 0.50.1
 - An Admin button in the account window, only for the admin account, so the admin page is easy to find.
 
