@@ -13,21 +13,29 @@
       label.textContent = t("Admin code");
       const input = document.createElement("input");
       input.type = "password";
-      input.autocomplete = "off";
+      // "off" is ignored for password boxes: browsers would fill in the saved login password.
+      input.autocomplete = "new-password";
+      input.name = "goboard-admin-code";
       label.append(input);
+      const showRow = document.createElement("label");
+      showRow.className = "remember-row";
+      const show = document.createElement("input");
+      show.type = "checkbox";
+      show.addEventListener("change", () => { input.type = show.checked ? "text" : "password"; });
+      showRow.append(show, document.createTextNode(t("Show the code")));
       let answer = null; // stays null when closed with Cancel or Escape
       const ok = document.createElement("button");
       ok.type = "button";
       ok.className = "btn btn-primary";
       ok.textContent = t("Confirm");
-      ok.addEventListener("click", () => { answer = input.value || null; dialog.close(); });
+      ok.addEventListener("click", () => { answer = input.value.trim() || null; dialog.close(); });
       const cancel = document.createElement("button");
       cancel.type = "button";
       cancel.className = "btn";
       cancel.textContent = t("Cancel");
       cancel.addEventListener("click", () => dialog.close());
       input.addEventListener("keydown", (event) => { if (event.key === "Enter") ok.click(); });
-      dialog.append(heading, label, ok, cancel);
+      dialog.append(heading, label, showRow, ok, cancel);
       dialog.addEventListener("close", () => {
         dialog.remove();
         resolve(answer);

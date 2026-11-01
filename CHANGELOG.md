@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.50.3
+- Admin code window: browsers no longer fill in the saved login password, a Show the code checkbox, and spaces around the code are ignored.
+
 ## 0.50.2
 - An Admin tab in the top row next to Achievements, only for the admin account.
 
