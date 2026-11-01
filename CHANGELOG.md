@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.48.0
+- Solved puzzles are saved on your account (supabase/19-puzzle-progress.sql), so every device you log in on shows the same ✓ marks.
+- Phones: small ‹ › arrows at the edges of the category row show that it scrolls sideways.
+- iPad Home Screen icon: solid-background PNGs in the 152/167/180 sizes iPads ask for.
+
 ## 0.47.0
 - Game sharing: a Share game button when a game ends (bots, friends, online) and on every replay. The link carries the whole game (two letters per move, like an SGF file), so it opens the replay with Dragon's Review for anyone, no account needed. Uses the phone/iPad share sheet when there is one, otherwise copies the link.
 
