@@ -170,6 +170,11 @@
   friendships insert and daily_games insert/join, and by quick_match; reports table, no client access; report_player;
   admin_reports / admin_handle_report with the admin code). js/block-report.js (GoBlockReport) is used by profile-extras.js,
   the own-history Report button in leaderboard-page.js, friends.js ("Players you blocked") and admin-page.js (Reports tab).
+- Admin tools: supabase/21-admin-tools.sql (ban_reasons, player_warnings, admin_log, profiles.must_rename, rating_undone;
+  check_two_step raises "BANNED_UNTIL <when or forever>|<reason>", forever = year 9999; every admin_* action calls log_admin).
+  js/admin-tools.js (Numbers, Players + card, Log, banWindow; admin text is English only), js/admin-page.js holds the tabs,
+  js/admin-notices.js (all pages: ban window, warnings, forced rename). Undoing a game sets its change to 0 so graphs still add up.
+  Clubs are postponed until the site has more players (the user's choice).
 - Planned next (user picked, in this order):
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).

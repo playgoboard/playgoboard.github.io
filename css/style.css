@@ -738,3 +738,18 @@ a.link-button { display: inline-block; }
 .report-dialog .about-input { width: 100%; box-sizing: border-box; margin-bottom: 10px; }
 .admin-switch { max-width: 320px; margin: 0 auto 12px; }
 .admin-report-note { margin: 4px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+/* Admin tools (js/admin-tools.js) and what players see from the admin (js/admin-notices.js). */
+.admin-switch { max-width: 620px; }
+.admin-actions { flex-wrap: wrap; margin: 12px 0; }
+.admin-actions .btn { flex: 0 1 auto; }
+.admin-section { margin-top: 18px; }
+.admin-section h3 { margin: 0 0 6px; font-size: 15px; }
+.admin-banned { padding: 8px 10px; border-radius: 6px; background: var(--danger); color: #fff; overflow-wrap: anywhere; }
+.admin-about { overflow-wrap: anywhere; }
+.admin-form .about-input, .admin-form input[type="number"] { width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+.admin-form .choice-row button { padding: 8px 10px; }
+.admin-notice-text { white-space: pre-wrap; overflow-wrap: anywhere; color: var(--text) !important; }
+.admin-card .row-actions { flex: none; align-items: center; }
+.admin-card .row-actions .btn { white-space: nowrap; flex: none; }
+.admin-row > .btn { flex: none; width: auto; }

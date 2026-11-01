@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.50.0
+- More admin tools (supabase/21-admin-tools.sql), in tabs on the admin page. Numbers: players, new players, online games, open reports. Players: search anyone and open a card with their reports, warnings and rated games. From the card: ban for 1, 7 or 30 days or forever with a reason the player sees, unban, warn (the player taps OK next visit), clear picture and About me, force a new username, change rating, undo a game's rating for both players. Log: every admin action.
+- Banned players now see a window with how long the ban lasts and why.
+
 ## 0.49.0
 - Block and report (supabase/20-block-report.sql): Block / Report buttons on other players' profiles, and Report on games in your own history. Blocking stops friend requests, daily challenges and quick match between you, and ends the friendship; unblock from the profile or the Friends window. Reports show on the admin page (Reports tab): Dismiss, or Ban 7 days (achievements stay).
 

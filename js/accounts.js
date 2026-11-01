@@ -394,8 +394,15 @@
     }
     const { data, error } = await client.from("profiles").select("*").eq("id", session.user.id).maybeSingle();
     profile = data || null;
-    const ban = error && /BANNED_UNTIL (.+)/.exec(error.message);
-    bannedText = ban ? t("Your account is banned until {when} for cheating on achievements.", { when: ban[1] }) : "";
+    // "BANNED_UNTIL <when or forever>|<reason>" (supabase/21-admin-tools.sql)
+    const ban = error && /BANNED_UNTIL ([^|]+)\|?(.*)/.exec(error.message);
+    bannedText = "";
+    if (ban) {
+      const until = ban[1].trim();
+      const reason = ban[2].trim();
+      bannedText = (until === "forever" ? t("Your account is banned forever.") : t("Your account is banned until {when}.", { when: until }))
+        + (reason ? ` ${t("Reason: {reason}", { reason: t(reason) })}` : "");
+    }
   }
 
   let known = false; // true once we know who is logged in (or that nobody is)
@@ -425,6 +432,7 @@
     ready,
     client,
     current: () => ({ session, profile }),
+    banMessage: () => bannedText,
     // A file that starts listening after the login check already finished hears it right away.
     onChange(fn) {
       listeners.push(fn);
