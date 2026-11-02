@@ -753,3 +753,9 @@ a.link-button { display: inline-block; }
 .admin-card .row-actions { flex: none; align-items: center; }
 .admin-card .row-actions .btn { white-space: nowrap; flex: none; }
 .admin-row > .btn { flex: none; width: auto; }
+
+/* Rated puzzles (js/rated-puzzles-page.js) */
+.rp-result { font-size: 24px; font-weight: 800; }
+.rp-result.ok { color: var(--accent); }
+.rp-result.bad { color: var(--danger); }
+.rp-result[hidden] { display: none; }

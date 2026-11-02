@@ -337,6 +337,7 @@
     const stats = element("div", "stat-row");
     for (const [label, value] of [[t("Rating"), player.rating], [t("Rank"), window.GoRanks.name(player.rating)], [t("Rated games"), player.games], [t("Wins"), player.wins],
       [t("Losses"), player.losses], [t("Member since"), dateText(player.created_at)],
+      ...(player.puzzle_games ? [[t("Puzzle rating"), player.puzzle_rating]] : []),
       ...(window.GoAchievements ? [[t("Streak"), `🔥 ${window.GoAchievements.currentStreak(player)}`]] : [])]) {
       const stat = element("div", "stat");
       stat.append(element("b", "", String(value)), element("span", "", label));

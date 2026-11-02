@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GoBoard — Rated puzzles</title>
+  <meta name="description" content="Rated puzzles: a Go puzzle rating that goes up and down, with each puzzle picked for your level.">
+  <link rel="canonical" href="https://playgoboard.netlify.app/rated-puzzles.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="GoBoard">
+  <meta property="og:title" content="GoBoard — Rated puzzles">
+  <meta property="og:description" content="Rated puzzles: a Go puzzle rating that goes up and down, with each puzzle picked for your level.">
+  <meta property="og:url" content="https://playgoboard.github.io/rated-puzzles.html">
+  <meta property="og:image" content="https://playgoboard.github.io/preview.png?v=2">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#302e2b">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="img/favicon-32.png" type="image/png" sizes="32x32">
+  <link rel="icon" href="img/favicon-96.png" type="image/png" sizes="96x96">
+  <link rel="apple-touch-icon" href="img/touch-icon-152.png" sizes="152x152">
+  <link rel="apple-touch-icon" href="img/touch-icon-167.png" sizes="167x167">
+  <link rel="apple-touch-icon" href="img/touch-icon-180.png" sizes="180x180">
+  <meta name="apple-mobile-web-app-title" content="GoBoard">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <script src="js/theme.js?v=78"></script>
+  <link rel="stylesheet" href="css/style.css?v=78">
+</head>
+<body>
+  <header class="top-bar">
+    <a class="logo" href="index.html"><img class="logo-mark" src="img/logo.svg" alt="" width="30" height="30">GoBoard</a>
+    <a class="menu-button" href="index.html" title="Main menu" aria-label="Main menu">☰</a>
+    <nav id="nav">
+      <a class="nav-item" href="index.html?mode=friend">Play a friend</a>
+      <a class="nav-item" href="index.html?mode=bot">Bots</a>
+      <a class="nav-item" href="index.html?mode=online">Online</a>
+      <a class="nav-item daily-link" href="daily.html">Daily</a>
+      <a class="nav-item active" href="puzzles.html">Puzzles</a>
+      <a class="nav-item" href="leaderboard.html">Leaderboard</a>
+      <a class="nav-item" href="achievements.html">Achievements</a>
+    </nav>
+    <button id="btn-sound" class="sound-toggle" type="button"></button>
+  </header>
+
+  <main class="game-layout">
+    <section class="board-column">
+      <div class="player-card puzzle-title-card">
+        <span class="stone-icon black"></span>
+        <span class="player-name">🎯 Rated puzzles</span>
+      </div>
+      <div id="board" class="board"></div>
+    </section>
+
+    <aside class="side-panel">
+      <!-- Filled in by js/rated-puzzles-page.js. -->
+      <div class="panel-block">
+        <p class="label">Your puzzle rating</p>
+        <div class="rush-scoreline"><span class="rush-score" id="rp-rating">–</span><span class="rp-result" id="rp-result" hidden></span></div>
+        <p class="message" id="rp-games"></p>
+        <p id="rp-prompt" class="puzzle-prompt"></p>
+        <p class="message" id="rp-puzzle-rating"></p>
+        <div class="button-row">
+          <button id="rp-next" class="btn btn-primary" hidden>Next puzzle</button>
+          <button id="rp-answer" class="btn" hidden>Show answer</button>
+        </div>
+        <p class="message small-note">Each puzzle counts once. Leaving or reloading brings the same puzzle back.</p>
+        <p class="account-links"><a class="link-button" href="puzzles.html">All puzzles</a></p>
+      </div>
+    </aside>
+  </main>
+
+  <script src="js/i18n-load.js?v=78"></script>
+  <script src="js/i18n.js?v=78"></script>
+  <script src="js/ranks.js?v=78"></script>
+  <script src="js/app-install.js?v=78"></script>
+  <script src="js/version-check.js?v=78"></script>
+  <script src="js/nav-arrows.js?v=78"></script>
+  <script src="js/go-rules.js?v=78"></script>
+  <script src="js/go-bot.js?v=78"></script>
+  <script src="js/sounds.js?v=78"></script>
+  <script src="js/vendor/supabase-js-2.115.0.js"></script>
+  <script src="js/supabase-config.js?v=78"></script>
+  <script src="js/board-view.js?v=78"></script>
+  <script src="js/puzzle-solver.js?v=78"></script>
+  <script src="js/puzzles-data.js?v=78"></script>
+  <script src="js/rush-puzzles.js?v=78"></script>
+  <script src="js/chat-filter.js?v=78"></script>
+  <script src="js/accounts.js?v=78"></script>
+  <script src="js/avatars.js?v=78"></script>
+  <script src="js/block-report.js?v=78"></script>
+  <script src="js/admin-notices.js?v=78"></script>
+  <script src="js/friends.js?v=78"></script>
+  <script src="js/achievements.js?v=78"></script>
+  <script src="js/live-games.js?v=78"></script>
+  <script src="js/daily-badge.js?v=78"></script>
+  <script src="js/puzzle-play.js?v=78"></script>
+  <script src="js/rated-puzzles-page.js?v=78"></script>
+</body>
+</html>

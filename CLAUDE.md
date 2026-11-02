@@ -179,7 +179,9 @@
 - Ranks: js/ranks.js (GoRanks.name, own scale, 100 points per rank). Weekly boards: supabase/23-weekly-boards.sql (weekly_top; wins from
   rated live + daily games, puzzles from weekly_puzzles via add_solved_puzzles +1, daily puzzle trigger +1, Rush score up to 100).
   SGF: js/sgf.js (write/read/download, main line only, no handicap or setup stones yet), upload box and download button in leaderboard-page.js.
-- Next batches the user picked: puzzle rating, then your-turn alerts (needs a Supabase function; check free limits), then stronger 19x19 bots.
+- Rated puzzles: rated-puzzles.html + js/rated-puzzles-page.js; js/puzzle-play.js (GoPuzzlePlay, also used by rush-page.js). supabase/24-puzzle-rating.sql:
+  profiles.puzzle_rating/puzzle_games, puzzle_ratings, puzzle_attempts; puzzle_next, puzzle_finish. Puzzles are numbered by place in js/rush-puzzles.js, so add new ones at the END.
+- Next batches the user picked: your-turn alerts (needs a Supabase function; check free limits), then stronger 19x19 bots.
 - Planned next (user picked, in this order):
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).

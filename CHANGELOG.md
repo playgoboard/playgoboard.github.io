@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.53.0
+- Rated puzzles (rated-puzzles.html, supabase/24-puzzle-rating.sql): a puzzle rating that goes up and down, with each next puzzle picked near your rating. Puzzles earn their own rating as people play them. Solved rated puzzles count on this week's board. Puzzle Rush now shares its puzzle-playing code (js/puzzle-play.js).
+
 ## 0.52.0
 - Kyu and dan ranks worked out from the rating (1200 = 10 kyu, 2200 = 1 dan), on the leaderboard, profiles, the account window and online game cards.
 - This week's boards on the Leaderboard (supabase/23-weekly-boards.sql): wins and puzzles, starting fresh every Monday.

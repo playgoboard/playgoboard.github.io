@@ -1,17 +1,12 @@
 // Puzzle Rush (puzzle-rush.html): solve as many capture puzzles as you can. 3 minutes, 5 minutes,
 // or Survival (no clock); 3 mistakes and the run is over. Puzzles start easy (capture in 1 move)
-// and get harder. White always answers with its best defense (puzzle-solver.js), and a move only
-// counts if it still wins. Puzzles come from js/rush-puzzles.js plus the normal puzzles.
+// and get harder. js/puzzle-play.js plays each puzzle. Puzzles come from js/rush-puzzles.js plus
+// the normal puzzles.
 (function () {
-  const { BLACK, WHITE } = window.Go;
-  const { FastBoard } = window.GoBot;
-  const { renderBoard, COLUMN_LETTERS } = window.GoBoardView;
-  const { boardFromDiagram, moveWins, whiteReply } = window.GoPuzzleSolver;
   const { t } = window.GoI18n;
   const $ = (id) => document.getElementById(id);
   const MODES = { "3min": { seconds: 180, name: "3 minutes" }, "5min": { seconds: 300, name: "5 minutes" }, survival: { seconds: 0, name: "Survival" } };
   const MAX_MISTAKES = 3;
-  const WHITE_DELAY_MS = 250;
   const BEST_KEY = "goboard-rush-best"; // guests keep their best scores in the browser
 
   // Every puzzle sorted into 5 steps of difficulty by how many moves it takes.
@@ -21,12 +16,12 @@
   const stepFor = (k) => Math.min(Math.floor(k / 5), 4);
 
   let run = null; // { mode, score, mistakes, k, endsAt, used, over, results: [true/false] }
-  let puzzle = null, board = null, targets = [], movesLeft = 0, busy = false, lastMove = null, marks = [];
   let timer = null, token = 0;
-
-  function pointIndex(coord, size) {
-    return (size - Number(coord.slice(1))) * size + COLUMN_LETTERS.indexOf(coord[0]);
-  }
+  const play = window.GoPuzzlePlay.create({
+    boardEl: $("board"),
+    canPlay: () => Boolean(run && !run.over),
+    onFinish: finishPuzzle,
+  });
 
   function pickPuzzle() {
     for (let step = stepFor(run.k); step >= 0; step--) {
@@ -35,12 +30,6 @@
     }
     run.used.clear(); // played them all: start over
     return STEPS[0][Math.floor(Math.random() * STEPS[0].length)];
-  }
-
-  function draw() {
-    const size = board.size;
-    const targetMarks = targets.filter((i) => board.cells[i] === WHITE).map((i) => ({ x: i % size, y: Math.floor(i / size), kind: "target" }));
-    $("board").innerHTML = renderBoard({ size, board: Array.from(board.cells), lastMove, marks: [...targetMarks, ...marks], ghostColor: busy || !run || run.over ? null : BLACK });
   }
 
   function drawPanel() {
@@ -58,17 +47,11 @@
 
   function nextPuzzle() {
     token++;
-    puzzle = pickPuzzle();
+    const puzzle = pickPuzzle();
     run.used.add(puzzle);
-    board = boardFromDiagram(puzzle.rows);
-    targets = puzzle.targets.map((c) => pointIndex(c, board.size));
-    movesLeft = puzzle.moves;
-    lastMove = null;
-    marks = [];
-    busy = false;
+    play.load(puzzle);
     $("rush-prompt").textContent = puzzle.moves === 1 ? t("Black to play. Capture the marked stones in 1 move.")
       : t("Black to play. Capture the marked stones in {n} moves.", { n: puzzle.moves });
-    draw();
     drawPanel();
   }
 
@@ -85,45 +68,6 @@
     if (run.mistakes >= MAX_MISTAKES) return endRun(t("3 mistakes: the run is over."));
     const myToken = token;
     setTimeout(() => { if (myToken === token && !run.over) nextPuzzle(); }, solved ? 400 : 900);
-  }
-
-  function playBlack(point) {
-    if (!run || run.over || busy) return;
-    if (!board.isLegal(point, BLACK)) return;
-    const size = board.size;
-    if (!moveWins(board, targets, point, movesLeft)) {
-      // Not the winning move: show it with a red X, then on to the next puzzle.
-      busy = true;
-      board.play(point, BLACK);
-      lastMove = point;
-      marks = [{ x: point % size, y: Math.floor(point / size), kind: "bad" }];
-      window.GoSounds.stone();
-      draw();
-      return finishPuzzle(false);
-    }
-    board.play(point, BLACK);
-    lastMove = point;
-    movesLeft--;
-    window.GoSounds.stone();
-    if (targets.some((i) => board.cells[i] !== WHITE)) {
-      busy = true;
-      draw();
-      return finishPuzzle(true);
-    }
-    busy = true;
-    draw();
-    const myToken = token;
-    setTimeout(() => {
-      if (myToken !== token || run.over) return;
-      const reply = whiteReply(board, targets, movesLeft);
-      if (reply !== null) {
-        board.play(reply, WHITE);
-        lastMove = reply;
-        window.GoSounds.stone();
-      }
-      busy = false;
-      draw();
-    }, WHITE_DELAY_MS);
   }
 
   // ---- Starting and ending a run ----
@@ -154,8 +98,7 @@
     run.over = true;
     token++;
     clearInterval(timer);
-    busy = false;
-    draw();
+    play.stop();
     drawPanel();
     const best = bestScores();
     const newBest = run.score > (best[run.mode] || 0);
@@ -187,10 +130,6 @@
     if (window.GoAchievements) window.GoAchievements.activity(); // a Rush counts for the daily streak
   }
 
-  $("board").addEventListener("click", (event) => {
-    const spot = event.target.closest(".spot");
-    if (spot) playBlack(Number(spot.dataset.y) * board.size + Number(spot.dataset.x));
-  });
   for (const b of document.querySelectorAll("[data-rush-mode]")) b.addEventListener("click", () => startRun(b.dataset.rushMode));
   $("rush-again").addEventListener("click", (event) => startRun(event.currentTarget.dataset.mode));
   $("rush-menu").addEventListener("click", () => {
@@ -208,9 +147,6 @@
     }
   }
 
-  // An empty board until a run starts.
-  board = new FastBoard(9);
-  draw();
   drawBests();
   $("rush-count").textContent = t("{n} puzzles", { n: POOL.length });
 })();
