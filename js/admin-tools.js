@@ -12,7 +12,7 @@
   const ACTION_NAMES = {
     ban: "Banned", unban: "Unbanned", warn: "Warned", reset_profile: "Profile reset", force_rename: "Forced rename",
     set_rating: "Rating changed", undo_game: "Game undone", proof_fine: "Proof marked fine",
-    proof_ban: "Banned for faked proof", dismiss_report: "Report dismissed",
+    proof_ban: "Banned for faked proof", dismiss_report: "Report dismissed", code_chosen: "Admin code chosen",
   };
   const BAN_LENGTHS = [[1, "1 day"], [7, "7 days"], [30, "30 days"], [0, "Forever"]];
 

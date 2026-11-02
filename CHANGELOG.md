@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.51.0
+- Admins choose their admin code on the Admin page (supabase/22-choose-admin-code.sql). The site can only save a code when the admin has none, so a stolen password can't change it; clearing a code is done in Supabase.
+
 ## 0.50.3
 - Admin code window: browsers no longer fill in the saved login password, a Show the code checkbox, and spaces around the code are ignored.
 

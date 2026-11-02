@@ -175,6 +175,7 @@
   js/admin-tools.js (Numbers, Players + card, Log, banWindow; admin text is English only), js/admin-page.js holds the tabs,
   js/admin-notices.js (all pages: ban window, warnings, forced rename). Undoing a game sets its change to 0 so graphs still add up.
   Clubs are postponed until the site has more players (the user's choice).
+  Admin code: chosen on the Admin page when none exists (supabase/22, GoAdminCode.choose); clearing it is SQL only.
 - Planned next (user picked, in this order):
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).

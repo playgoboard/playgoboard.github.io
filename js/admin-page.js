@@ -237,6 +237,7 @@
       listBox.append(element("p", "message panel-block", t("Only the admin can see this page.")));
       return;
     }
+    await window.GoAdminCode.chooseIfNeeded();
     drawList();
   });
 })();
