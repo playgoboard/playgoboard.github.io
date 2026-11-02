@@ -93,7 +93,7 @@
   function cardName(color) {
     const player = onlinePlayer(color);
     if (!player) return playerName(color);
-    if (player.rating !== undefined) return `${player.username} (${player.rating})${player.title ? ` · 🏅 ${t(player.title)}` : ""}`;
+    if (player.rating !== undefined) return `${player.username} (${player.rating} · ${window.GoRanks.name(player.rating)})${player.title ? ` · 🏅 ${t(player.title)}` : ""}`;
     return player.id ? player.username : guestName(player);
   }
 

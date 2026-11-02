@@ -100,14 +100,83 @@
     if (!data.length) {
       box.append(element("p", "message", t("Nobody has played a rated game yet. Be the first! Play online and pick Rated.")));
     } else {
-      box.append(table(["#", t("Player"), t("Rating"), t("Games"), t("Won / Lost")], data.map((p, k) =>
-        row([String(k + 1), nameWithPicture(p), String(p.rating), String(p.games), `${p.wins} / ${p.losses}`],
+      box.append(table(["#", t("Player"), t("Rating"), t("Rank"), t("Games"), t("Won / Lost")], data.map((p, k) =>
+        row([String(k + 1), nameWithPicture(p), String(p.rating), window.GoRanks.name(p.rating), String(p.games), `${p.wins} / ${p.losses}`],
           me && me.username === p.username ? "me" : ""))));
     }
     if (me) box.append(link(t("See my games"), playerLink(me.username), "link-button spaced-link"));
-    const rush = await rushTopScores(me);
-    showList(box, rush);
+    const [weekly, rush] = await Promise.all([weeklyBoards(me), rushTopScores(me)]);
+    showList(box, ...(weekly ? [weekly] : []), rush, sgfUploadBox());
     if (params.get("rush")) rush.scrollIntoView();
+  }
+
+  // ---- This week's boards (supabase/23-weekly-boards.sql) ----
+
+  async function weeklyBoards(me) {
+    const { data, error } = await accounts.client.rpc("weekly_top");
+    if (error || !data) return null; // before step 23 is set up, just leave this out
+    const box = element("div", "panel-block");
+    box.append(element("h2", "", t("🗓️ This week")),
+      element("p", "message", t("Starts fresh on {when}. Wins come from rated online and daily games.",
+        { when: new Date(data.resets).toLocaleString(undefined, { weekday: "long", hour: "2-digit", minute: "2-digit" }) })));
+    const tabs = element("div", "choice-row");
+    const list = element("div");
+    box.append(tabs, list);
+    const show = (mode, heading) => {
+      for (const b of tabs.children) b.classList.toggle("selected", b.dataset.mode === mode);
+      list.textContent = "";
+      const rows = data[mode].filter((r) => r.username);
+      if (!rows.length) {
+        list.append(element("p", "message", t("Nobody yet this week. Be the first!")));
+        return;
+      }
+      list.append(table(["#", t("Player"), heading], rows.map((r, k) =>
+        row([String(k + 1), nameWithPicture(r), String(r.n)], me && me.username === r.username ? "me" : ""))));
+    };
+    for (const [mode, name] of [["wins", t("Wins")], ["puzzles", t("Puzzles")]]) {
+      const b = element("button", "", name);
+      b.type = "button";
+      b.dataset.mode = mode;
+      b.addEventListener("click", () => show(mode, name));
+      tabs.append(b);
+    }
+    show("wins", t("Wins"));
+    return box;
+  }
+
+  // ---- Opening an SGF file (js/sgf.js) ----
+
+  function sgfUploadBox() {
+    const box = element("div", "panel-block");
+    box.append(element("h2", "", t("📂 Open a game file")),
+      element("p", "message", t("Open an SGF file from any Go site to replay it and run Dragon's Review. The file stays on your device.")));
+    const input = element("input");
+    input.type = "file";
+    input.accept = ".sgf";
+    input.hidden = true;
+    const note = element("p", "message");
+    const open = element("button", "btn", t("Choose an SGF file"));
+    open.type = "button";
+    open.addEventListener("click", () => input.click());
+    input.addEventListener("change", async () => {
+      const file = input.files[0];
+      input.value = "";
+      if (!file) return;
+      note.textContent = "";
+      if (file.size > 1000000) { note.textContent = t("That file is too big."); return; }
+      const { game, problem: why } = window.GoSgf.read(await file.text());
+      if (why) { note.textContent = why; return; }
+      listView.hidden = true;
+      playReplay({
+        size: game.size, moves: game.moves, result: game.result, bottom: BLACK,
+        names: { [BLACK]: game.black, [WHITE]: game.white },
+        details: `${game.size}×${game.size} · ${t("SGF file")}${game.date ? ` · ${dateText(game.date)}` : ""}`,
+        date: game.date, back: "leaderboard.html",
+        shareUrl: window.GoShare.link({ size: game.size, moves: game.moves, black: game.black, white: game.white, result: game.result }),
+      });
+    });
+    box.append(open, input, note);
+    return box;
   }
 
   // ---- Puzzle Rush top scores (supabase/16-puzzle-rush.sql) ----
@@ -266,7 +335,7 @@
     head.append(window.GoAvatars.element(player.avatar, player.username, 64, player.frame), titles);
     profile.append(link(t("‹ Leaderboard"), "leaderboard.html", "link-button"), head);
     const stats = element("div", "stat-row");
-    for (const [label, value] of [[t("Rating"), player.rating], [t("Rated games"), player.games], [t("Wins"), player.wins],
+    for (const [label, value] of [[t("Rating"), player.rating], [t("Rank"), window.GoRanks.name(player.rating)], [t("Rated games"), player.games], [t("Wins"), player.wins],
       [t("Losses"), player.losses], [t("Member since"), dateText(player.created_at)],
       ...(window.GoAchievements ? [[t("Streak"), `🔥 ${window.GoAchievements.currentStreak(player)}`]] : [])]) {
       const stat = element("div", "stat");
@@ -343,6 +412,7 @@
       size: record.board_size, moves: record.moves, result: record.result, bottom: ownerColor,
       names: { [ownerColor]: ownerName, [opponentColor]: shownName(record.opponent_name) },
       details: `${record.board_size}×${record.board_size} · ${kind} · ${dateText(record.created_at)}`,
+      date: record.created_at.slice(0, 10),
       back: record.owner ? playerLink(record.owner.username) : "leaderboard.html", shareUrl,
     });
   }
@@ -355,12 +425,12 @@
       size: shared.size, moves: shared.moves, result: shared.result, bottom: BLACK,
       names: { [BLACK]: shared.black, [WHITE]: shared.white },
       details: `${shared.size}×${shared.size} · ${t("Shared game")}${shared.date ? ` · ${dateText(shared.date)}` : ""}`,
-      back: "leaderboard.html", shareUrl: window.location.href,
+      date: shared.date, back: "leaderboard.html", shareUrl: window.location.href,
     });
   }
 
   // The replay view, for a saved game or a shared link.
-  // game: { size, moves, result ("" if unknown), bottom (color at the bottom), names, details, back, shareUrl }
+  // game: { size, moves, result ("" if unknown), bottom (color at the bottom), names, details, date, back, shareUrl }
   function playReplay(info) {
     const game = gameHistory.rebuild(info.size, info.moves);
     const total = game.moves.length;
@@ -374,6 +444,11 @@
     $("btn-share-replay").addEventListener("click", async () => {
       $("share-note").textContent = await window.GoShare.share(info.shareUrl);
     });
+
+    $("btn-download-sgf").hidden = false;
+    $("btn-download-sgf").addEventListener("click", () => window.GoSgf.download({
+      size: info.size, moves: info.moves, black: names[BLACK], white: names[WHITE], result: info.result, date: info.date,
+    }));
 
     for (const seat of ["top", "bottom"]) {
       const color = seats[seat];

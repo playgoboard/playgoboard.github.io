@@ -176,6 +176,10 @@
   js/admin-notices.js (all pages: ban window, warnings, forced rename). Undoing a game sets its change to 0 so graphs still add up.
   Clubs are postponed until the site has more players (the user's choice).
   Admin code: chosen on the Admin page when none exists (supabase/22, GoAdminCode.choose); clearing it is SQL only.
+- Ranks: js/ranks.js (GoRanks.name, own scale, 100 points per rank). Weekly boards: supabase/23-weekly-boards.sql (weekly_top; wins from
+  rated live + daily games, puzzles from weekly_puzzles via add_solved_puzzles +1, daily puzzle trigger +1, Rush score up to 100).
+  SGF: js/sgf.js (write/read/download, main line only, no handicap or setup stones yet), upload box and download button in leaderboard-page.js.
+- Next batches the user picked: puzzle rating, then your-turn alerts (needs a Supabase function; check free limits), then stronger 19x19 bots.
 - Planned next (user picked, in this order):
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).

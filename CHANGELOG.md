@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.52.0
+- Kyu and dan ranks worked out from the rating (1200 = 10 kyu, 2200 = 1 dan), on the leaderboard, profiles, the account window and online game cards.
+- This week's boards on the Leaderboard (supabase/23-weekly-boards.sql): wins and puzzles, starting fresh every Monday.
+- SGF: Download SGF on every replay, and open an SGF file from any Go site to replay it with Dragon's Review.
+
 ## 0.51.0
 - Admins choose their admin code on the Admin page (supabase/22-choose-admin-code.sql). The site can only save a code when the admin has none, so a stolen password can't change it; clearing a code is done in Supabase.
 

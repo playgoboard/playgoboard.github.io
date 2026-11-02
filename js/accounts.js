@@ -223,7 +223,7 @@
     const since = new Date(profile.created_at).toLocaleDateString();
     box.innerHTML = "";
     for (const [label, value] of [
-      [t("Rating"), profile.rating], [t("Rated games"), profile.games],
+      [t("Rating"), profile.rating], [t("Rank"), window.GoRanks.name(profile.rating)], [t("Rated games"), profile.games],
       [t("Wins"), profile.wins], [t("Losses"), profile.losses], [t("Member since"), since],
     ]) {
       const row = document.createElement("div");
