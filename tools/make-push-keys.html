@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>GoBoard alert keys</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { max-width: 720px; margin: 24px auto; padding: 0 16px; font: 16px/1.5 system-ui, sans-serif; background: #262421; color: #eee; }
+    label { display: block; margin: 16px 0 4px; font-weight: 700; }
+    textarea { width: 100%; box-sizing: border-box; padding: 8px; background: #1b1a18; color: #eee; border: 1px solid #555; font: 13px monospace; word-break: break-all; }
+    button { padding: 10px 16px; font-size: 16px; font-weight: 700; cursor: pointer; }
+    .warn { color: #ffb74d; }
+  </style>
+</head>
+<body>
+  <h1>GoBoard alert keys</h1>
+  <p>This page makes the keys for alerts. They're made in this browser and aren't sent anywhere.
+    <b class="warn">Don't send them to anyone, and only do this once:</b> new keys turn off alerts on every device that already has them on.</p>
+  <button id="make" type="button">Make the keys</button>
+  <div id="out" hidden>
+    <p>In Supabase, go to Edge Functions → Secrets and add these three, with exactly these names:</p>
+    <label>VAPID_PUBLIC_KEY</label><textarea id="pub" rows="3" readonly></textarea>
+    <label>VAPID_PRIVATE_KEY</label><textarea id="priv" rows="2" readonly></textarea>
+    <label>ALERT_SECRET</label><textarea id="secret" rows="2" readonly></textarea>
+    <p>Then paste this into the SQL Editor and press Run. Delete the query afterwards.</p>
+    <label>SQL</label><textarea id="sql" rows="6" readonly></textarea>
+  </div>
+  <script>
+    const base64Url = (bytes) => btoa(String.fromCharCode(...bytes)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+    document.getElementById("make").addEventListener("click", async (event) => {
+      const pair = await crypto.subtle.generateKey({ name: "ECDSA", namedCurve: "P-256" }, true, ["sign", "verify"]);
+      const publicKey = base64Url(new Uint8Array(await crypto.subtle.exportKey("raw", pair.publicKey)));
+      const privateKey = (await crypto.subtle.exportKey("jwk", pair.privateKey)).d;
+      const secret = base64Url(crypto.getRandomValues(new Uint8Array(32)));
+      document.getElementById("pub").value = publicKey;
+      document.getElementById("priv").value = privateKey;
+      document.getElementById("secret").value = secret;
+      document.getElementById("sql").value =
+        `insert into public.push_settings (id, public_key, secret) values (1, '${publicKey}', '${secret}')\n` +
+        `  on conflict (id) do update set public_key = excluded.public_key, secret = excluded.secret;\n` +
+        `select 'alert keys saved' as status;`;
+      document.getElementById("out").hidden = false;
+      event.target.disabled = true; // one set of keys per visit
+    });
+    for (const box of document.querySelectorAll("textarea")) box.addEventListener("focus", () => box.select());
+  </script>
+</body>
+</html>

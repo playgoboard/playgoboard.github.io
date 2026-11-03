@@ -759,3 +759,8 @@ a.link-button { display: inline-block; }
 .rp-result.ok { color: var(--accent); }
 .rp-result.bad { color: var(--danger); }
 .rp-result[hidden] { display: none; }
+
+/* Alerts in the account window (js/push-alerts.js) */
+.push-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 0; font-size: 14px; color: var(--text-dim); }
+.account-dialog .push-note { flex-basis: 100%; margin: 0; font-size: 13px; }
+.account-dialog .push-note:empty { display: none; }

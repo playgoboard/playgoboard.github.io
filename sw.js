@@ -46,6 +46,30 @@ async function internetFirst(request) {
   }
 }
 
+// Your-turn alerts (js/push-alerts.js, supabase/functions/send-alert).
+self.addEventListener("push", (event) => {
+  let alert = {};
+  try { alert = event.data ? event.data.json() : {}; } catch { /* shows the plain alert below */ }
+  event.waitUntil(self.registration.showNotification(alert.title || "GoBoard", {
+    body: alert.body || "",
+    icon: "img/icon-192.png",
+    data: { url: alert.url || "index.html" },
+    tag: alert.url || "goboard", // a newer alert for the same game replaces the old one
+  }));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL(event.notification.data.url, self.location.href).href;
+  event.waitUntil((async () => {
+    const open = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const client of open) {
+      if (client.url === target && "focus" in client) return client.focus();
+    }
+    return self.clients.openWindow(target);
+  })());
+});
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);

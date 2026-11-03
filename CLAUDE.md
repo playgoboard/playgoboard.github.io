@@ -181,7 +181,10 @@
   SGF: js/sgf.js (write/read/download, main line only, no handicap or setup stones yet), upload box and download button in leaderboard-page.js.
 - Rated puzzles: rated-puzzles.html + js/rated-puzzles-page.js; js/puzzle-play.js (GoPuzzlePlay, also used by rush-page.js). supabase/24-puzzle-rating.sql:
   profiles.puzzle_rating/puzzle_games, puzzle_ratings, puzzle_attempts; puzzle_next, puzzle_finish. Puzzles are numbered by place in js/rush-puzzles.js, so add new ones at the END.
-- Next batches the user picked: your-turn alerts (needs a Supabase function; check free limits), then stronger 19x19 bots.
+- Alerts: supabase/25-push-alerts.sql (pg_net; push_settings [keys, no client access], push_devices; trigger daily_games_alert calls push_send, never stops a game).
+  supabase/functions/send-alert/index.ts is pasted into the Supabase dashboard (Verify JWT off; Secrets VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, ALERT_SECRET, from tools/make-push-keys.html). Changing it means pasting it again.
+  js/push-alerts.js (button in the account window, GoPush.forgetDevice on logout), sw.js shows the alerts. No outside libraries. Free plan: 500,000 function runs a month.
+- Next batch the user picked: stronger 19x19 bots.
 - Planned next (user picked, in this order):
   puzzles. Later: accounts + ratings, stronger 19×19 bots.
 - `css/style.css`: the look (dark chess.com-like theme, colors at the top).

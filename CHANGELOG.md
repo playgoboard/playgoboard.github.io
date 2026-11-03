@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.54.0
+- Your-turn alerts: phone or browser alerts when it's your turn in a daily game or someone sends you a daily challenge, even with the site closed. Turned on per device in the account window. Logging out turns them off on that device. On iPhone and iPad the site must be on the Home Screen. supabase/25-push-alerts.sql + the send-alert function.
+
 ## 0.53.0
 - Rated puzzles (rated-puzzles.html, supabase/24-puzzle-rating.sql): a puzzle rating that goes up and down, with each next puzzle picked near your rating. Puzzles earn their own rating as people play them. Solved rated puzzles count on this week's board. Puzzle Rush now shares its puzzle-playing code (js/puzzle-play.js).
 

@@ -148,6 +148,11 @@
     if (!dialog.open) dialog.showModal();
   }
 
+  async function logOut() {
+    if (window.GoPush) await window.GoPush.forgetDevice(); // stops alerts for this account on this device
+    await client.auth.signOut();
+  }
+
   function showError(text) {
     message.textContent = text;
     message.classList.add("error");
@@ -387,7 +392,7 @@
     },
 
     async logout() {
-      await client.auth.signOut();
+      await logOut();
       dialog.close();
     },
 
@@ -420,7 +425,7 @@
   });
 
   accountButton.addEventListener("click", () => showView(session ? "profile" : needsCode ? "two-step" : "login"));
-  logoutButton.addEventListener("click", () => client.auth.signOut());
+  logoutButton.addEventListener("click", logOut);
 
   // ---- Keeping track of who is logged in ----
 
